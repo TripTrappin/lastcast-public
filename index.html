@@ -354,6 +354,31 @@ min-height: 22px;
 line-height: 1.2;
 }
 
+.debt-stat .ms-val { color: #ff7e5a; }
+.itch-stat { width: 60px; }
+.ms-itch {
+height: 8px; width: 100%;
+background: rgba(255,255,255,0.08);
+border-radius: 999px;
+overflow: hidden;
+margin-top: 6px; margin-bottom: 2px;
+border: 1px solid rgba(255,255,255,0.14);
+}
+.ms-itch-fill {
+height: 100%; width: 0%;
+background: linear-gradient(90deg, #6fb069, #f8c850, #ff5a4a);
+transition: width 0.4s ease, background 0.4s ease;
+}
+.itch-high #rod-canvas { animation: rodTremble 0.18s linear infinite; }
+@keyframes rodTremble {
+0%   { transform: translate(0, 0) rotate(0deg); }
+25%  { transform: translate(0.6px, -0.4px) rotate(0.4deg); }
+50%  { transform: translate(-0.5px, 0.3px) rotate(-0.3deg); }
+75%  { transform: translate(0.4px, 0.5px) rotate(0.2deg); }
+100% { transform: translate(-0.3px, -0.4px) rotate(-0.2deg); }
+}
+.itch-very-high { filter: saturate(0.8) contrast(1.05); }
+
 #stats-bar {
 position: absolute;
 top: 110px; left: 20px; right: 20px;
@@ -429,6 +454,28 @@ justify-content: center;
 transition: transform 0.15s;
 }
 #shop-btn:active { transform: scale(0.92); }
+
+#dice-btn {
+position: absolute;
+top: 24px; right: 196px;
+width: 64px; height: 36px;
+background: rgba(80, 20, 30, 0.7);
+backdrop-filter: blur(8px);
+border: 1px solid rgba(255,140,80,0.45);
+border-radius: 999px;
+color: var(--text);
+font-family: 'Baloo 2', cursive;
+font-size: 12px;
+font-weight: 700;
+letter-spacing: 1.5px;
+cursor: pointer;
+z-index: 30;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: transform 0.15s;
+}
+#dice-btn:active { transform: scale(0.92); }
 
 #mute-btn {
 position: absolute;
@@ -1379,6 +1426,179 @@ text-shadow: 0 0 8px rgba(255,213,79,0.6);
   100% { transform: translate(-50%, -110%) scale(1.0); opacity: 0; }
 }
 
+/* === DICE SCREEN === */
+#dice-screen { background: linear-gradient(180deg, #1a0a14 0%, #2a1024 100%); }
+.dice-header {
+display: flex; align-items: center; justify-content: space-between;
+padding: 14px 20px 10px;
+flex-shrink: 0;
+}
+.dice-title {
+font-family: 'Baloo 2', cursive; font-size: 20px; font-weight: 800;
+color: #ff8a60; letter-spacing: 1px;
+}
+.dice-close {
+height: 28px; padding: 0 14px; border-radius: 999px; border: none;
+background: rgba(80, 20, 30, 0.85); color: var(--bg);
+font-family: 'Baloo 2', cursive; font-size: 11px; font-weight: 700;
+letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+}
+.dice-table {
+flex: 1;
+display: flex; flex-direction: column; align-items: center;
+gap: 14px;
+padding: 8px 16px 18px;
+overflow-y: auto;
+}
+.dice-flavor {
+font-family: 'Baloo 2', cursive; font-size: 12px;
+color: var(--text-dim);
+font-style: italic;
+text-align: center;
+}
+.dice-pair {
+display: flex; gap: 14px;
+margin: 4px 0 4px;
+}
+.die {
+width: 60px; height: 60px;
+background: linear-gradient(180deg, #fde8c8 0%, #c8a070 100%);
+border: 2px solid #1a0c05;
+border-radius: 10px;
+box-shadow: 0 4px 8px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.4);
+display: flex; align-items: center; justify-content: center;
+position: relative;
+font-family: 'Baloo 2', cursive;
+font-size: 36px; color: #1a0c05;
+font-weight: 800;
+}
+.die.rolling { animation: dieShake 0.42s ease-in-out; }
+@keyframes dieShake {
+0%, 100% { transform: rotate(0); }
+25%      { transform: rotate(-12deg) translate(-4px, 0); }
+50%      { transform: rotate(8deg) translate(3px, -2px); }
+75%      { transform: rotate(-6deg) translate(-2px, 1px); }
+}
+.die-face {
+width: 36px; height: 36px;
+display: flex; align-items: center; justify-content: center;
+}
+.dice-result {
+font-family: 'Baloo 2', cursive; font-size: 14px; font-weight: 700;
+height: 18px;
+color: var(--text);
+text-align: center;
+}
+.dice-result.win { color: #6fb069; }
+.dice-result.lose { color: #ff5a4a; }
+.dice-bet-row {
+display: flex; align-items: center; gap: 6px;
+margin-top: 4px;
+}
+.dice-bet-label {
+font-family: 'Baloo 2', cursive; font-size: 11px;
+color: var(--text-dim); letter-spacing: 1px;
+text-transform: uppercase; margin-right: 6px;
+}
+.dice-step {
+height: 32px; min-width: 36px; padding: 0 8px;
+border-radius: 8px; border: 1px solid rgba(255,255,255,0.15);
+background: rgba(20,10,18,0.5);
+color: var(--text);
+font-family: 'Baloo 2', cursive; font-size: 12px; font-weight: 700;
+cursor: pointer;
+}
+.dice-step:active { transform: scale(0.94); }
+#dice-bet {
+width: 76px; height: 32px; padding: 0 8px;
+border-radius: 8px; border: 1px solid rgba(255,140,80,0.45);
+background: rgba(20,10,18,0.7);
+color: #fde898;
+font-family: 'Baloo 2', cursive; font-size: 13px; font-weight: 800;
+text-align: center;
+}
+.dice-choices {
+display: flex; gap: 8px; width: 100%;
+margin-top: 4px;
+}
+.dice-choice {
+flex: 1; height: 56px;
+display: flex; flex-direction: column; align-items: center; justify-content: center;
+gap: 2px;
+border-radius: 12px;
+background: rgba(20,10,18,0.55);
+border: 1px solid rgba(255,140,80,0.35);
+color: var(--text);
+font-family: 'Baloo 2', cursive;
+cursor: pointer;
+transition: transform 0.12s, background 0.12s;
+}
+.dice-choice:active { transform: scale(0.96); }
+.dice-choice.lucky {
+border-color: #ffd54f;
+background: rgba(80, 50, 10, 0.55);
+}
+.dice-choice .dc-name {
+font-size: 12px; font-weight: 700; letter-spacing: 1px;
+text-transform: uppercase;
+}
+.dice-choice .dc-pay {
+font-size: 18px; font-weight: 800;
+color: var(--gold);
+}
+.dice-bottom-row {
+margin-top: 6px;
+display: flex; align-items: center; justify-content: space-between;
+gap: 10px;
+width: 100%;
+font-family: 'Baloo 2', cursive; font-size: 12px;
+color: var(--text-dim);
+}
+.dice-num { color: var(--gold); font-weight: 800; font-size: 14px; }
+.dice-num.bad { color: #ff7e5a; }
+.dice-pay-btn {
+height: 30px; padding: 0 14px; border-radius: 999px; border: none;
+background: rgba(232, 132, 58, 0.92); color: var(--bg);
+font-family: 'Baloo 2', cursive; font-size: 11px; font-weight: 700;
+letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+}
+.dice-pay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.dice-pay-btn:active { transform: scale(0.94); }
+
+/* === GAME OVER === */
+#gameover-popup {
+position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+z-index: 400; background: rgba(0,0,0,0.92);
+opacity: 0; pointer-events: none; transition: opacity 0.4s;
+}
+#gameover-popup.show { opacity: 1; pointer-events: all; }
+.gameover-card {
+background: var(--surface-solid);
+border: 2px solid #ff5a4a;
+border-radius: 16px;
+padding: 28px 24px 22px;
+width: min(86%, 360px);
+text-align: center;
+}
+.gameover-title {
+font-family: 'Baloo 2', cursive; font-size: 22px; font-weight: 800;
+color: #ff7e5a;
+margin-bottom: 12px;
+line-height: 1.15;
+}
+.gameover-body {
+font-family: 'Baloo 2', cursive; font-size: 14px; color: var(--text-dim);
+margin-bottom: 20px;
+font-style: italic;
+}
+.gameover-restart {
+height: 40px; padding: 0 22px; border-radius: 999px; border: none;
+background: linear-gradient(135deg, #ff7043, #d32f2f); color: white;
+font-family: 'Baloo 2', cursive; font-size: 13px; font-weight: 800;
+letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+}
+.gameover-restart:active { transform: scale(0.96); }
+
 </style>
 </head>
 <body>
@@ -1397,9 +1617,9 @@ text-shadow: 0 0 8px rgba(255,213,79,0.6);
 
 <!-- Title content -->
 <div id="title-content">
-  <div class="title-tagline-top">A COZY FISHING GAME</div>
+  <div class="title-tagline-top">A FISHING GAME ABOUT MAKING RENT</div>
   <h1 class="title-main">Last Cast</h1>
-  <div class="title-tagline-bot">one more cast before sundown</div>
+  <div class="title-tagline-bot">one more cast. just one.</div>
 
   <div class="title-buttons">
     <button class="title-btn primary" id="play-btn" onclick="startGame()">
@@ -1407,6 +1627,9 @@ text-shadow: 0 0 8px rgba(255,213,79,0.6);
     </button>
     <button class="title-btn secondary" onclick="openShopFromTitle()">
       <span class="btn-label">Shop</span>
+    </button>
+    <button class="title-btn secondary" onclick="openDiceFromTitle()">
+      <span class="btn-label">Boudreaux's</span>
     </button>
     <button class="title-btn secondary" onclick="openFishdexFromTitle()">
       <span class="btn-label">Fishdex</span>
@@ -1465,6 +1688,7 @@ text-shadow: 0 0 8px rgba(255,213,79,0.6);
 
 <button id="fishdex-btn" onclick="openFishdex()">DEX</button>
 <button id="shop-btn" onclick="openShop()">SHOP</button>
+<button id="dice-btn" onclick="openDice()">DICE</button>
 <button id="mute-btn" onclick="toggleMute()">🔊</button>
 
 <div id="status-overlay">
@@ -1473,8 +1697,9 @@ text-shadow: 0 0 8px rgba(255,213,79,0.6);
 
 <div id="stats-bar">
   <div class="mini-stat"><div class="ms-val" id="stat-caught">0</div><div class="ms-lbl">Caught</div></div>
-  <div class="mini-stat"><div class="ms-val" id="stat-rare">0</div><div class="ms-lbl">Rare+</div></div>
   <div class="mini-stat coin-stat"><div class="ms-val" id="stat-coins">0</div><div class="ms-lbl">Coins</div></div>
+  <div class="mini-stat debt-stat"><div class="ms-val" id="stat-debt">0</div><div class="ms-lbl">Debt</div></div>
+  <div class="mini-stat itch-stat"><div class="ms-itch"><div class="ms-itch-fill" id="stat-itch-fill"></div></div><div class="ms-lbl">Itch</div></div>
 </div>
 
 <div id="control-panel">
@@ -1557,6 +1782,58 @@ text-shadow: 0 0 8px rgba(255,213,79,0.6);
 
   </div>
 
+  <!-- ============== DICE SCREEN (Boudreaux's) ============== -->
+  <div id="dice-screen" class="screen">
+    <div class="dice-header">
+      <span class="dice-title">Boudreaux's Back Room</span>
+      <button class="dice-close" onclick="closeDice()">CLOSE</button>
+    </div>
+    <div class="dice-table">
+      <div class="dice-flavor" id="dice-flavor">Bet small, win small. Bet big, lose bigger.</div>
+      <div class="dice-pair">
+        <div class="die" id="die-1"><div class="die-face" data-face="1">●</div></div>
+        <div class="die" id="die-2"><div class="die-face" data-face="1">●</div></div>
+      </div>
+      <div class="dice-result" id="dice-result"></div>
+      <div class="dice-bet-row">
+        <span class="dice-bet-label">Bet</span>
+        <button class="dice-step" onclick="adjDiceBet(-50)">−50</button>
+        <button class="dice-step" onclick="adjDiceBet(-10)">−10</button>
+        <input id="dice-bet" type="number" min="10" step="10" value="50" inputmode="numeric"/>
+        <button class="dice-step" onclick="adjDiceBet(10)">+10</button>
+        <button class="dice-step" onclick="adjDiceBet(50)">+50</button>
+      </div>
+      <div class="dice-choices">
+        <button class="dice-choice" data-choice="under" onclick="rollDice('under')">
+          <div class="dc-name">Under 7</div>
+          <div class="dc-pay">2×</div>
+        </button>
+        <button class="dice-choice lucky" data-choice="seven" onclick="rollDice('seven')">
+          <div class="dc-name">Lucky 7</div>
+          <div class="dc-pay">5×</div>
+        </button>
+        <button class="dice-choice" data-choice="over" onclick="rollDice('over')">
+          <div class="dc-name">Over 7</div>
+          <div class="dc-pay">2×</div>
+        </button>
+      </div>
+      <div class="dice-bottom-row">
+        <span class="dice-coins-line">Coins <span class="dice-num" id="dice-coins">0</span></span>
+        <span class="dice-debt-line">Owed <span class="dice-num bad" id="dice-debt">0</span></span>
+        <button class="dice-pay-btn" onclick="payBoudreaux()">Pay Down</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game over modal -->
+  <div id="gameover-popup">
+    <div class="gameover-card">
+      <div class="gameover-title">Boudreaux's boys came by today.</div>
+      <div class="gameover-body" id="gameover-body">You owe more than the bayou's worth. They took the truck. They took the dog. They left you the rod.</div>
+      <button class="gameover-restart" onclick="restartFromGameOver()">Try Again</button>
+    </div>
+  </div>
+
   <div id="catch-popup">
     <div class="catch-card" id="catch-card">
       <canvas class="catch-fish-canvas" id="popup-fish-canvas" width="120" height="60"></canvas>
@@ -1620,8 +1897,10 @@ function saveGame() {
       ),
       selectedBaitId,
       ownedUpgrades,
+      itch,
+      debt,
       muted: isMuted,
-      version: 8,
+      version: 9,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
   } catch (e) {
@@ -1642,9 +1921,8 @@ function loadGame() {
     }
     if (!raw) return;
     const save = JSON.parse(raw);
-    // Accept v1 through v8. v8 dropped the cabin entirely; older versions'
-    // cabin fields are simply ignored on load.
-    if (![1,2,3,4,5,6,7,8].includes(save.version)) return;
+    // Accept v1 through v9. v9 added itch + debt for the gambling rework.
+    if (![1,2,3,4,5,6,7,8,9].includes(save.version)) return;
     
     // Rehydrate collection with fish object refs
     if (save.collection) {
@@ -1690,6 +1968,10 @@ function loadGame() {
       : [];
 
     // v5+ cabin fields are no longer loaded (cabin removed in v8).
+
+    // v9 fields - itch + debt
+    itch = (typeof save.itch === 'number') ? save.itch : 0;
+    debt = (typeof save.debt === 'number') ? save.debt : DEBT_START;
   } catch (e) {
     console.warn('Load failed:', e);
   }
@@ -1706,7 +1988,10 @@ function resetSave() {
   baitInventory = { worms: Infinity };
   selectedBaitId = 'worms';
   ownedUpgrades = [];
+  itch = 0;
+  debt = DEBT_START;
   updateStats();
+  updateGamblingUI();
   renderFishdex();
 }
 
@@ -2823,6 +3108,7 @@ function cast() {
   bobber.style.left = x + 'px'; bobber.style.top = y + 'px';
   bobber.style.display = 'block'; bobber.className = '';
   drawLine(x, y);
+  bumpItchOnCast();
   setTimeout(() => {
     spawnRipple(x, y);
     sfxBobberSettle();
@@ -3112,7 +3398,7 @@ $('fail-dismiss').addEventListener('click', () => {
 
 function updateStats() {
   $('stat-caught').textContent = totalCaught;
-  $('stat-rare').textContent = rareCount;
+  if ($('stat-debt')) updateGamblingUI();
   if ($('stat-coins')) $('stat-coins').textContent = coins;
   // Refresh title screen indicator (in case title screen is currently visible)
   if (typeof updateTitleScreen === 'function') updateTitleScreen();
@@ -3668,6 +3954,254 @@ function equipRod(id) {
 
 
 
+
+
+// ============================================================
+// GAMBLING ADDICTION CORE
+// State: itch (0-100), debt (coins owed to Boudreaux).
+// ============================================================
+const ITCH_MAX = 100;
+const ITCH_PER_SEC = 1;        // passive growth per real-time second
+const ITCH_PER_CAST = 4;       // bumps per cast
+const ITCH_DRAIN_PER_ROLL = 25;// each dice roll relieves itch
+const DEBT_INTEREST_PER_MIN = 0.01;   // +1% per real-time minute
+const DEBT_GAME_OVER = 5000;
+const DEBT_START = 500;
+
+let itch = 0;
+let debt = DEBT_START;
+let diceCameFromTitle = false;
+let gameOverShown = false;
+
+function tickGambling() {
+  // Itch grows
+  itch = Math.min(ITCH_MAX, itch + ITCH_PER_SEC);
+  // Debt accrues continuously
+  debt = Math.min(DEBT_GAME_OVER * 2, debt * (1 + DEBT_INTEREST_PER_MIN / 60));
+  updateGamblingUI();
+  // Check game over
+  if (debt >= DEBT_GAME_OVER) showGameOverPopup();
+}
+
+function bumpItchOnCast() {
+  itch = Math.min(ITCH_MAX, itch + ITCH_PER_CAST);
+  updateGamblingUI();
+}
+
+function updateGamblingUI() {
+  const fill = document.getElementById('stat-itch-fill');
+  if (fill) fill.style.width = (itch / ITCH_MAX * 100) + '%';
+  const debtEl = document.getElementById('stat-debt');
+  if (debtEl) debtEl.textContent = Math.floor(debt);
+  const dCoins = document.getElementById('dice-coins');
+  if (dCoins) dCoins.textContent = coins;
+  const dDebt = document.getElementById('dice-debt');
+  if (dDebt) dDebt.textContent = Math.floor(debt);
+  const app = document.getElementById('app');
+  if (app) {
+    app.classList.toggle('itch-high', itch >= 75);
+    app.classList.toggle('itch-very-high', itch >= 90);
+  }
+}
+
+// Start the gambling tick AFTER the game scripts have wired things up.
+document.addEventListener('DOMContentLoaded', () => {
+  setInterval(tickGambling, 1000);
+});
+
+// ============================================================
+// DICE SCREEN
+// ============================================================
+function openDiceFromTitle() {
+  sfxButtonClick();
+  document.getElementById('title-screen').classList.remove('active');
+  document.getElementById('dice-screen').classList.add('active');
+  diceCameFromTitle = true;
+  refreshDiceScreen();
+}
+function openDice() {
+  sfxButtonClick();
+  document.getElementById('fishing-screen').classList.remove('active');
+  document.getElementById('dice-screen').classList.add('active');
+  diceCameFromTitle = false;
+  refreshDiceScreen();
+}
+function closeDice() {
+  sfxButtonClick();
+  document.getElementById('dice-screen').classList.remove('active');
+  if (diceCameFromTitle) {
+    document.getElementById('title-screen').classList.add('active');
+    diceCameFromTitle = false;
+  } else {
+    document.getElementById('fishing-screen').classList.add('active');
+  }
+}
+
+function refreshDiceScreen() {
+  updateGamblingUI();
+  const flavor = document.getElementById('dice-flavor');
+  if (flavor) flavor.textContent = pickDiceFlavor();
+  const result = document.getElementById('dice-result');
+  if (result) { result.textContent = ''; result.className = 'dice-result'; }
+  const bet = document.getElementById('dice-bet');
+  if (bet) bet.value = Math.min(50, Math.max(10, coins));
+}
+
+const DICE_FLAVOR_LINES = [
+  "Bet small, win small. Bet big, lose bigger.",
+  "Boudreaux's smile says he likes your odds. He smiles a lot.",
+  "Your hand is shaking again.",
+  "The dice know things you don't.",
+  "Just one good roll and you're square.",
+  "Just one more.",
+  "You're due. You can feel it.",
+];
+function pickDiceFlavor() {
+  return DICE_FLAVOR_LINES[Math.floor(Math.random() * DICE_FLAVOR_LINES.length)];
+}
+
+function adjDiceBet(d) {
+  const el = document.getElementById('dice-bet');
+  if (!el) return;
+  let v = parseInt(el.value, 10) || 0;
+  v = Math.max(10, Math.min(coins, v + d));
+  el.value = v;
+  sfxButtonClick();
+}
+
+const DIE_FACE_GLYPH = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+
+function rollDice(choice) {
+  const betEl = document.getElementById('dice-bet');
+  let bet = Math.max(10, Math.min(coins, parseInt(betEl.value, 10) || 0));
+  if (bet > coins || coins < 10) {
+    setDiceResult("Boudreaux: \"Come back when you got money.\"", false);
+    return;
+  }
+  betEl.value = bet;
+
+  // Lock in the bet
+  coins -= bet;
+  itch = Math.max(0, itch - ITCH_DRAIN_PER_ROLL);
+  updateStats();
+  updateGamblingUI();
+
+  // Roll
+  const d1 = 1 + Math.floor(Math.random() * 6);
+  const d2 = 1 + Math.floor(Math.random() * 6);
+  const sum = d1 + d2;
+
+  animateDice(d1, d2);
+
+  // Determine outcome (resolved after the roll animation)
+  setTimeout(() => {
+    let payout = 0;
+    let won = false;
+    if (choice === 'under' && sum < 7)      { payout = bet * 2; won = true; }
+    else if (choice === 'over' && sum > 7)  { payout = bet * 2; won = true; }
+    else if (choice === 'seven' && sum === 7) { payout = bet * 5; won = true; }
+
+    if (won) {
+      coins += payout;
+      const profit = payout - bet;
+      setDiceResult(`Rolled ${sum}. Won ${profit}.`, true);
+      sfxCatch();
+    } else {
+      const lines = [
+        `Rolled ${sum}. Boudreaux pockets the ${bet}.`,
+        `Rolled ${sum}. House wins again.`,
+        `Rolled ${sum}. Should've gone the other way.`,
+        `Rolled ${sum}. So close.`,
+      ];
+      setDiceResult(lines[Math.floor(Math.random() * lines.length)], false);
+      sfxTapMiss();
+    }
+    updateStats();
+    updateGamblingUI();
+    saveGame();
+  }, 450);
+}
+
+function animateDice(d1, d2) {
+  const die1 = document.getElementById('die-1');
+  const die2 = document.getElementById('die-2');
+  if (!die1 || !die2) return;
+  die1.classList.remove('rolling'); die2.classList.remove('rolling');
+  void die1.offsetWidth; void die2.offsetWidth;  // restart animation
+  die1.classList.add('rolling');  die2.classList.add('rolling');
+  // Show face after animation
+  setTimeout(() => {
+    die1.querySelector('.die-face').textContent = DIE_FACE_GLYPH[d1];
+    die2.querySelector('.die-face').textContent = DIE_FACE_GLYPH[d2];
+    die1.querySelector('.die-face').dataset.face = d1;
+    die2.querySelector('.die-face').dataset.face = d2;
+  }, 220);
+}
+
+function setDiceResult(text, won) {
+  const el = document.getElementById('dice-result');
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'dice-result ' + (won === true ? 'win' : (won === false ? 'lose' : ''));
+}
+
+function payBoudreaux() {
+  // Pay down the smaller of (current coins) or (current debt).
+  const amount = Math.min(Math.floor(coins), Math.floor(debt));
+  if (amount <= 0) {
+    setDiceResult("Nothing to pay with.", false);
+    return;
+  }
+  coins -= amount;
+  debt = Math.max(0, debt - amount);
+  setDiceResult(`Paid Boudreaux ${amount}. He grunts.`, true);
+  sfxButtonClick();
+  updateStats();
+  updateGamblingUI();
+  saveGame();
+}
+
+// ============================================================
+// GAME OVER
+// ============================================================
+const GAMEOVER_LINES = [
+  "You owe more than the bayou's worth. They took the truck. They took the dog. They left you the rod.",
+  "Boudreaux didn't even look mad. That was the worst part.",
+  "The old man at the dock gave you a look like he'd seen this before.",
+  "Your wife packed your things. They fit in one bag.",
+];
+function showGameOverPopup() {
+  if (gameOverShown) return;
+  gameOverShown = true;
+  const popup = document.getElementById('gameover-popup');
+  const body  = document.getElementById('gameover-body');
+  if (body) body.textContent = GAMEOVER_LINES[Math.floor(Math.random() * GAMEOVER_LINES.length)];
+  if (popup) popup.classList.add('show');
+}
+
+function restartFromGameOver() {
+  // Wipe coins/debt/itch + ownership of buyable items, but keep the fishdex.
+  // This isn't your first time, after all.
+  coins = 0;
+  debt = DEBT_START;
+  itch = 0;
+  ownedRods = ['cane'];
+  equippedRodId = 'cane';
+  baitInventory = { worms: Infinity };
+  selectedBaitId = 'worms';
+  ownedUpgrades = [];
+  totalCaught = 0;
+  rareCount = 0;
+  gameOverShown = false;
+  saveGame();
+  redrawEquippedRod();
+  updateStats();
+  updateGamblingUI();
+  document.getElementById('gameover-popup').classList.remove('show');
+  // Send back to title
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('title-screen').classList.add('active');
+}
 
 
 </script>
