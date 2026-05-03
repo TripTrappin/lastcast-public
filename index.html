@@ -1432,95 +1432,41 @@ border-radius: 12px;
 overflow: hidden;
 border: 2px solid #1a0d05;
 box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-background: #1a0c05 url('bg-cabin.png?v=2') center / cover no-repeat;
-/* The room artwork has strong perspective; we set the same vanishing point
-   here so plaques on the side walls can rotate to match. */
-perspective: 1000px;
-perspective-origin: 50% 55%;
+background: #1a0c05;
 }
-
-/* === Trophy mounts: pixel-art canvases drawn the same way as the rod
-   sprite, so they live in the same rendering pipeline as the rest of the
-   pixel art and don't read as web UI overlaid on a painted scene. === */
-.cabin-mount {
-position: absolute;
-width: 44px; height: 38px;
-z-index: 3;
+.cabin-room.editing {
+box-shadow: 0 4px 16px rgba(0,0,0,0.5), inset 0 0 0 2px rgba(232,132,58,0.7);
 }
-.cabin-mount-plaque {
+#cabin-canvas {
+position: absolute; inset: 0;
 width: 100%; height: 100%;
 display: block;
-position: relative;
-cursor: pointer;
-transition: transform 0.12s;
-background: none;
-border: none;
+touch-action: none;
 }
-.cabin-mount-plaque canvas {
-display: block;
-width: 100%; height: 100%;
-image-rendering: pixelated;
-}
-.cabin-mount-plaque:active { transform: scale(0.95); }
-
-/* Species name overlay - crisp HTML text, sits over the engraved nameplate
-   band that the canvas paints at the bottom. */
-.cabin-mount-name-overlay {
-position: absolute; left: 3px; right: 3px; bottom: 2px;
-height: 8px;
-display: flex; align-items: center; justify-content: center;
-font-family: 'Baloo 2', cursive; font-size: 7px; font-weight: 800;
-color: #fde898; letter-spacing: 0.4px;
-text-transform: uppercase;
-text-shadow: 0 1px 0 rgba(0,0,0,0.95), 0 0 2px rgba(0,0,0,0.9);
-white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+.cabin-edit-hint {
+position: absolute; left: 50%; top: 8px;
+transform: translateX(-50%);
+padding: 4px 10px;
+background: rgba(20, 10, 18, 0.85);
+border: 1px solid var(--accent);
+border-radius: 999px;
+font-family: 'Baloo 2', cursive; font-size: 10px; font-weight: 700;
+letter-spacing: 1px; text-transform: uppercase;
+color: var(--accent2);
+z-index: 60;
 pointer-events: none;
 }
-.cabin-mount-name-overlay.locked { color: rgba(255,232,160,0.5); }
-
-/* Mount slot positions on the bg-cabin.png artwork.
-   The image has narrow dark-wood borders: top ~7%, sides ~7-8%, bottom ~15%.
-   Plaques are 50x44 = roughly 11-12% of a square room. */
-/* Furniture canvases: positioned absolutely inside cabin-room. */
-.cabin-furniture {
-position: absolute;
-pointer-events: none;
-}
-.cabin-furniture canvas {
-display: block;
-width: 100%; height: 100%;
-image-rendering: pixelated;
-filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.45));
-}
-
-/* Plaque positions are now applied via inline styles in renderCabin so
-   the user can override them in edit mode. Defaults live in PLAQUE_DEFAULTS. */
-
-/* Decor placeholders (Phase 3 will toggle visible) */
-.cabin-slot {
-position: absolute;
-border: 1px dashed rgba(255,232,212,0.18);
-border-radius: 6px;
-display: none;
-align-items: center; justify-content: center;
-font-family: 'Baloo 2', cursive; font-size: 9px;
-color: rgba(255,232,212,0.4);
-text-transform: uppercase; letter-spacing: 1px;
-pointer-events: none;
-}
-.cabin-slot.show { display: flex; }
-
 .cabin-footer {
 display: flex; align-items: center; justify-content: space-between;
 padding: 0 20px 16px;
 flex-shrink: 0;
+gap: 8px;
 }
 .cabin-progress {
 font-family: 'Baloo 2', cursive; font-size: 12px; font-weight: 700;
 color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase;
 }
 .cabin-progress .progress-num { color: var(--gold); font-weight: 800; }
-
 .cabin-preview-btn {
 height: 26px; padding: 0 12px; border-radius: 999px;
 background: rgba(20, 10, 18, 0.55);
@@ -1536,43 +1482,6 @@ transition: transform 0.15s, background 0.15s, color 0.15s;
 background: rgba(232, 132, 58, 0.85);
 color: var(--bg);
 border-color: rgba(232, 132, 58, 0.95);
-}
-
-/* Edit-mode visuals: dashed outline on every draggable item, glow on the
-   item being dragged. The cabin-room itself gets a subtle "edit" tint. */
-.cabin-room.editing {
-box-shadow: 0 4px 16px rgba(0,0,0,0.5), inset 0 0 0 2px rgba(232,132,58,0.7);
-}
-.cabin-room.editing .cabin-mount,
-.cabin-room.editing .cabin-furniture {
-pointer-events: auto;
-cursor: grab;
-touch-action: none;
-outline: 1px dashed rgba(255,232,212,0.45);
-outline-offset: 1px;
-}
-.cabin-room.editing .cabin-mount.dragging,
-.cabin-room.editing .cabin-furniture.dragging {
-cursor: grabbing;
-outline-color: var(--gold);
-outline-width: 2px;
-filter: brightness(1.15);
-z-index: 50 !important;
-}
-
-/* Hint banner at the top of the room while editing */
-.cabin-edit-hint {
-position: absolute; left: 50%; top: 8px;
-transform: translateX(-50%);
-padding: 4px 10px;
-background: rgba(20, 10, 18, 0.85);
-border: 1px solid var(--accent);
-border-radius: 999px;
-font-family: 'Baloo 2', cursive; font-size: 10px; font-weight: 700;
-letter-spacing: 1px; text-transform: uppercase;
-color: var(--accent2);
-z-index: 60;
-pointer-events: none;
 }
 
 /* === Mount detail popup === */
@@ -1800,10 +1709,7 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
       <button class="cabin-back" onclick="closeCabin()">CLOSE</button>
     </div>
     <div class="cabin-room" id="cabin-room">
-      <div class="cabin-mount" data-mount="0"></div>
-      <div class="cabin-mount" data-mount="1"></div>
-      <div class="cabin-mount" data-mount="2"></div>
-      <div class="cabin-mount" data-mount="3"></div>
+      <canvas id="cabin-canvas"></canvas>
     </div>
     <div class="cabin-footer">
       <div class="cabin-progress">
@@ -1857,6 +1763,7 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
 
 </div>
 
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 <script>
 // ============================================================
 // SAVE / LOAD SYSTEM (localStorage)
@@ -1891,7 +1798,7 @@ function saveGame() {
       furnitureLayout,
       plaqueLayout,
       muted: isMuted,
-      version: 6,
+      version: 7,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
   } catch (e) {
@@ -1912,8 +1819,9 @@ function loadGame() {
     }
     if (!raw) return;
     const save = JSON.parse(raw);
-    // Accept v1 through v6 (older versions just default newer fields).
-    if (![1,2,3,4,5,6].includes(save.version)) return;
+    // Accept v1 through v7. The v7 jump changed the cabin from 2D to 3D,
+    // so older v6 layouts (which were % positions) are dropped on load.
+    if (![1,2,3,4,5,6,7].includes(save.version)) return;
     
     // Rehydrate collection with fish object refs
     if (save.collection) {
@@ -1963,11 +1871,16 @@ function loadGame() {
       ? save.ownedFurniture.filter(id => FURNITURE.find(f => f.id === id))
       : [];
 
-    // v6 fields - cabin layout (free placement + flips)
-    furnitureLayout = (save.furnitureLayout && typeof save.furnitureLayout === 'object')
-      ? save.furnitureLayout : {};
-    plaqueLayout    = (save.plaqueLayout    && typeof save.plaqueLayout    === 'object')
-      ? save.plaqueLayout    : {};
+    // v6 fields existed but used 2D % positions. v7 switched to 3D.
+    if (save.version >= 7) {
+      furnitureLayout = (save.furnitureLayout && typeof save.furnitureLayout === 'object')
+        ? save.furnitureLayout : {};
+      plaqueLayout    = (save.plaqueLayout    && typeof save.plaqueLayout    === 'object')
+        ? save.plaqueLayout    : {};
+    } else {
+      furnitureLayout = {};
+      plaqueLayout = {};
+    }
   } catch (e) {
     console.warn('Load failed:', e);
   }
@@ -4020,131 +3933,712 @@ function equipRod(id) {
   renderShop();
   saveGame();
 }
+
+
+
+
+
 // ============================================================
-// CABIN SCREEN - shows your legendary catches mounted on the wall.
-// Phase 3 will add buyable decor that fills the empty slots.
+// FURNITURE - id/name/cost/description used by both the shop and the 3D
+// scene. Each item gains a build3d() that returns a Three.js Group.
 // ============================================================
+const FURNITURE = [
+  { id: 'rug',           name: 'Woven Rug',     cost: 100, description: 'Worn rag rug. Ties the room together.', pos3d: { x:  0.0, z:  0.7 }, build3d: buildRug },
+  { id: 'books',         name: 'Stacked Books', cost: 120, description: 'A small leaning pile of well-loved books.', pos3d: { x: -0.6, z:  0.9 }, build3d: buildBooks },
+  { id: 'tackle_box',    name: 'Tackle Box',    cost: 180, description: 'A worn wooden tackle box.', pos3d: { x: -1.0, z:  0.7 }, build3d: buildTackleBox },
+  { id: 'creel',         name: 'Fishing Creel', cost: 220, description: 'Wicker basket, your old reliable.', pos3d: { x:  0.7, z:  0.8 }, build3d: buildCreel },
+  { id: 'stool',         name: 'Wooden Stool',  cost: 260, description: 'Three legs and one wobble.', pos3d: { x: -0.4, z:  0.0 }, build3d: buildStool },
+  { id: 'side_table',    name: 'Side Table',    cost: 320, description: 'Cypress, with a coffee ring.', pos3d: { x: -1.4, z:  0.2 }, build3d: buildSideTable },
+  { id: 'plant',         name: 'Potted Fern',   cost: 380, description: 'Survives despite your neglect.', pos3d: { x:  1.4, z: -0.4 }, build3d: buildPlant },
+  { id: 'floor_lantern', name: 'Floor Lantern', cost: 480, description: 'Casts a warm puddle on the boards.', pos3d: { x:  1.0, z:  0.9 }, build3d: buildFloorLantern },
+  { id: 'rocking_chair', name: 'Rocking Chair', cost: 700, description: 'Best seat in the cabin.', pos3d: { x:  1.3, z:  0.3 }, build3d: buildRockingChair },
+  { id: 'bookshelf',     name: 'Bookshelf',     cost: 950, description: 'Five shelves, mostly fishing manuals.', pos3d: { x: -1.7, z: -0.6 }, build3d: buildBookshelf },
+];
+
+function getFurniture(id) { return FURNITURE.find(f => f.id === id); }
+
+let ownedFurniture = [];
+let furnitureLayout = {};   // { itemId: { x, z, rotY } }
+let plaqueLayout = {};      // { mountIndex: { x, y } }   (back-wall positions)
+let cabinPreviewMode = false;
+let cabinEditMode = false;
 let cabinCameFromTitle = false;
-let cabinPreviewMode = false;  // when true, all 5 legendaries render as-if caught at max size
-let cabinEditMode = false;     // when true, items become drag-and-drop and tap-to-flip
-let furnitureLayout = {};      // { itemId: { left: %, top: %, flipped: bool } }
-let plaqueLayout = {};         // { mountIndex: { left: %, top: % } }
 
-function toggleCabinPreview() {
-  cabinPreviewMode = !cabinPreviewMode;
-  const btn = document.getElementById('cabin-preview-btn');
-  if (btn) btn.classList.toggle('on', cabinPreviewMode);
-  sfxButtonClick();
-  renderCabin();
+// ============================================================
+// 3D CABIN SCENE (Three.js)
+// Room is roughly 4 wide, 3 tall, 5 deep. Camera looks straight at the
+// back wall from a position slightly elevated near the front.
+// ============================================================
+
+const ROOM_W = 4, ROOM_H = 3, ROOM_D = 5;
+const FLOOR_Y = 0;
+const BACK_Z  = -ROOM_D / 2;
+const FRONT_Z =  ROOM_D / 2;
+
+let cabin3D = null;       // { scene, camera, renderer, items, plaques, raycaster, ... }
+let cabin3DAnimating = false;
+let cabin3DInited = false;
+
+function initCabin3D() {
+  if (cabin3DInited || typeof THREE === 'undefined') return cabin3D;
+  cabin3DInited = true;
+
+  const canvas = document.getElementById('cabin-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x1a0c05);
+
+  const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 100);
+  camera.position.set(0, 1.6, FRONT_Z + 0.3);
+  camera.lookAt(0, 1.4, 0);
+
+  // ---- Room geometry ----
+  const woodCol     = 0x8a4820;
+  const woodColDark = 0x4a2410;
+  const ceilingCol  = 0x6a3818;
+  const floorCol    = 0xa05828;
+
+  const matFloor = new THREE.MeshStandardMaterial({ color: floorCol, roughness: 1 });
+  const matWall  = new THREE.MeshStandardMaterial({ color: woodCol,  roughness: 1 });
+  const matWallDark = new THREE.MeshStandardMaterial({ color: woodColDark, roughness: 1 });
+  const matCeil  = new THREE.MeshStandardMaterial({ color: ceilingCol, roughness: 1 });
+
+  // Floor
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W, ROOM_D), matFloor);
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = FLOOR_Y;
+  scene.add(floor);
+
+  // Ceiling
+  const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W, ROOM_D), matCeil);
+  ceiling.rotation.x = Math.PI / 2;
+  ceiling.position.y = ROOM_H;
+  scene.add(ceiling);
+
+  // Back wall
+  const backWall = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W, ROOM_H), matWall);
+  backWall.position.set(0, ROOM_H / 2, BACK_Z);
+  scene.add(backWall);
+
+  // Side walls
+  const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_D, ROOM_H), matWallDark);
+  leftWall.rotation.y = Math.PI / 2;
+  leftWall.position.set(-ROOM_W / 2, ROOM_H / 2, 0);
+  scene.add(leftWall);
+
+  const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_D, ROOM_H), matWallDark);
+  rightWall.rotation.y = -Math.PI / 2;
+  rightWall.position.set(ROOM_W / 2, ROOM_H / 2, 0);
+  scene.add(rightWall);
+
+  // ---- Window on the back wall (sunset texture from bg-title.png) ----
+  const winW = 1.5, winH = 1.4;
+  const winY = 1.7;
+  // Frame box (sits flush on the back wall)
+  const frameMat = new THREE.MeshStandardMaterial({ color: 0x2a1808, roughness: 1 });
+  const winFrame = new THREE.Mesh(new THREE.BoxGeometry(winW + 0.18, winH + 0.18, 0.05), frameMat);
+  winFrame.position.set(0, winY, BACK_Z + 0.025);
+  scene.add(winFrame);
+  // Window pane with the sunset
+  const texLoader = new THREE.TextureLoader();
+  const sunsetMat = new THREE.MeshBasicMaterial({ color: 0xffaa66 });
+  texLoader.load('bg-title.png?v=2', (tex) => {
+    tex.colorSpace = THREE.SRGBColorSpace;
+    sunsetMat.map = tex;
+    sunsetMat.color.set(0xffffff);
+    sunsetMat.needsUpdate = true;
+  });
+  const pane = new THREE.Mesh(new THREE.PlaneGeometry(winW, winH), sunsetMat);
+  pane.position.set(0, winY, BACK_Z + 0.06);
+  scene.add(pane);
+  // Mullions (cross + horizontal)
+  const mullionMat = new THREE.MeshStandardMaterial({ color: 0x2a1808, roughness: 1 });
+  const mV = new THREE.Mesh(new THREE.BoxGeometry(0.06, winH, 0.04), mullionMat);
+  mV.position.set(0, winY, BACK_Z + 0.07);
+  scene.add(mV);
+  const mH = new THREE.Mesh(new THREE.BoxGeometry(winW, 0.06, 0.04), mullionMat);
+  mH.position.set(0, winY, BACK_Z + 0.07);
+  scene.add(mH);
+
+  // ---- Hanging lantern (ceiling pendant + point light) ----
+  const lanternGroup = new THREE.Group();
+  // Cord
+  const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.5, 6), new THREE.MeshStandardMaterial({ color: 0x1a0c05 }));
+  cord.position.y = -0.25;
+  lanternGroup.add(cord);
+  // Lantern body
+  const lanternBody = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.32, 0.22), new THREE.MeshStandardMaterial({ color: 0x3a2008 }));
+  lanternBody.position.y = -0.5 - 0.16;
+  lanternGroup.add(lanternBody);
+  // Glowing pane
+  const lanternGlow = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.22, 0.16), new THREE.MeshBasicMaterial({ color: 0xffd06a }));
+  lanternGlow.position.y = -0.5 - 0.16;
+  lanternGroup.add(lanternGlow);
+  // Top cap
+  const lanternCap = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.04, 0.26), new THREE.MeshStandardMaterial({ color: 0x1a0c05 }));
+  lanternCap.position.y = -0.5;
+  lanternGroup.add(lanternCap);
+  // Point light at the lantern
+  const lanternLight = new THREE.PointLight(0xffb060, 1.5, 6, 1.2);
+  lanternLight.position.y = -0.66;
+  lanternGroup.add(lanternLight);
+  lanternGroup.position.set(0, ROOM_H, 0.5);
+  scene.add(lanternGroup);
+
+  // ---- Soft sunset light spilling in from the window ----
+  const sunset = new THREE.DirectionalLight(0xff9050, 0.6);
+  sunset.position.set(0, winY + 0.3, BACK_Z - 0.5);
+  sunset.target.position.set(0, FLOOR_Y, FRONT_Z);
+  scene.add(sunset);
+  scene.add(sunset.target);
+
+  // Ambient fill (low) so shadows aren't pitch black
+  scene.add(new THREE.AmbientLight(0x4a2818, 0.4));
+
+  // ---- Trophy plaques on the back wall ----
+  const plaquePositions = [
+    { x: -1.1, y: 2.1 },   // upper-left of window
+    { x:  1.1, y: 2.1 },   // upper-right
+    { x: -1.1, y: 1.3 },   // lower-left
+    { x:  1.1, y: 1.3 },   // lower-right
+  ];
+  const plaques = plaquePositions.map((pos, i) => {
+    const group = new THREE.Group();
+    const board = new THREE.Mesh(
+      new THREE.BoxGeometry(0.65, 0.5, 0.06),
+      new THREE.MeshStandardMaterial({ color: 0x4a2410, roughness: 1 })
+    );
+    group.add(board);
+    // Brass nails (top corners)
+    const nailMat = new THREE.MeshStandardMaterial({ color: 0xc89858, roughness: 0.4, metalness: 0.7 });
+    [[-0.27,  0.20], [ 0.27,  0.20]].forEach(([x, y]) => {
+      const nail = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.03, 8), nailMat);
+      nail.rotation.x = Math.PI / 2;
+      nail.position.set(x, y, 0.05);
+      group.add(nail);
+    });
+    // Fish-art canvas texture (built lazily once we know which fish to show)
+    const fishMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true });
+    const fishMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.22), fishMat);
+    fishMesh.position.set(0, 0.06, 0.04);
+    group.add(fishMesh);
+    // Nameplate
+    const nameMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true });
+    const nameMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.55, 0.12), nameMat);
+    nameMesh.position.set(0, -0.16, 0.04);
+    group.add(nameMesh);
+
+    const layout = plaqueLayout[i] || {};
+    group.position.set(layout.x ?? pos.x, layout.y ?? pos.y, BACK_Z + 0.05);
+    group.userData = { kind: 'plaque', index: i, fishMesh, nameMesh, fishMat, nameMat, defaultPos: pos };
+    scene.add(group);
+    return group;
+  });
+
+  // ---- Items (built per-owned) ----
+  const items = {};
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+  const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+
+  cabin3D = { scene, camera, renderer, plaques, items, raycaster, pointer, floorPlane, lanternGroup };
+
+  // ---- Resize handling ----
+  const resize = () => {
+    const room = document.getElementById('cabin-room');
+    if (!room) return;
+    const w = room.clientWidth, h = room.clientHeight;
+    if (w === 0 || h === 0) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  };
+  resize();
+  window.addEventListener('resize', resize);
+
+  // ---- Drag-and-drop with raycaster ----
+  setupCabinDrag();
+
+  return cabin3D;
 }
 
-function toggleCabinEdit() {
-  cabinEditMode = !cabinEditMode;
-  const btn = document.getElementById('cabin-edit-btn');
-  const reset = document.getElementById('cabin-reset-btn');
-  if (btn) btn.classList.toggle('on', cabinEditMode);
-  if (reset) reset.style.display = cabinEditMode ? '' : 'none';
-  const room = document.getElementById('cabin-room');
-  if (room) room.classList.toggle('editing', cabinEditMode);
-  sfxButtonClick();
-  renderCabin();
+// Render the fish art (24x12) to a small canvas, return it as a THREE.Texture
+function fishArtTexture(fishId) {
+  const cv = document.createElement('canvas');
+  cv.width = 96; cv.height = 48;
+  const ctx = cv.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  const art = FISH_ART[fishId];
+  if (!art) return new THREE.Texture(cv);
+  const scale = 4;
+  for (let y = 0; y < art.length; y++) {
+    const row = art[y];
+    for (let x = 0; x < row.length; x++) {
+      const ch = row[x];
+      const color = PALETTE[ch];
+      if (color) {
+        ctx.fillStyle = color;
+        ctx.fillRect(x * scale, y * scale, scale, scale);
+      }
+    }
+  }
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.magFilter = THREE.NearestFilter;
+  tex.minFilter = THREE.NearestFilter;
+  return tex;
 }
 
-function resetCabinLayout() {
-  if (!confirm('Reset all cabin items to their default positions?')) return;
-  furnitureLayout = {};
-  plaqueLayout = {};
-  saveGame();
-  renderCabin();
+function nameplateTexture(text, locked) {
+  const cv = document.createElement('canvas');
+  cv.width = 256; cv.height = 56;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#1a0805';
+  ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.fillStyle = '#3a1c08';
+  ctx.fillRect(0, 0, cv.width, 4);
+  ctx.fillStyle = '#5a3018';
+  ctx.fillRect(0, cv.height - 4, cv.width, 4);
+  ctx.fillStyle = locked ? 'rgba(255,232,160,0.45)' : '#fde898';
+  ctx.font = 'bold 28px "Baloo 2", cursive';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText((text || 'LOCKED').toUpperCase(), cv.width / 2, cv.height / 2);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
 }
 
-// Make an absolutely-positioned cabin element draggable. Single-tap (no
-// movement) on a furniture item flips it horizontally; on a plaque it does
-// nothing (when editing) or opens the popup (when not editing).
-function attachDragHandlers(el, key, layoutMap, isFurniture) {
-  let dragging = false;
+function refreshPlaques() {
+  if (!cabin3D) return;
+  const legendaries = FISH.filter(f => f.rarity === 'legendary');
+  let caught;
+  if (cabinPreviewMode) {
+    caught = legendaries
+      .map(f => ({ fish: f, entry: { count: 1, personalBest: f.maxSz } }))
+      .sort((a, b) => b.fish.maxSz - a.fish.maxSz);
+  } else {
+    caught = legendaries
+      .map(f => ({ fish: f, entry: collection[f.id] }))
+      .filter(x => x.entry && x.entry.count > 0)
+      .sort((a, b) => b.entry.personalBest - a.entry.personalBest);
+  }
+  $('cabin-trophy-count').textContent = String(Math.min(4, caught.length));
+  cabin3D.plaques.forEach((plaque, i) => {
+    const c = caught[i];
+    const ud = plaque.userData;
+    if (c) {
+      ud.fishMat.map = fishArtTexture(c.fish.id);
+      ud.fishMat.color.set(0xffffff);
+      ud.fishMat.opacity = 1;
+      ud.fishMat.needsUpdate = true;
+      ud.nameMat.map = nameplateTexture(c.fish.name, false);
+      ud.nameMat.color.set(0xffffff);
+      ud.nameMat.opacity = 1;
+      ud.nameMat.needsUpdate = true;
+      ud.fish = c.fish;
+      ud.entry = c.entry;
+    } else {
+      ud.fishMat.map = null;
+      ud.fishMat.color.set(0x000000);
+      ud.fishMat.opacity = 0;
+      ud.fishMat.needsUpdate = true;
+      ud.nameMat.map = nameplateTexture('LOCKED', true);
+      ud.nameMat.color.set(0xffffff);
+      ud.nameMat.opacity = 1;
+      ud.nameMat.needsUpdate = true;
+      ud.fish = null;
+      ud.entry = null;
+    }
+  });
+}
+
+function refreshFurniture() {
+  if (!cabin3D) return;
+  // Clear existing items
+  Object.values(cabin3D.items).forEach(g => cabin3D.scene.remove(g));
+  cabin3D.items = {};
+  const showAll = cabinPreviewMode;
+  FURNITURE.forEach(item => {
+    if (!showAll && !ownedFurniture.includes(item.id)) return;
+    const group = item.build3d();
+    const layout = furnitureLayout[item.id] || {};
+    group.position.x = layout.x ?? item.pos3d.x;
+    group.position.y = FLOOR_Y;
+    group.position.z = layout.z ?? item.pos3d.z;
+    group.rotation.y = layout.rotY ?? 0;
+    group.userData = { kind: 'furniture', itemId: item.id };
+    cabin3D.scene.add(group);
+    cabin3D.items[item.id] = group;
+  });
+}
+
+// ============================================================
+// 3D drag-and-drop
+// ============================================================
+
+function setupCabinDrag() {
+  const canvas = document.getElementById('cabin-canvas');
+  let dragGroup = null;
   let didMove = false;
-  let startCX, startCY, startL, startT;
-  el.addEventListener('pointerdown', (e) => {
-    if (!cabinEditMode) return;
-    e.preventDefault();
-    e.stopPropagation();
-    el.setPointerCapture(e.pointerId);
-    dragging = true; didMove = false;
-    el.classList.add('dragging');
-    startCX = e.clientX; startCY = e.clientY;
-    const room = document.getElementById('cabin-room');
-    const rRect = room.getBoundingClientRect();
-    const eRect = el.getBoundingClientRect();
-    startL = ((eRect.left - rRect.left) / rRect.width) * 100;
-    startT = ((eRect.top  - rRect.top ) / rRect.height) * 100;
-    // Switch to top/left positioning so dragging works regardless of how
-    // the element was originally anchored (right/bottom defaults).
-    el.style.right = ''; el.style.bottom = ''; el.style.transform = '';
-    el.style.left = startL + '%';
-    el.style.top  = startT + '%';
+  let startPx = 0, startPy = 0;
+  let dragOffset = new THREE.Vector3();
+
+  function pointerNDC(e) {
+    const rect = canvas.getBoundingClientRect();
+    cabin3D.pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    cabin3D.pointer.y = -((e.clientY - rect.top)  / rect.height) * 2 + 1;
+  }
+
+  function pickInteractive() {
+    cabin3D.raycaster.setFromCamera(cabin3D.pointer, cabin3D.camera);
+    const targets = [
+      ...Object.values(cabin3D.items),
+      ...cabin3D.plaques,
+    ];
+    for (const obj of targets) {
+      const hits = cabin3D.raycaster.intersectObject(obj, true);
+      if (hits.length) return obj;
+    }
+    return null;
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    pointerNDC(e);
+    const picked = pickInteractive();
+    if (!picked) return;
+
+    if (cabinEditMode) {
+      // Start drag
+      e.preventDefault();
+      canvas.setPointerCapture(e.pointerId);
+      dragGroup = picked;
+      didMove = false;
+      startPx = e.clientX;
+      startPy = e.clientY;
+      // Record offset between pointer-on-floor and item position so the
+      // item doesn't snap its center to the cursor.
+      const hit = new THREE.Vector3();
+      cabin3D.raycaster.ray.intersectPlane(cabin3D.floorPlane, hit);
+      dragOffset.set(picked.position.x - hit.x, 0, picked.position.z - hit.z);
+    } else {
+      // Not editing: trophy plaque tap shows popup
+      if (picked.userData.kind === 'plaque' && picked.userData.fish) {
+        showMountPopup(picked.userData.fish, picked.userData.entry);
+      }
+    }
   });
-  el.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
-    const room = document.getElementById('cabin-room');
-    const rRect = room.getBoundingClientRect();
-    const dx = ((e.clientX - startCX) / rRect.width) * 100;
-    const dy = ((e.clientY - startCY) / rRect.height) * 100;
-    if (Math.abs(dx) + Math.abs(dy) > 1) didMove = true;
-    const elPctW = (el.offsetWidth  / rRect.width)  * 100;
-    const elPctH = (el.offsetHeight / rRect.height) * 100;
-    let newL = Math.max(0, Math.min(100 - elPctW, startL + dx));
-    let newT = Math.max(0, Math.min(100 - elPctH, startT + dy));
-    el.style.left = newL + '%';
-    el.style.top  = newT + '%';
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (!dragGroup) return;
+    pointerNDC(e);
+    cabin3D.raycaster.setFromCamera(cabin3D.pointer, cabin3D.camera);
+    if (Math.hypot(e.clientX - startPx, e.clientY - startPy) > 4) didMove = true;
+
+    if (dragGroup.userData.kind === 'plaque') {
+      // Plaques drag along the back-wall plane (constant z).
+      // Use the camera-to-pointer ray, intersect with z = BACK_Z + 0.05 plane.
+      const wallPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -(BACK_Z + 0.05));
+      const hit = new THREE.Vector3();
+      if (cabin3D.raycaster.ray.intersectPlane(wallPlane, hit)) {
+        // Clamp to back-wall extents
+        const halfW = 0.34, halfH = 0.27;
+        dragGroup.position.x = Math.max(-ROOM_W / 2 + halfW, Math.min(ROOM_W / 2 - halfW, hit.x));
+        dragGroup.position.y = Math.max(0.6, Math.min(ROOM_H - halfH, hit.y));
+      }
+    } else {
+      // Furniture: drag along the floor plane.
+      const hit = new THREE.Vector3();
+      if (cabin3D.raycaster.ray.intersectPlane(cabin3D.floorPlane, hit)) {
+        const margin = 0.3;
+        const newX = Math.max(-ROOM_W / 2 + margin, Math.min(ROOM_W / 2 - margin, hit.x + dragOffset.x));
+        const newZ = Math.max(BACK_Z + margin,      Math.min(FRONT_Z - margin,    hit.z + dragOffset.z));
+        dragGroup.position.x = newX;
+        dragGroup.position.z = newZ;
+      }
+    }
   });
-  el.addEventListener('pointerup', (e) => {
-    if (!dragging) return;
-    dragging = false;
-    el.classList.remove('dragging');
+
+  function endDrag(e) {
+    if (!dragGroup) return;
+    const ud = dragGroup.userData;
     if (didMove) {
-      const left = parseFloat(el.style.left);
-      const top  = parseFloat(el.style.top);
-      layoutMap[key] = layoutMap[key] || {};
-      layoutMap[key].left = left;
-      layoutMap[key].top  = top;
+      if (ud.kind === 'plaque') {
+        plaqueLayout[ud.index] = { x: dragGroup.position.x, y: dragGroup.position.y };
+      } else if (ud.kind === 'furniture') {
+        const cur = furnitureLayout[ud.itemId] || {};
+        cur.x = dragGroup.position.x;
+        cur.z = dragGroup.position.z;
+        furnitureLayout[ud.itemId] = cur;
+      }
       saveGame();
     } else {
-      // Single tap: furniture flips, plaques are no-op while editing
-      if (isFurniture) {
-        const cur = (layoutMap[key] && layoutMap[key].flipped) || false;
-        layoutMap[key] = layoutMap[key] || {};
-        layoutMap[key].flipped = !cur;
-        const cv = el.querySelector('canvas');
-        if (cv) cv.style.transform = layoutMap[key].flipped ? 'scaleX(-1)' : '';
+      // Tap-without-drag in edit mode rotates furniture by 90 deg
+      if (cabinEditMode && ud.kind === 'furniture') {
+        const cur = furnitureLayout[ud.itemId] || {};
+        cur.rotY = ((cur.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+        dragGroup.rotation.y = cur.rotY;
+        furnitureLayout[ud.itemId] = cur;
         sfxButtonClick();
         saveGame();
       }
     }
-  });
-  el.addEventListener('pointercancel', () => {
-    dragging = false;
-    el.classList.remove('dragging');
-  });
+    dragGroup = null;
+  }
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
 }
 
-// Apply a layout entry (or fall back to default) to an absolutely-positioned
-// element. `defaultPos` is the original CSS-style pos object for this item.
-function applyLayoutTo(el, layout, defaultPos) {
-  // Reset all anchoring properties first.
-  el.style.left = ''; el.style.top = ''; el.style.right = ''; el.style.bottom = '';
-  el.style.transform = '';
-  if (layout && (layout.left != null || layout.top != null)) {
-    if (layout.left != null) el.style.left = layout.left + '%';
-    if (layout.top  != null) el.style.top  = layout.top  + '%';
-  } else if (defaultPos) {
-    if (defaultPos.left)   el.style.left   = defaultPos.left;
-    if (defaultPos.right)  el.style.right  = defaultPos.right;
-    if (defaultPos.top)    el.style.top    = defaultPos.top;
-    if (defaultPos.bottom) el.style.bottom = defaultPos.bottom;
-    if (defaultPos.transform) el.style.transform = defaultPos.transform;
+// ============================================================
+// Render loop control
+// ============================================================
+function startCabin3DLoop() {
+  if (cabin3DAnimating || !cabin3D) return;
+  cabin3DAnimating = true;
+  function frame() {
+    if (!cabin3DAnimating) return;
+    cabin3D.renderer.render(cabin3D.scene, cabin3D.camera);
+    requestAnimationFrame(frame);
   }
+  frame();
 }
+function stopCabin3DLoop() { cabin3DAnimating = false; }
+
+
+// ============================================================
+// Furniture builders - each returns a Three.js Group, anchored at
+// the floor (y=0) and centered in xz.
+// ============================================================
+
+function _wood(c, rough = 1) {
+  return new THREE.MeshStandardMaterial({ color: c, roughness: rough });
+}
+
+function buildRug() {
+  const g = new THREE.Group();
+  const base = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.04, 1.0), _wood(0x7a1818));
+  base.position.y = 0.02;
+  g.add(base);
+  // Stripes
+  for (let i = 0; i < 5; i++) {
+    const stripe = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.045, 0.08), _wood(0xa83828));
+    stripe.position.set(0, 0.022, -0.4 + i * 0.2);
+    g.add(stripe);
+  }
+  return g;
+}
+
+function buildBooks() {
+  const g = new THREE.Group();
+  const colors = [0x8a2010, 0x284828, 0x284868];
+  for (let i = 0; i < 3; i++) {
+    const b = new THREE.Mesh(new THREE.BoxGeometry(0.32 - i * 0.04, 0.08, 0.22 - i * 0.02), _wood(colors[i]));
+    b.position.y = 0.04 + i * 0.085;
+    b.rotation.y = (i % 2 === 0 ? 0.04 : -0.06);
+    g.add(b);
+  }
+  return g;
+}
+
+function buildTackleBox() {
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.22, 0.3), _wood(0x5a3818));
+  body.position.y = 0.11;
+  g.add(body);
+  const lid = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.05, 0.3), _wood(0x6a4220));
+  lid.position.y = 0.245;
+  g.add(lid);
+  // Handle
+  const handle = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.012, 6, 14, Math.PI), _wood(0x1a0c05));
+  handle.position.set(0, 0.31, 0);
+  handle.rotation.x = Math.PI / 2;
+  g.add(handle);
+  // Latch
+  const latch = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 0.02), new THREE.MeshStandardMaterial({ color: 0xc89858, metalness: 0.6, roughness: 0.4 }));
+  latch.position.set(0, 0.21, 0.16);
+  g.add(latch);
+  return g;
+}
+
+function buildCreel() {
+  const g = new THREE.Group();
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.20, 0.28, 16), _wood(0xa87838));
+  base.position.y = 0.14;
+  g.add(base);
+  const lid = new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.23, 0.04, 16), _wood(0x8a5828));
+  lid.position.y = 0.30;
+  g.add(lid);
+  const strap = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.018, 6, 16), _wood(0x3a1c08));
+  strap.position.set(0, 0.32, 0);
+  strap.rotation.x = Math.PI / 2;
+  g.add(strap);
+  return g;
+}
+
+function buildStool() {
+  const g = new THREE.Group();
+  const seat = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.06, 16), _wood(0x6a3818));
+  seat.position.y = 0.42;
+  g.add(seat);
+  for (let i = 0; i < 3; i++) {
+    const a = (i / 3) * Math.PI * 2 + Math.PI / 6;
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.42, 8), _wood(0x3a1c08));
+    leg.position.set(Math.cos(a) * 0.13, 0.21, Math.sin(a) * 0.13);
+    g.add(leg);
+  }
+  return g;
+}
+
+function buildSideTable() {
+  const g = new THREE.Group();
+  const top = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.05, 0.4), _wood(0x6a3818));
+  top.position.y = 0.62;
+  g.add(top);
+  for (const [x, z] of [[-0.27, -0.17], [0.27, -0.17], [-0.27, 0.17], [0.27, 0.17]]) {
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.6, 0.04), _wood(0x3a1c08));
+    leg.position.set(x, 0.3, z);
+    g.add(leg);
+  }
+  // Cup on top
+  const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.04, 0.07, 12), _wood(0xfde898));
+  cup.position.set(0.15, 0.68, 0);
+  g.add(cup);
+  return g;
+}
+
+function buildPlant() {
+  const g = new THREE.Group();
+  const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.12, 0.28, 12), _wood(0xa85820));
+  pot.position.y = 0.14;
+  g.add(pot);
+  const leafMat = _wood(0x386838, 1);
+  for (let i = 0; i < 6; i++) {
+    const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 6), leafMat);
+    const a = (i / 6) * Math.PI * 2;
+    leaf.position.set(Math.cos(a) * 0.1, 0.36 + (i % 2) * 0.08, Math.sin(a) * 0.1);
+    leaf.scale.set(1, 0.7, 1);
+    g.add(leaf);
+  }
+  // Top sprout
+  const top = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 6), leafMat);
+  top.position.y = 0.5;
+  g.add(top);
+  return g;
+}
+
+function buildFloorLantern() {
+  const g = new THREE.Group();
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.06, 12), _wood(0x1a0c05));
+  base.position.y = 0.03;
+  g.add(base);
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 1.0, 8), _wood(0x1a0c05));
+  pole.position.y = 0.56;
+  g.add(pole);
+  const lampBody = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.3, 0.22), _wood(0x3a2008));
+  lampBody.position.y = 1.18;
+  g.add(lampBody);
+  const lampGlow = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.22, 0.16), new THREE.MeshBasicMaterial({ color: 0xffd06a }));
+  lampGlow.position.y = 1.18;
+  g.add(lampGlow);
+  // Soft light
+  const pl = new THREE.PointLight(0xffaa50, 0.6, 3, 1.5);
+  pl.position.y = 1.18;
+  g.add(pl);
+  return g;
+}
+
+function buildRockingChair() {
+  const g = new THREE.Group();
+  // Seat
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.05, 0.5), _wood(0x5a3018));
+  seat.position.y = 0.5;
+  g.add(seat);
+  // Back posts
+  const lp = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.85, 0.06), _wood(0x3a1c08));
+  lp.position.set(-0.22, 0.95, -0.22);
+  g.add(lp);
+  const rp = lp.clone();
+  rp.position.x = 0.22;
+  g.add(rp);
+  // Back slats
+  for (let i = 0; i < 4; i++) {
+    const slat = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.7, 0.03), _wood(0x4a2410));
+    slat.position.set(-0.15 + i * 0.1, 0.9, -0.22);
+    g.add(slat);
+  }
+  // Front legs
+  const fl = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.45, 0.06), _wood(0x3a1c08));
+  fl.position.set(-0.22, 0.27, 0.22);
+  g.add(fl);
+  const fr = fl.clone();
+  fr.position.x = 0.22;
+  g.add(fr);
+  // Curved rockers (simple flat boards arched via a torus segment)
+  const rockMat = _wood(0x3a1c08);
+  for (const x of [-0.22, 0.22]) {
+    const rocker = new THREE.Mesh(
+      new THREE.TorusGeometry(0.5, 0.025, 6, 16, Math.PI / 2.5),
+      rockMat
+    );
+    rocker.position.set(x, 0.06, 0);
+    rocker.rotation.x = Math.PI / 2;
+    rocker.rotation.z = Math.PI - Math.PI / 5;
+    g.add(rocker);
+  }
+  return g;
+}
+
+function buildBookshelf() {
+  const g = new THREE.Group();
+  // Frame
+  const w = 0.7, h = 1.6, d = 0.35;
+  const wood = _wood(0x4a2410);
+  const left = new THREE.Mesh(new THREE.BoxGeometry(0.05, h, d), wood);
+  left.position.set(-w / 2, h / 2, 0);
+  g.add(left);
+  const right = new THREE.Mesh(new THREE.BoxGeometry(0.05, h, d), wood);
+  right.position.set(w / 2, h / 2, 0);
+  g.add(right);
+  const top = new THREE.Mesh(new THREE.BoxGeometry(w, 0.05, d), wood);
+  top.position.set(0, h - 0.025, 0);
+  g.add(top);
+  const bot = new THREE.Mesh(new THREE.BoxGeometry(w, 0.05, d), wood);
+  bot.position.set(0, 0.025, 0);
+  g.add(bot);
+  const back = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.03), wood);
+  back.position.set(0, h / 2, -d / 2 + 0.015);
+  g.add(back);
+  // 4 shelves
+  const shelfYs = [0.32, 0.64, 0.96, 1.28];
+  shelfYs.forEach(y => {
+    const sh = new THREE.Mesh(new THREE.BoxGeometry(w - 0.1, 0.03, d - 0.04), wood);
+    sh.position.set(0, y, 0);
+    g.add(sh);
+  });
+  // Books
+  const bookCols = [0x8a2010, 0x284828, 0x284868, 0x7a4818, 0x5a2a6a];
+  const rows = [0.16, 0.48, 0.80, 1.12, 1.44];
+  rows.forEach((y, ri) => {
+    for (let i = 0; i < 8; i++) {
+      const x = -w / 2 + 0.07 + i * 0.075;
+      const book = new THREE.Mesh(
+        new THREE.BoxGeometry(0.06, 0.3, 0.18),
+        _wood(bookCols[(ri + i) % bookCols.length])
+      );
+      book.position.set(x, y, 0);
+      g.add(book);
+    }
+  });
+  return g;
+}
+
+// ============================================================
+// CABIN screen entry / exit
+// ============================================================
 
 function openCabin() {
   sfxButtonClick();
@@ -4164,6 +4658,7 @@ function openCabinFromTitle() {
 
 function closeCabin() {
   sfxButtonClick();
+  stopCabin3DLoop();
   $('cabin-screen').classList.remove('active');
   if (cabinCameFromTitle) {
     document.getElementById('title-screen').classList.add('active');
@@ -4173,643 +4668,71 @@ function closeCabin() {
   }
 }
 
-
-
-// ============================================================
-// FURNITURE - one-time purchases that fill out the cabin floor.
-// Each entry has its own pixel-art draw function, fixed canvas
-// dimensions, and a fixed position in the cabin-room.
-// ============================================================
-const FURNITURE = [
-  {
-    id: 'rug',
-    name: 'Woven Rug',
-    cost: 100,
-    description: 'Worn rag rug. Ties the room together.',
-    pos: { left: '50%', bottom: '6%', transform: 'translateX(-50%)' },
-    size: { w: 88, h: 12 },
-    z: 1,
-    draw: drawRug,
-  },
-  {
-    id: 'books',
-    name: 'Stacked Books',
-    cost: 120,
-    description: 'A small leaning pile of well-loved books.',
-    pos: { left: '34%', bottom: '6%' },
-    size: { w: 16, h: 12 },
-    z: 3,
-    draw: drawBooks,
-  },
-  {
-    id: 'tackle_box',
-    name: 'Tackle Box',
-    cost: 180,
-    description: 'A worn wooden tackle box, lid slightly ajar.',
-    pos: { left: '20%', bottom: '7%' },
-    size: { w: 24, h: 14 },
-    z: 3,
-    draw: drawTackleBox,
-  },
-  {
-    id: 'creel',
-    name: 'Fishing Creel',
-    cost: 220,
-    description: 'Wicker basket. Your old reliable.',
-    pos: { right: '34%', bottom: '7%' },
-    size: { w: 22, h: 18 },
-    z: 3,
-    draw: drawCreel,
-  },
-  {
-    id: 'stool',
-    name: 'Wooden Stool',
-    cost: 260,
-    description: 'Three legs and one wobble.',
-    pos: { left: '24%', bottom: '14%' },
-    size: { w: 18, h: 22 },
-    z: 3,
-    draw: drawStool,
-  },
-  {
-    id: 'side_table',
-    name: 'Side Table',
-    cost: 320,
-    description: 'Cypress, with a coffee ring.',
-    pos: { left: '8%', bottom: '12%' },
-    size: { w: 26, h: 30 },
-    z: 3,
-    draw: drawSideTable,
-  },
-  {
-    id: 'plant',
-    name: 'Potted Fern',
-    cost: 380,
-    description: 'Survives despite your neglect.',
-    pos: { right: '8%', bottom: '14%' },
-    size: { w: 22, h: 30 },
-    z: 3,
-    draw: drawPlant,
-  },
-  {
-    id: 'floor_lantern',
-    name: 'Floor Lantern',
-    cost: 480,
-    description: 'Casts a warm puddle on the boards.',
-    pos: { right: '18%', bottom: '7%' },
-    size: { w: 14, h: 42 },
-    z: 3,
-    draw: drawFloorLantern,
-  },
-  {
-    id: 'rocking_chair',
-    name: 'Rocking Chair',
-    cost: 700,
-    description: 'Best seat in the cabin.',
-    pos: { right: '4%', bottom: '5%' },
-    size: { w: 36, h: 44 },
-    z: 4,
-    draw: drawRockingChair,
-  },
-  {
-    id: 'bookshelf',
-    name: 'Bookshelf',
-    cost: 950,
-    description: 'Five shelves, mostly fishing manuals.',
-    pos: { left: '4%', bottom: '14%' },
-    size: { w: 28, h: 56 },
-    z: 2,
-    draw: drawBookshelf,
-  },
-];
-
-function getFurniture(id) { return FURNITURE.find(f => f.id === id); }
-
-
-// ---------- Pixel-art draw functions for each furniture sprite ----------
-// All use fillRect-only so they sit at the same chunky resolution as the
-// rod sprite and the trophy plaques.
-
-function drawRug(canvas) {
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const W = canvas.width, H = canvas.height;
-  // Rag rug with horizontal stripes; central darker oval; tassels.
-  ctx.fillStyle = '#7a1818'; ctx.fillRect(2, 2, W - 4, H - 4);
-  ctx.fillStyle = '#4a0a08'; ctx.fillRect(2, 2, W - 4, 1);
-  ctx.fillStyle = '#a83828'; ctx.fillRect(2, H - 3, W - 4, 1);
-  // stripes
-  for (let y = 4; y < H - 4; y += 2) {
-    ctx.fillStyle = (y % 4 === 0) ? '#a83828' : '#5a1010';
-    ctx.fillRect(3, y, W - 6, 1);
-  }
-  // border outline
-  ctx.fillStyle = '#1a0805';
-  ctx.fillRect(1, 1, W - 2, 1);
-  ctx.fillRect(1, H - 2, W - 2, 1);
-  ctx.fillRect(1, 1, 1, H - 2);
-  ctx.fillRect(W - 2, 1, 1, H - 2);
-  // tassels left/right
-  ctx.fillStyle = '#3a1808';
-  for (let i = 0; i < 4; i++) {
-    ctx.fillRect(0, 3 + i * 2, 1, 1);
-    ctx.fillRect(W - 1, 3 + i * 2, 1, 1);
-  }
-  // hard cast shadow (bottom edge)
-  ctx.fillStyle = 'rgba(0,0,0,0.4)';
-  ctx.fillRect(2, H - 1, W - 4, 1);
-}
-
-function drawBooks(canvas) {
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  // 3 books stacked, slightly leaning
-  // bottom book (red, widest)
-  ctx.fillStyle = '#1a0805'; ctx.fillRect(1, 8, 14, 4);
-  ctx.fillStyle = '#8a2010'; ctx.fillRect(2, 9, 12, 2);
-  ctx.fillStyle = '#fde898'; ctx.fillRect(3, 9, 1, 1);  // page edge
-  // middle (green)
-  ctx.fillStyle = '#1a0805'; ctx.fillRect(2, 4, 12, 4);
-  ctx.fillStyle = '#284828'; ctx.fillRect(3, 5, 10, 2);
-  ctx.fillStyle = '#fde898'; ctx.fillRect(4, 5, 1, 1);
-  // top (blue, narrowest, leaning)
-  ctx.fillStyle = '#1a0805'; ctx.fillRect(3, 0, 10, 4);
-  ctx.fillStyle = '#284868'; ctx.fillRect(4, 1, 8, 2);
-  ctx.fillStyle = '#fde898'; ctx.fillRect(5, 1, 1, 1);
-  // shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(1, 12, 14, 1);
-}
-
-function drawTackleBox(canvas) {
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const W = canvas.width, H = canvas.height;
-  // Body
-  ctx.fillStyle = '#1a0c05'; ctx.fillRect(1, 4, W - 2, H - 5);
-  ctx.fillStyle = '#5a3818'; ctx.fillRect(2, 5, W - 4, H - 7);
-  ctx.fillStyle = '#8a5828'; ctx.fillRect(2, 5, W - 4, 1); // top highlight
-  ctx.fillStyle = '#3a1c08'; ctx.fillRect(2, H - 3, W - 4, 1); // bottom shadow
-  // lid line
-  ctx.fillStyle = '#1a0c05'; ctx.fillRect(2, 8, W - 4, 1);
-  // latch
-  ctx.fillStyle = '#c89858'; ctx.fillRect(W / 2 - 1, 7, 2, 3);
-  // handle
-  ctx.fillStyle = '#1a0c05';
-  ctx.fillRect(W / 2 - 4, 1, 8, 1);
-  ctx.fillRect(W / 2 - 4, 1, 1, 3);
-  ctx.fillRect(W / 2 + 3, 1, 1, 3);
-  // shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.4)';
-  ctx.fillRect(1, H - 1, W - 2, 1);
-}
-
-function drawCreel(canvas) {
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const W = canvas.width, H = canvas.height;
-  // Wicker basket - rounded body, woven texture, leather strap
-  ctx.fillStyle = '#1a0c05'; ctx.fillRect(2, 4, W - 4, H - 5);
-  ctx.fillStyle = '#a87838'; ctx.fillRect(3, 5, W - 6, H - 7);
-  // weave pattern
-  ctx.fillStyle = '#6a4818';
-  for (let y = 6; y < H - 3; y += 2)
-    for (let x = 3; x < W - 3; x += 2)
-      ctx.fillRect(x + (y % 4 === 0 ? 0 : 1), y, 1, 1);
-  // lid
-  ctx.fillStyle = '#8a5828'; ctx.fillRect(2, 4, W - 4, 2);
-  ctx.fillStyle = '#1a0c05'; ctx.fillRect(2, 4, W - 4, 1);
-  // strap
-  ctx.fillStyle = '#1a0c05';
-  ctx.fillRect(W / 2 - 5, 0, 10, 5);
-  ctx.fillStyle = '#5a3818';
-  ctx.fillRect(W / 2 - 4, 1, 8, 3);
-  // shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.45)';
-  ctx.fillRect(1, H - 1, W - 2, 1);
-}
-
-function drawStool(canvas) {
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const W = canvas.width, H = canvas.height;
-  // Round seat
-  ctx.fillStyle = '#1a0c05';
-  ctx.fillRect(1, 1, W - 2, 5);
-  ctx.fillRect(0, 2, W, 3);
-  ctx.fillStyle = '#6a3818';
-  ctx.fillRect(2, 2, W - 4, 3);
-  ctx.fillStyle = '#8a5828';
-  ctx.fillRect(2, 2, W - 4, 1);
-  // 3 legs (front 2 visible, back 1 between)
-  ctx.fillStyle = '#1a0c05';
-  ctx.fillRect(3, 5, 2, H - 5);
-  ctx.fillRect(W - 5, 5, 2, H - 5);
-  ctx.fillRect(W / 2 - 1, 5, 2, H - 6);
-  ctx.fillStyle = '#5a3018';
-  ctx.fillRect(3, 5, 1, H - 6);
-  ctx.fillRect(W - 5, 5, 1, H - 6);
-  // shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.4)';
-  ctx.fillRect(2, H - 1, W - 4, 1);
-}
-
-function drawSideTable(canvas) {
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const W = canvas.width, H = canvas.height;
-  // Top
-  ctx.fillStyle = '#1a0c05'; ctx.fillRect(0, 0, W, 5);
-  ctx.fillStyle = '#6a3818'; ctx.fillRect(1, 1, W - 2, 3);
-  ctx.fillStyle = '#8a5828'; ctx.fillRect(1, 1, W - 2, 1);
-  // Drawer
-  ctx.fillStyle = '#5a3018'; ctx.fillRect(2, 5, W - 4, 5);
-  ctx.fillStyle = '#1a0c05'; ctx.fillRect(2, 5, W - 4, 1);
-  ctx.fillStyle = '#1a0c05'; ctx.fillRect(2, 9, W - 4, 1);
-  ctx.fillStyle = '#c89858'; ctx.fillRect(W / 2 - 1, 7, 2, 1); // brass handle
-  // Front legs
-  ctx.fillStyle = '#1a0c05';
-  ctx.fillRect(2, 10, 3, H - 10);
-  ctx.fillRect(W - 5, 10, 3, H - 10);
-  ctx.fillStyle = '#5a3018';
-  ctx.fillRect(2, 10, 1, H - 11);
-  ctx.fillRect(W - 5, 10, 1, H - 11);
-  // Cup on the table
-  ctx.fillStyle = '#fde898'; ctx.fillRect(W / 2 - 2, -2 + 0, 4, 0); // cleared
-  ctx.fillStyle = '#3a2810'; ctx.fillRect(W / 2 - 2, 0, 4, 1);
-  ctx.fillStyle = '#fde898'; ctx.fillRect(W / 2 - 2, 0, 4, 1);
-  // shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.45)';
-  ctx.fillRect(1, H - 1, W - 2, 1);
-}
-
-function drawPlant(canvas) {
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const W = canvas.width, H = canvas.height;
-  // Pot (bottom 12px)
-  const potTop = H - 12;
-  ctx.fillStyle = '#1a0c05'; ctx.fillRect(3, potTop, W - 6, 12);
-  ctx.fillStyle = '#a85820'; ctx.fillRect(4, potTop + 1, W - 8, 10);
-  ctx.fillStyle = '#c87838'; ctx.fillRect(4, potTop + 1, W - 8, 1);
-  ctx.fillStyle = '#7a3818'; ctx.fillRect(4, potTop + 10, W - 8, 1);
-  // Soil
-  ctx.fillStyle = '#3a1808'; ctx.fillRect(5, potTop, W - 10, 1);
-  // Foliage above pot
-  ctx.fillStyle = '#284828';
-  // a chunky leaf cluster
-  ctx.fillRect(3, potTop - 6, W - 6, 6);
-  ctx.fillStyle = '#386838';
-  ctx.fillRect(4, potTop - 7, W - 8, 1);
-  ctx.fillRect(2, potTop - 4, 2, 4);
-  ctx.fillRect(W - 4, potTop - 4, 2, 4);
-  ctx.fillStyle = '#284828';
-  ctx.fillRect(4, potTop - 9, W - 8, 2);
-  ctx.fillStyle = '#386838';
-  ctx.fillRect(6, potTop - 11, W - 12, 2);
-  // sprouts
-  ctx.fillStyle = '#284828';
-  ctx.fillRect(W / 2 - 1, potTop - 13, 2, 2);
-  // shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.45)';
-  ctx.fillRect(2, H - 1, W - 4, 1);
-}
-
-function drawFloorLantern(canvas) {
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const W = canvas.width, H = canvas.height;
-  // Stand pole
-  ctx.fillStyle = '#1a0c05';
-  ctx.fillRect(W / 2 - 1, 12, 2, H - 16);
-  ctx.fillStyle = '#3a1808';
-  ctx.fillRect(W / 2, 12, 1, H - 16);
-  // Base
-  ctx.fillStyle = '#1a0c05';
-  ctx.fillRect(W / 2 - 4, H - 4, 8, 4);
-  ctx.fillStyle = '#5a3018';
-  ctx.fillRect(W / 2 - 3, H - 4, 6, 1);
-  // Lantern body (top)
-  ctx.fillStyle = '#1a0c05';
-  ctx.fillRect(1, 0, W - 2, 12);
-  ctx.fillStyle = '#3a2008';
-  ctx.fillRect(2, 1, W - 4, 10);
-  // Glass panel
-  ctx.fillStyle = '#fde898';
-  ctx.fillRect(3, 3, W - 6, 6);
-  ctx.fillStyle = '#ffb84a';
-  ctx.fillRect(4, 4, W - 8, 4);
-  // Frame divider
-  ctx.fillStyle = '#1a0c05';
-  ctx.fillRect(W / 2 - 1, 3, 1, 6);
-  ctx.fillRect(2, 6, W - 4, 1);
-  // Top cap
-  ctx.fillStyle = '#1a0c05';
-  ctx.fillRect(W / 2 - 1, -1, 2, 1);
-  // shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.45)';
-  ctx.fillRect(W / 2 - 4, H - 1, 8, 1);
-}
-
-function drawRockingChair(canvas) {
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const W = canvas.width, H = canvas.height;
-  // Backrest (tall, slightly tilted - we just draw it vertical)
-  ctx.fillStyle = '#1a0c05';
-  ctx.fillRect(4, 0, 4, H - 12);
-  ctx.fillRect(W - 8, 0, 4, H - 12);
-  ctx.fillStyle = '#3a1c08';
-  ctx.fillRect(5, 1, 2, H - 14);
-  ctx.fillRect(W - 7, 1, 2, H - 14);
-  // back slats
-  for (let x = 9; x < W - 9; x += 4) {
-    ctx.fillStyle = '#1a0c05';
-    ctx.fillRect(x, 4, 2, H - 18);
-    ctx.fillStyle = '#3a1c08';
-    ctx.fillRect(x, 4, 1, H - 18);
-  }
-  // Top crest
-  ctx.fillStyle = '#1a0c05';
-  ctx.fillRect(2, 0, W - 4, 4);
-  ctx.fillStyle = '#5a3018';
-  ctx.fillRect(3, 1, W - 6, 2);
-  // Seat
-  ctx.fillStyle = '#1a0c05';
-  ctx.fillRect(0, H - 16, W, 6);
-  ctx.fillStyle = '#5a3018';
-  ctx.fillRect(1, H - 15, W - 2, 4);
-  ctx.fillStyle = '#7a4220';
-  ctx.fillRect(1, H - 15, W - 2, 1);
-  // Front legs
-  ctx.fillStyle = '#1a0c05';
-  ctx.fillRect(2, H - 10, 3, 6);
-  ctx.fillRect(W - 5, H - 10, 3, 6);
-  // Rockers (curved bottom)
-  ctx.fillStyle = '#1a0c05';
-  ctx.fillRect(0, H - 4, W, 2);
-  ctx.fillRect(1, H - 5, W - 2, 1);
-  ctx.fillStyle = '#5a3018';
-  ctx.fillRect(2, H - 4, W - 4, 1);
-  // shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.5)';
-  ctx.fillRect(0, H - 1, W, 1);
-}
-
-function drawBookshelf(canvas) {
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const W = canvas.width, H = canvas.height;
-  // Outer frame
-  ctx.fillStyle = '#1a0c05';
-  ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = '#5a3018';
-  ctx.fillRect(1, 1, W - 2, H - 2);
-  ctx.fillStyle = '#8a5828';
-  ctx.fillRect(1, 1, W - 2, 1);
-  ctx.fillStyle = '#3a1c08';
-  ctx.fillRect(1, H - 2, W - 2, 1);
-  // 4 shelves (5 rows of books)
-  const shelfYs = [];
-  const rows = 5;
-  for (let r = 0; r < rows; r++) {
-    const y = 2 + Math.floor((r * (H - 4)) / rows);
-    shelfYs.push(y);
-  }
-  // book colors per row
-  const bookColors = ['#8a2010', '#284828', '#284868', '#7a4818', '#5a2a6a'];
-  for (let r = 0; r < rows; r++) {
-    const yTop = shelfYs[r] + 1;
-    const yBot = (r + 1 < rows ? shelfYs[r + 1] : H - 2);
-    // shelf board
-    ctx.fillStyle = '#1a0c05';
-    ctx.fillRect(2, yBot - 1, W - 4, 1);
-    // books
-    for (let x = 3; x < W - 3; x += 3) {
-      ctx.fillStyle = bookColors[(r + x) % bookColors.length];
-      const bookH = (yBot - 1) - yTop - 1;
-      ctx.fillRect(x, yTop, 2, bookH);
-      ctx.fillStyle = '#1a0c05';
-      ctx.fillRect(x, yTop, 1, bookH);
-      ctx.fillStyle = '#fde898';
-      ctx.fillRect(x, yTop + 1, 1, 1);
-    }
-  }
-  // shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.45)';
-  ctx.fillRect(1, H - 1, W - 2, 1);
-}
-
-
-// ---------- Render owned furniture into the cabin-room ----------
-let ownedFurniture = [];
-
-function renderCabinFurniture() {
-  const room = document.getElementById('cabin-room');
-  if (!room) return;
-  // Clear any existing furniture canvases first.
-  room.querySelectorAll('.cabin-furniture').forEach(el => el.remove());
-  // Preview mode: show every item so the user can see the fully decorated room.
-  const showAll = cabinPreviewMode;
-  FURNITURE.forEach(item => {
-    if (!showAll && !ownedFurniture.includes(item.id)) return;
-    const wrapper = document.createElement('div');
-    wrapper.className = 'cabin-furniture';
-    const layout = furnitureLayout[item.id];
-    applyLayoutTo(wrapper, layout, item.pos);
-    wrapper.style.width  = item.size.w + 'px';
-    wrapper.style.height = item.size.h + 'px';
-    wrapper.style.zIndex = item.z;
-    const cv = document.createElement('canvas');
-    cv.width = item.size.w; cv.height = item.size.h;
-    cv.style.width  = item.size.w + 'px';
-    cv.style.height = item.size.h + 'px';
-    if (layout && layout.flipped) cv.style.transform = 'scaleX(-1)';
-    wrapper.appendChild(cv);
-    item.draw(cv);
-    room.appendChild(wrapper);
-    if (cabinEditMode) {
-      attachDragHandlers(wrapper, item.id, furnitureLayout, true);
-    }
-  });
-}
-
-// Renders one pixel-art trophy plaque onto a canvas. fillRect only, no
-// smoothing, no gradients - same chunky-pixel resolution as the cabin
-// background art so the plaques live in the same world.
-function drawPlaque(canvas, fish) {
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Canvas is 44x38; plaque body sits at (0,0)-(41,35); the bottom-right
-  // 3x3 margin holds the cast shadow so the plaque looks raised off the wall.
-  const W = 41, H = 35;
-
-  // Cast shadow first (behind everything)
-  ctx.fillStyle = 'rgba(0,0,0,0.6)';
-  ctx.fillRect(3, 3, W, H);
-
-  const filled = !!fish;
-  const baseDark   = filled ? '#3a1808' : '#2a1408';
-  const baseMid    = filled ? '#6a3618' : '#4a2810';
-  const baseLight  = filled ? '#8a4a20' : '#5a3018';
-  const grainDark  = filled ? '#3a1808' : '#2a1408';
-
-  // Outer dark border
-  ctx.fillStyle = baseDark;
-  ctx.fillRect(0, 0, W, H);
-  // Wood plank fill
-  ctx.fillStyle = baseMid;
-  ctx.fillRect(1, 1, W - 2, H - 2);
-  // Top highlight
-  ctx.fillStyle = baseLight;
-  ctx.fillRect(1, 1, W - 2, 1);
-  // Darker band above nameplate
-  ctx.fillStyle = baseDark;
-  ctx.fillRect(1, H - 10, W - 2, 1);
-  // A couple of grain seams + speckle pixels
-  ctx.fillStyle = grainDark;
-  ctx.fillRect(1, 6, W - 2, 1);
-  ctx.fillRect(1, 16, W - 2, 1);
-  ctx.fillRect(7, 11, 1, 1);
-  ctx.fillRect(28, 19, 1, 1);
-
-  // Brass nails at top corners (3x3 with a 1px highlight)
-  if (filled) {
-    ctx.fillStyle = '#1a0c05';
-    ctx.fillRect(2, 2, 4, 4);
-    ctx.fillRect(W - 6, 2, 4, 4);
-    ctx.fillStyle = '#c89858';
-    ctx.fillRect(3, 3, 2, 2);
-    ctx.fillRect(W - 5, 3, 2, 2);
-    ctx.fillStyle = '#fde898';
-    ctx.fillRect(3, 3, 1, 1);
-    ctx.fillRect(W - 5, 3, 1, 1);
-  } else {
-    ctx.fillStyle = '#1a0c05';
-    ctx.fillRect(3, 3, 2, 2);
-    ctx.fillRect(W - 5, 3, 2, 2);
-  }
-
-  // Fish art - 24x12 source rendered at 1.0x (no scale). Centered horizontally
-  // between the nails, vertically above the nameplate.
-  if (fish && FISH_ART[fish.id]) {
-    const fishX = Math.floor((W - 24) / 2);
-    const fishY = 9;
-    const art = FISH_ART[fish.id];
-    for (let y = 0; y < art.length; y++) {
-      const row = art[y];
-      for (let x = 0; x < row.length; x++) {
-        const ch = row[x];
-        const color = PALETTE[ch];
-        if (color) {
-          ctx.fillStyle = color;
-          ctx.fillRect(fishX + x, fishY + y, 1, 1);
-        }
-      }
-    }
-  } else {
-    // Empty plaque "?" mark
-    ctx.fillStyle = 'rgba(255,232,160,0.25)';
-    ctx.font = 'bold 12px "Baloo 2", cursive';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('?', W / 2, 14);
-  }
-
-  // Nameplate band (engraved, 9px tall at the bottom)
-  const npY = H - 9;
-  ctx.fillStyle = '#1a0805';
-  ctx.fillRect(2, npY, W - 4, 7);
-  ctx.fillStyle = '#3a1c08';
-  ctx.fillRect(2, npY, W - 4, 1);
-  ctx.fillStyle = '#5a3018';
-  ctx.fillRect(2, npY + 6, W - 4, 1);
-
-  // Species name is rendered as an HTML overlay (not on the canvas) so it
-  // stays crisp at small sizes. The canvas just paints the engraved groove.
-}
-
 function renderCabin() {
-  // Up to 4 legendary mounts, ordered by personal best size descending.
-  // Preview mode shows all legendaries (sorted by max size) so the wall
-  // can be inspected fully filled before any catches.
-  const legendaries = FISH.filter(f => f.rarity === 'legendary');
-  let caught;
-  if (cabinPreviewMode) {
-    caught = legendaries
-      .map(f => ({ fish: f, entry: { count: 1, personalBest: f.maxSz } }))
-      .sort((a, b) => b.fish.maxSz - a.fish.maxSz);
-  } else {
-    caught = legendaries
-      .map(f => ({ fish: f, entry: collection[f.id] }))
-      .filter(x => x.entry && x.entry.count > 0)
-      .sort((a, b) => b.entry.personalBest - a.entry.personalBest);
+  initCabin3D();
+  if (!cabin3D) {
+    // Fallback: Three.js failed to load; show plain message
+    const room = document.getElementById('cabin-room');
+    if (room) room.innerHTML = '<div style="color: var(--text-dim); padding: 20px; text-align:center;">3D cabin failed to load. Check connection and refresh.</div>';
+    return;
   }
+  refreshPlaques();
+  refreshFurniture();
+  // Resize after layout settles
+  setTimeout(() => {
+    const room = document.getElementById('cabin-room');
+    if (!room) return;
+    cabin3D.renderer.setSize(room.clientWidth, room.clientHeight, false);
+    cabin3D.camera.aspect = room.clientWidth / room.clientHeight;
+    cabin3D.camera.updateProjectionMatrix();
+  }, 0);
+  startCabin3DLoop();
+}
 
-  const TOTAL_SLOTS = 4;
-  $('cabin-trophy-count').textContent = String(Math.min(TOTAL_SLOTS, caught.length));
+function toggleCabinPreview() {
+  cabinPreviewMode = !cabinPreviewMode;
+  const btn = document.getElementById('cabin-preview-btn');
+  if (btn) btn.classList.toggle('on', cabinPreviewMode);
+  sfxButtonClick();
+  refreshPlaques();
+  refreshFurniture();
+}
 
-  // Default plaque positions (the ones that used to live in CSS).
-  const PLAQUE_DEFAULTS = [
-    { left: '21%', top: '33%' },
-    { right: '21%', top: '33%' },
-    { left: '21%', top: '55%' },
-    { right: '21%', top: '55%' },
-  ];
-
-  for (let i = 0; i < TOTAL_SLOTS; i++) {
-    const mount = document.querySelector(`.cabin-mount[data-mount="${i}"]`);
-    if (!mount) continue;
-    mount.innerHTML = '';
-    applyLayoutTo(mount, plaqueLayout[i], PLAQUE_DEFAULTS[i]);
-
-    const plaque = document.createElement('div');
-    plaque.className = 'cabin-mount-plaque';
-    const cv = document.createElement('canvas');
-    cv.width = 44; cv.height = 38;
-    cv.style.width = '44px'; cv.style.height = '38px';
-    plaque.appendChild(cv);
-    const fish = caught[i] ? caught[i].fish : null;
-    drawPlaque(cv, fish);
-    const nameEl = document.createElement('div');
-    nameEl.className = 'cabin-mount-name-overlay' + (fish ? '' : ' locked');
-    nameEl.textContent = fish ? fish.name : 'Locked';
-    plaque.appendChild(nameEl);
-    if (caught[i] && !cabinEditMode) {
-      const { entry } = caught[i];
-      plaque.addEventListener('click', () => showMountPopup(fish, entry));
-    }
-    mount.appendChild(plaque);
-
-    if (cabinEditMode) {
-      attachDragHandlers(mount, i, plaqueLayout, false);
-    }
-  }
-  renderCabinFurniture();
-
-  // Edit hint banner
+function toggleCabinEdit() {
+  cabinEditMode = !cabinEditMode;
+  const btn = document.getElementById('cabin-edit-btn');
+  const reset = document.getElementById('cabin-reset-btn');
+  if (btn) btn.classList.toggle('on', cabinEditMode);
+  if (reset) reset.style.display = cabinEditMode ? '' : 'none';
   const room = document.getElementById('cabin-room');
   if (room) {
+    room.classList.toggle('editing', cabinEditMode);
     let hint = room.querySelector('.cabin-edit-hint');
     if (cabinEditMode) {
       if (!hint) {
         hint = document.createElement('div');
         hint.className = 'cabin-edit-hint';
-        hint.textContent = 'Drag to move \u2022 Tap to flip';
+        hint.textContent = 'Drag to move \u2022 Tap to rotate';
         room.appendChild(hint);
       }
     } else if (hint) hint.remove();
+  }
+  sfxButtonClick();
+}
+
+function resetCabinLayout() {
+  if (!confirm('Reset all cabin items to their default positions?')) return;
+  furnitureLayout = {};
+  plaqueLayout = {};
+  saveGame();
+  if (cabin3D) {
+    refreshFurniture();
+    refreshPlaques();
+    // Reset plaques to default positions
+    cabin3D.plaques.forEach((p) => {
+      const d = p.userData.defaultPos;
+      if (d) { p.position.x = d.x; p.position.y = d.y; }
+    });
   }
 }
 
