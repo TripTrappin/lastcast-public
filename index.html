@@ -1463,9 +1463,36 @@ image-rendering: pixelated;
 }
 .cabin-mount-plaque:active { transform: scale(0.95); }
 
+/* Species name overlay - crisp HTML text, sits over the engraved nameplate
+   band that the canvas paints at the bottom. */
+.cabin-mount-name-overlay {
+position: absolute; left: 3px; right: 3px; bottom: 2px;
+height: 8px;
+display: flex; align-items: center; justify-content: center;
+font-family: 'Baloo 2', cursive; font-size: 7px; font-weight: 800;
+color: #fde898; letter-spacing: 0.4px;
+text-transform: uppercase;
+text-shadow: 0 1px 0 rgba(0,0,0,0.95), 0 0 2px rgba(0,0,0,0.9);
+white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+pointer-events: none;
+}
+.cabin-mount-name-overlay.locked { color: rgba(255,232,160,0.5); }
+
 /* Mount slot positions on the bg-cabin.png artwork.
    The image has narrow dark-wood borders: top ~7%, sides ~7-8%, bottom ~15%.
    Plaques are 50x44 = roughly 11-12% of a square room. */
+/* Furniture canvases: positioned absolutely inside cabin-room. */
+.cabin-furniture {
+position: absolute;
+pointer-events: none;
+}
+.cabin-furniture canvas {
+display: block;
+width: 100%; height: 100%;
+image-rendering: pixelated;
+filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.45));
+}
+
 /* Layout: 4 plaques on the FLAT back wall, flanking the window. The
    side-wall corners (outer ~20%) are off-limits because plaques there
    straddle two walls and read as floating. No rotation - back wall is
@@ -1730,6 +1757,7 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
       <button class="shop-tab active" data-tab="rods" onclick="setShopTab('rods')">Rods</button>
       <button class="shop-tab" data-tab="bait" onclick="setShopTab('bait')">Bait</button>
       <button class="shop-tab" data-tab="upgrades" onclick="setShopTab('upgrades')">Upgrades</button>
+      <button class="shop-tab" data-tab="cabin" onclick="setShopTab('cabin')">Cabin</button>
     </div>
     <div class="shop-scroll" id="shop-scroll"></div>
   </div>
@@ -1826,8 +1854,9 @@ function saveGame() {
       ),
       selectedBaitId,
       ownedUpgrades,
+      ownedFurniture,
       muted: isMuted,
-      version: 4,
+      version: 5,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
   } catch (e) {
@@ -1848,8 +1877,8 @@ function loadGame() {
     }
     if (!raw) return;
     const save = JSON.parse(raw);
-    // Accept v1 (legacy), v2, v3, and v4
-    if (save.version !== 1 && save.version !== 2 && save.version !== 3 && save.version !== 4) return;
+    // Accept v1 through v5 (older versions just default newer fields).
+    if (![1,2,3,4,5].includes(save.version)) return;
     
     // Rehydrate collection with fish object refs
     if (save.collection) {
@@ -1893,6 +1922,11 @@ function loadGame() {
     ownedUpgrades = Array.isArray(save.ownedUpgrades)
       ? save.ownedUpgrades.filter(id => UPGRADES.find(u => u.id === id))
       : [];
+
+    // v5 fields - furniture
+    ownedFurniture = Array.isArray(save.ownedFurniture)
+      ? save.ownedFurniture.filter(id => FURNITURE.find(f => f.id === id))
+      : [];
   } catch (e) {
     console.warn('Load failed:', e);
   }
@@ -1909,6 +1943,7 @@ function resetSave() {
   baitInventory = { worms: Infinity };
   selectedBaitId = 'worms';
   ownedUpgrades = [];
+  ownedFurniture = [];
   updateStats();
   renderFishdex();
 }
@@ -3522,7 +3557,83 @@ function renderShop() {
     renderBaitShop(scroll);
   } else if (currentShopTab === 'upgrades') {
     renderUpgradesShop(scroll);
+  } else if (currentShopTab === 'cabin') {
+    renderCabinShop(scroll);
   }
+}
+
+function renderCabinShop(scroll) {
+  const intro = document.createElement('div');
+  intro.className = 'shop-bait-intro';
+  intro.textContent = 'Furnish your cabin. One-time purchases - your stuff appears in the room when you buy it.';
+  scroll.appendChild(intro);
+
+  FURNITURE.forEach(item => {
+    const owned = ownedFurniture.includes(item.id);
+    const canAfford = coins >= item.cost;
+
+    const row = document.createElement('div');
+    row.className = 'shop-item' + (owned ? ' equipped' : '');
+
+    // Pixel-art preview icon (mini version of the sprite, capped at 48x48)
+    const icon = document.createElement('div');
+    icon.className = 'shop-item-icon';
+    const pcv = document.createElement('canvas');
+    const SCALE = Math.min(48 / item.size.w, 48 / item.size.h, 2);
+    pcv.width = item.size.w; pcv.height = item.size.h;
+    pcv.style.width  = (item.size.w * SCALE) + 'px';
+    pcv.style.height = (item.size.h * SCALE) + 'px';
+    pcv.style.imageRendering = 'pixelated';
+    item.draw(pcv);
+    icon.appendChild(pcv);
+    row.appendChild(icon);
+
+    const info = document.createElement('div');
+    info.className = 'shop-item-info';
+    const name = document.createElement('div');
+    name.className = 'shop-item-name';
+    name.textContent = item.name;
+    info.appendChild(name);
+    const desc = document.createElement('div');
+    desc.className = 'shop-item-desc';
+    desc.textContent = item.description;
+    info.appendChild(desc);
+    row.appendChild(info);
+
+    const action = document.createElement('div');
+    action.className = 'shop-item-action';
+    if (owned) {
+      const badge = document.createElement('div');
+      badge.className = 'state-badge owned';
+      badge.textContent = 'Owned';
+      action.appendChild(badge);
+    } else {
+      const buy = document.createElement('button');
+      buy.className = 'shop-buy-btn';
+      buy.disabled = !canAfford;
+      if (!canAfford) buy.classList.add('cant-afford');
+      buy.innerHTML = `<span class="coin-icon">●</span> ${item.cost}`;
+      buy.onclick = (e) => {
+        if (!canAfford) return;
+        confirmPurchase(item.name, item.cost, () => buyFurniture(item.id, e.currentTarget));
+      };
+      action.appendChild(buy);
+    }
+    row.appendChild(action);
+    scroll.appendChild(row);
+  });
+}
+
+function buyFurniture(id, buttonEl) {
+  const item = getFurniture(id);
+  if (!item || ownedFurniture.includes(id)) return;
+  if (coins < item.cost) return;
+  coins -= item.cost;
+  ownedFurniture.push(id);
+  purchaseFeedback(buttonEl, item.cost);
+  updateStats();
+  renderShop();
+  saveGame();
 }
 
 // ---- Confirmation modal & purchase feedback -------------------------------
@@ -3908,6 +4019,475 @@ function closeCabin() {
   }
 }
 
+
+
+// ============================================================
+// FURNITURE - one-time purchases that fill out the cabin floor.
+// Each entry has its own pixel-art draw function, fixed canvas
+// dimensions, and a fixed position in the cabin-room.
+// ============================================================
+const FURNITURE = [
+  {
+    id: 'rug',
+    name: 'Woven Rug',
+    cost: 100,
+    description: 'Worn rag rug. Ties the room together.',
+    pos: { left: '50%', bottom: '6%', transform: 'translateX(-50%)' },
+    size: { w: 88, h: 12 },
+    z: 1,
+    draw: drawRug,
+  },
+  {
+    id: 'books',
+    name: 'Stacked Books',
+    cost: 120,
+    description: 'A small leaning pile of well-loved books.',
+    pos: { left: '34%', bottom: '6%' },
+    size: { w: 16, h: 12 },
+    z: 3,
+    draw: drawBooks,
+  },
+  {
+    id: 'tackle_box',
+    name: 'Tackle Box',
+    cost: 180,
+    description: 'A worn wooden tackle box, lid slightly ajar.',
+    pos: { left: '20%', bottom: '7%' },
+    size: { w: 24, h: 14 },
+    z: 3,
+    draw: drawTackleBox,
+  },
+  {
+    id: 'creel',
+    name: 'Fishing Creel',
+    cost: 220,
+    description: 'Wicker basket. Your old reliable.',
+    pos: { right: '34%', bottom: '7%' },
+    size: { w: 22, h: 18 },
+    z: 3,
+    draw: drawCreel,
+  },
+  {
+    id: 'stool',
+    name: 'Wooden Stool',
+    cost: 260,
+    description: 'Three legs and one wobble.',
+    pos: { left: '24%', bottom: '14%' },
+    size: { w: 18, h: 22 },
+    z: 3,
+    draw: drawStool,
+  },
+  {
+    id: 'side_table',
+    name: 'Side Table',
+    cost: 320,
+    description: 'Cypress, with a coffee ring.',
+    pos: { left: '8%', bottom: '12%' },
+    size: { w: 26, h: 30 },
+    z: 3,
+    draw: drawSideTable,
+  },
+  {
+    id: 'plant',
+    name: 'Potted Fern',
+    cost: 380,
+    description: 'Survives despite your neglect.',
+    pos: { right: '8%', bottom: '14%' },
+    size: { w: 22, h: 30 },
+    z: 3,
+    draw: drawPlant,
+  },
+  {
+    id: 'floor_lantern',
+    name: 'Floor Lantern',
+    cost: 480,
+    description: 'Casts a warm puddle on the boards.',
+    pos: { right: '18%', bottom: '7%' },
+    size: { w: 14, h: 42 },
+    z: 3,
+    draw: drawFloorLantern,
+  },
+  {
+    id: 'rocking_chair',
+    name: 'Rocking Chair',
+    cost: 700,
+    description: 'Best seat in the cabin.',
+    pos: { right: '4%', bottom: '5%' },
+    size: { w: 36, h: 44 },
+    z: 4,
+    draw: drawRockingChair,
+  },
+  {
+    id: 'bookshelf',
+    name: 'Bookshelf',
+    cost: 950,
+    description: 'Five shelves, mostly fishing manuals.',
+    pos: { left: '4%', bottom: '14%' },
+    size: { w: 28, h: 56 },
+    z: 2,
+    draw: drawBookshelf,
+  },
+];
+
+function getFurniture(id) { return FURNITURE.find(f => f.id === id); }
+
+
+// ---------- Pixel-art draw functions for each furniture sprite ----------
+// All use fillRect-only so they sit at the same chunky resolution as the
+// rod sprite and the trophy plaques.
+
+function drawRug(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const W = canvas.width, H = canvas.height;
+  // Rag rug with horizontal stripes; central darker oval; tassels.
+  ctx.fillStyle = '#7a1818'; ctx.fillRect(2, 2, W - 4, H - 4);
+  ctx.fillStyle = '#4a0a08'; ctx.fillRect(2, 2, W - 4, 1);
+  ctx.fillStyle = '#a83828'; ctx.fillRect(2, H - 3, W - 4, 1);
+  // stripes
+  for (let y = 4; y < H - 4; y += 2) {
+    ctx.fillStyle = (y % 4 === 0) ? '#a83828' : '#5a1010';
+    ctx.fillRect(3, y, W - 6, 1);
+  }
+  // border outline
+  ctx.fillStyle = '#1a0805';
+  ctx.fillRect(1, 1, W - 2, 1);
+  ctx.fillRect(1, H - 2, W - 2, 1);
+  ctx.fillRect(1, 1, 1, H - 2);
+  ctx.fillRect(W - 2, 1, 1, H - 2);
+  // tassels left/right
+  ctx.fillStyle = '#3a1808';
+  for (let i = 0; i < 4; i++) {
+    ctx.fillRect(0, 3 + i * 2, 1, 1);
+    ctx.fillRect(W - 1, 3 + i * 2, 1, 1);
+  }
+  // hard cast shadow (bottom edge)
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.fillRect(2, H - 1, W - 4, 1);
+}
+
+function drawBooks(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // 3 books stacked, slightly leaning
+  // bottom book (red, widest)
+  ctx.fillStyle = '#1a0805'; ctx.fillRect(1, 8, 14, 4);
+  ctx.fillStyle = '#8a2010'; ctx.fillRect(2, 9, 12, 2);
+  ctx.fillStyle = '#fde898'; ctx.fillRect(3, 9, 1, 1);  // page edge
+  // middle (green)
+  ctx.fillStyle = '#1a0805'; ctx.fillRect(2, 4, 12, 4);
+  ctx.fillStyle = '#284828'; ctx.fillRect(3, 5, 10, 2);
+  ctx.fillStyle = '#fde898'; ctx.fillRect(4, 5, 1, 1);
+  // top (blue, narrowest, leaning)
+  ctx.fillStyle = '#1a0805'; ctx.fillRect(3, 0, 10, 4);
+  ctx.fillStyle = '#284868'; ctx.fillRect(4, 1, 8, 2);
+  ctx.fillStyle = '#fde898'; ctx.fillRect(5, 1, 1, 1);
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(1, 12, 14, 1);
+}
+
+function drawTackleBox(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const W = canvas.width, H = canvas.height;
+  // Body
+  ctx.fillStyle = '#1a0c05'; ctx.fillRect(1, 4, W - 2, H - 5);
+  ctx.fillStyle = '#5a3818'; ctx.fillRect(2, 5, W - 4, H - 7);
+  ctx.fillStyle = '#8a5828'; ctx.fillRect(2, 5, W - 4, 1); // top highlight
+  ctx.fillStyle = '#3a1c08'; ctx.fillRect(2, H - 3, W - 4, 1); // bottom shadow
+  // lid line
+  ctx.fillStyle = '#1a0c05'; ctx.fillRect(2, 8, W - 4, 1);
+  // latch
+  ctx.fillStyle = '#c89858'; ctx.fillRect(W / 2 - 1, 7, 2, 3);
+  // handle
+  ctx.fillStyle = '#1a0c05';
+  ctx.fillRect(W / 2 - 4, 1, 8, 1);
+  ctx.fillRect(W / 2 - 4, 1, 1, 3);
+  ctx.fillRect(W / 2 + 3, 1, 1, 3);
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.fillRect(1, H - 1, W - 2, 1);
+}
+
+function drawCreel(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const W = canvas.width, H = canvas.height;
+  // Wicker basket - rounded body, woven texture, leather strap
+  ctx.fillStyle = '#1a0c05'; ctx.fillRect(2, 4, W - 4, H - 5);
+  ctx.fillStyle = '#a87838'; ctx.fillRect(3, 5, W - 6, H - 7);
+  // weave pattern
+  ctx.fillStyle = '#6a4818';
+  for (let y = 6; y < H - 3; y += 2)
+    for (let x = 3; x < W - 3; x += 2)
+      ctx.fillRect(x + (y % 4 === 0 ? 0 : 1), y, 1, 1);
+  // lid
+  ctx.fillStyle = '#8a5828'; ctx.fillRect(2, 4, W - 4, 2);
+  ctx.fillStyle = '#1a0c05'; ctx.fillRect(2, 4, W - 4, 1);
+  // strap
+  ctx.fillStyle = '#1a0c05';
+  ctx.fillRect(W / 2 - 5, 0, 10, 5);
+  ctx.fillStyle = '#5a3818';
+  ctx.fillRect(W / 2 - 4, 1, 8, 3);
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.fillRect(1, H - 1, W - 2, 1);
+}
+
+function drawStool(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const W = canvas.width, H = canvas.height;
+  // Round seat
+  ctx.fillStyle = '#1a0c05';
+  ctx.fillRect(1, 1, W - 2, 5);
+  ctx.fillRect(0, 2, W, 3);
+  ctx.fillStyle = '#6a3818';
+  ctx.fillRect(2, 2, W - 4, 3);
+  ctx.fillStyle = '#8a5828';
+  ctx.fillRect(2, 2, W - 4, 1);
+  // 3 legs (front 2 visible, back 1 between)
+  ctx.fillStyle = '#1a0c05';
+  ctx.fillRect(3, 5, 2, H - 5);
+  ctx.fillRect(W - 5, 5, 2, H - 5);
+  ctx.fillRect(W / 2 - 1, 5, 2, H - 6);
+  ctx.fillStyle = '#5a3018';
+  ctx.fillRect(3, 5, 1, H - 6);
+  ctx.fillRect(W - 5, 5, 1, H - 6);
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.fillRect(2, H - 1, W - 4, 1);
+}
+
+function drawSideTable(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const W = canvas.width, H = canvas.height;
+  // Top
+  ctx.fillStyle = '#1a0c05'; ctx.fillRect(0, 0, W, 5);
+  ctx.fillStyle = '#6a3818'; ctx.fillRect(1, 1, W - 2, 3);
+  ctx.fillStyle = '#8a5828'; ctx.fillRect(1, 1, W - 2, 1);
+  // Drawer
+  ctx.fillStyle = '#5a3018'; ctx.fillRect(2, 5, W - 4, 5);
+  ctx.fillStyle = '#1a0c05'; ctx.fillRect(2, 5, W - 4, 1);
+  ctx.fillStyle = '#1a0c05'; ctx.fillRect(2, 9, W - 4, 1);
+  ctx.fillStyle = '#c89858'; ctx.fillRect(W / 2 - 1, 7, 2, 1); // brass handle
+  // Front legs
+  ctx.fillStyle = '#1a0c05';
+  ctx.fillRect(2, 10, 3, H - 10);
+  ctx.fillRect(W - 5, 10, 3, H - 10);
+  ctx.fillStyle = '#5a3018';
+  ctx.fillRect(2, 10, 1, H - 11);
+  ctx.fillRect(W - 5, 10, 1, H - 11);
+  // Cup on the table
+  ctx.fillStyle = '#fde898'; ctx.fillRect(W / 2 - 2, -2 + 0, 4, 0); // cleared
+  ctx.fillStyle = '#3a2810'; ctx.fillRect(W / 2 - 2, 0, 4, 1);
+  ctx.fillStyle = '#fde898'; ctx.fillRect(W / 2 - 2, 0, 4, 1);
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.fillRect(1, H - 1, W - 2, 1);
+}
+
+function drawPlant(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const W = canvas.width, H = canvas.height;
+  // Pot (bottom 12px)
+  const potTop = H - 12;
+  ctx.fillStyle = '#1a0c05'; ctx.fillRect(3, potTop, W - 6, 12);
+  ctx.fillStyle = '#a85820'; ctx.fillRect(4, potTop + 1, W - 8, 10);
+  ctx.fillStyle = '#c87838'; ctx.fillRect(4, potTop + 1, W - 8, 1);
+  ctx.fillStyle = '#7a3818'; ctx.fillRect(4, potTop + 10, W - 8, 1);
+  // Soil
+  ctx.fillStyle = '#3a1808'; ctx.fillRect(5, potTop, W - 10, 1);
+  // Foliage above pot
+  ctx.fillStyle = '#284828';
+  // a chunky leaf cluster
+  ctx.fillRect(3, potTop - 6, W - 6, 6);
+  ctx.fillStyle = '#386838';
+  ctx.fillRect(4, potTop - 7, W - 8, 1);
+  ctx.fillRect(2, potTop - 4, 2, 4);
+  ctx.fillRect(W - 4, potTop - 4, 2, 4);
+  ctx.fillStyle = '#284828';
+  ctx.fillRect(4, potTop - 9, W - 8, 2);
+  ctx.fillStyle = '#386838';
+  ctx.fillRect(6, potTop - 11, W - 12, 2);
+  // sprouts
+  ctx.fillStyle = '#284828';
+  ctx.fillRect(W / 2 - 1, potTop - 13, 2, 2);
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.fillRect(2, H - 1, W - 4, 1);
+}
+
+function drawFloorLantern(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const W = canvas.width, H = canvas.height;
+  // Stand pole
+  ctx.fillStyle = '#1a0c05';
+  ctx.fillRect(W / 2 - 1, 12, 2, H - 16);
+  ctx.fillStyle = '#3a1808';
+  ctx.fillRect(W / 2, 12, 1, H - 16);
+  // Base
+  ctx.fillStyle = '#1a0c05';
+  ctx.fillRect(W / 2 - 4, H - 4, 8, 4);
+  ctx.fillStyle = '#5a3018';
+  ctx.fillRect(W / 2 - 3, H - 4, 6, 1);
+  // Lantern body (top)
+  ctx.fillStyle = '#1a0c05';
+  ctx.fillRect(1, 0, W - 2, 12);
+  ctx.fillStyle = '#3a2008';
+  ctx.fillRect(2, 1, W - 4, 10);
+  // Glass panel
+  ctx.fillStyle = '#fde898';
+  ctx.fillRect(3, 3, W - 6, 6);
+  ctx.fillStyle = '#ffb84a';
+  ctx.fillRect(4, 4, W - 8, 4);
+  // Frame divider
+  ctx.fillStyle = '#1a0c05';
+  ctx.fillRect(W / 2 - 1, 3, 1, 6);
+  ctx.fillRect(2, 6, W - 4, 1);
+  // Top cap
+  ctx.fillStyle = '#1a0c05';
+  ctx.fillRect(W / 2 - 1, -1, 2, 1);
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.fillRect(W / 2 - 4, H - 1, 8, 1);
+}
+
+function drawRockingChair(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const W = canvas.width, H = canvas.height;
+  // Backrest (tall, slightly tilted - we just draw it vertical)
+  ctx.fillStyle = '#1a0c05';
+  ctx.fillRect(4, 0, 4, H - 12);
+  ctx.fillRect(W - 8, 0, 4, H - 12);
+  ctx.fillStyle = '#3a1c08';
+  ctx.fillRect(5, 1, 2, H - 14);
+  ctx.fillRect(W - 7, 1, 2, H - 14);
+  // back slats
+  for (let x = 9; x < W - 9; x += 4) {
+    ctx.fillStyle = '#1a0c05';
+    ctx.fillRect(x, 4, 2, H - 18);
+    ctx.fillStyle = '#3a1c08';
+    ctx.fillRect(x, 4, 1, H - 18);
+  }
+  // Top crest
+  ctx.fillStyle = '#1a0c05';
+  ctx.fillRect(2, 0, W - 4, 4);
+  ctx.fillStyle = '#5a3018';
+  ctx.fillRect(3, 1, W - 6, 2);
+  // Seat
+  ctx.fillStyle = '#1a0c05';
+  ctx.fillRect(0, H - 16, W, 6);
+  ctx.fillStyle = '#5a3018';
+  ctx.fillRect(1, H - 15, W - 2, 4);
+  ctx.fillStyle = '#7a4220';
+  ctx.fillRect(1, H - 15, W - 2, 1);
+  // Front legs
+  ctx.fillStyle = '#1a0c05';
+  ctx.fillRect(2, H - 10, 3, 6);
+  ctx.fillRect(W - 5, H - 10, 3, 6);
+  // Rockers (curved bottom)
+  ctx.fillStyle = '#1a0c05';
+  ctx.fillRect(0, H - 4, W, 2);
+  ctx.fillRect(1, H - 5, W - 2, 1);
+  ctx.fillStyle = '#5a3018';
+  ctx.fillRect(2, H - 4, W - 4, 1);
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(0, H - 1, W, 1);
+}
+
+function drawBookshelf(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const W = canvas.width, H = canvas.height;
+  // Outer frame
+  ctx.fillStyle = '#1a0c05';
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#5a3018';
+  ctx.fillRect(1, 1, W - 2, H - 2);
+  ctx.fillStyle = '#8a5828';
+  ctx.fillRect(1, 1, W - 2, 1);
+  ctx.fillStyle = '#3a1c08';
+  ctx.fillRect(1, H - 2, W - 2, 1);
+  // 4 shelves (5 rows of books)
+  const shelfYs = [];
+  const rows = 5;
+  for (let r = 0; r < rows; r++) {
+    const y = 2 + Math.floor((r * (H - 4)) / rows);
+    shelfYs.push(y);
+  }
+  // book colors per row
+  const bookColors = ['#8a2010', '#284828', '#284868', '#7a4818', '#5a2a6a'];
+  for (let r = 0; r < rows; r++) {
+    const yTop = shelfYs[r] + 1;
+    const yBot = (r + 1 < rows ? shelfYs[r + 1] : H - 2);
+    // shelf board
+    ctx.fillStyle = '#1a0c05';
+    ctx.fillRect(2, yBot - 1, W - 4, 1);
+    // books
+    for (let x = 3; x < W - 3; x += 3) {
+      ctx.fillStyle = bookColors[(r + x) % bookColors.length];
+      const bookH = (yBot - 1) - yTop - 1;
+      ctx.fillRect(x, yTop, 2, bookH);
+      ctx.fillStyle = '#1a0c05';
+      ctx.fillRect(x, yTop, 1, bookH);
+      ctx.fillStyle = '#fde898';
+      ctx.fillRect(x, yTop + 1, 1, 1);
+    }
+  }
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.fillRect(1, H - 1, W - 2, 1);
+}
+
+
+// ---------- Render owned furniture into the cabin-room ----------
+let ownedFurniture = [];
+
+function renderCabinFurniture() {
+  const room = document.getElementById('cabin-room');
+  if (!room) return;
+  // Clear any existing furniture canvases first.
+  room.querySelectorAll('.cabin-furniture').forEach(el => el.remove());
+  // Preview mode: show every item so the user can see the fully decorated room.
+  const showAll = cabinPreviewMode;
+  FURNITURE.forEach(item => {
+    if (!showAll && !ownedFurniture.includes(item.id)) return;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'cabin-furniture';
+    if (item.pos.left)   wrapper.style.left = item.pos.left;
+    if (item.pos.right)  wrapper.style.right = item.pos.right;
+    if (item.pos.bottom) wrapper.style.bottom = item.pos.bottom;
+    if (item.pos.top)    wrapper.style.top = item.pos.top;
+    if (item.pos.transform) wrapper.style.transform = item.pos.transform;
+    wrapper.style.width  = item.size.w + 'px';
+    wrapper.style.height = item.size.h + 'px';
+    wrapper.style.zIndex = item.z;
+    const cv = document.createElement('canvas');
+    cv.width = item.size.w; cv.height = item.size.h;
+    cv.style.width  = item.size.w + 'px';
+    cv.style.height = item.size.h + 'px';
+    wrapper.appendChild(cv);
+    item.draw(cv);
+    room.appendChild(wrapper);
+  });
+}
+
 // Renders one pixel-art trophy plaque onto a canvas. fillRect only, no
 // smoothing, no gradients - same chunky-pixel resolution as the cabin
 // background art so the plaques live in the same world.
@@ -4001,26 +4581,8 @@ function drawPlaque(canvas, fish) {
   ctx.fillStyle = '#5a3018';
   ctx.fillRect(2, npY + 6, W - 4, 1);
 
-  // Name text - small to fit the narrower plaque. Long names auto-shrink.
-  if (fish) {
-    ctx.fillStyle = '#fde898';
-    let nameSize = 6;
-    ctx.font = `bold ${nameSize}px "Baloo 2", cursive`;
-    let text = fish.name.toUpperCase();
-    while (ctx.measureText(text).width > W - 5 && nameSize > 4) {
-      nameSize -= 1;
-      ctx.font = `bold ${nameSize}px "Baloo 2", cursive`;
-    }
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(text, W / 2, npY + 4);
-  } else {
-    ctx.fillStyle = 'rgba(255,232,160,0.32)';
-    ctx.font = 'bold 6px "Baloo 2", cursive';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('LOCKED', W / 2, npY + 4);
-  }
+  // Species name is rendered as an HTML overlay (not on the canvas) so it
+  // stays crisp at small sizes. The canvas just paints the engraved groove.
 }
 
 function renderCabin() {
@@ -4055,12 +4617,17 @@ function renderCabin() {
     plaque.appendChild(cv);
     const fish = caught[i] ? caught[i].fish : null;
     drawPlaque(cv, fish);
+    const nameEl = document.createElement('div');
+    nameEl.className = 'cabin-mount-name-overlay' + (fish ? '' : ' locked');
+    nameEl.textContent = fish ? fish.name : 'Locked';
+    plaque.appendChild(nameEl);
     if (caught[i]) {
       const { entry } = caught[i];
       plaque.addEventListener('click', () => showMountPopup(fish, entry));
     }
     mount.appendChild(plaque);
   }
+  renderCabinFurniture();
 }
 
 function showMountPopup(fish, entry) {
