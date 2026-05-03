@@ -1444,7 +1444,7 @@ perspective-origin: 50% 55%;
    pixel art and don't read as web UI overlaid on a painted scene. === */
 .cabin-mount {
 position: absolute;
-width: 64px; height: 56px;
+width: 44px; height: 38px;
 z-index: 3;
 }
 .cabin-mount-plaque {
@@ -1466,28 +1466,14 @@ image-rendering: pixelated;
 /* Mount slot positions on the bg-cabin.png artwork.
    The image has narrow dark-wood borders: top ~7%, sides ~7-8%, bottom ~15%.
    Plaques are 50x44 = roughly 11-12% of a square room. */
-/* Layout: 4 plaques flanking the window. Each rotates around Y to match
-   the perspective angle of the receding side walls. */
-.cabin-mount[data-mount="0"] {
-  left: 7%; top: 25%;
-  transform: rotateY(30deg);
-  transform-origin: right center;
-}
-.cabin-mount[data-mount="1"] {
-  right: 7%; top: 25%;
-  transform: rotateY(-30deg);
-  transform-origin: left center;
-}
-.cabin-mount[data-mount="2"] {
-  left: 7%; top: 48%;
-  transform: rotateY(30deg);
-  transform-origin: right center;
-}
-.cabin-mount[data-mount="3"] {
-  right: 7%; top: 48%;
-  transform: rotateY(-30deg);
-  transform-origin: left center;
-}
+/* Layout: 4 plaques on the FLAT back wall, flanking the window. The
+   side-wall corners (outer ~20%) are off-limits because plaques there
+   straddle two walls and read as floating. No rotation - back wall is
+   parallel to the camera. */
+.cabin-mount[data-mount="0"] { left: 21%;  top: 33%; }
+.cabin-mount[data-mount="1"] { right: 21%; top: 33%; }
+.cabin-mount[data-mount="2"] { left: 21%;  top: 55%; }
+.cabin-mount[data-mount="3"] { right: 21%; top: 55%; }
 
 /* Decor placeholders (Phase 3 will toggle visible) */
 .cabin-slot {
@@ -3922,21 +3908,21 @@ function closeCabin() {
   }
 }
 
-// Renders one pixel-art trophy plaque onto a canvas. Drawing technique mirrors
-// the rod sprite (fillRect only, no smoothing, no gradients) so the plaques sit
-// in the same chunky-pixel resolution as the cabin background art.
+// Renders one pixel-art trophy plaque onto a canvas. fillRect only, no
+// smoothing, no gradients - same chunky-pixel resolution as the cabin
+// background art so the plaques live in the same world.
 function drawPlaque(canvas, fish) {
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Canvas is 64x56; the plaque sits at (0,0)-(60,52); a hard cast shadow is
-  // painted in the lower-right margin so the plaque looks raised off the wall.
-  const W = 60, H = 52;
+  // Canvas is 44x38; plaque body sits at (0,0)-(41,35); the bottom-right
+  // 3x3 margin holds the cast shadow so the plaque looks raised off the wall.
+  const W = 41, H = 35;
 
   // Cast shadow first (behind everything)
-  ctx.fillStyle = 'rgba(0,0,0,0.55)';
-  ctx.fillRect(3, 4, W, H);
+  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.fillRect(3, 3, W, H);
 
   const filled = !!fish;
   const baseDark   = filled ? '#3a1808' : '#2a1408';
@@ -3944,62 +3930,47 @@ function drawPlaque(canvas, fish) {
   const baseLight  = filled ? '#8a4a20' : '#5a3018';
   const grainDark  = filled ? '#3a1808' : '#2a1408';
 
-  // 1px outer dark border
+  // Outer dark border
   ctx.fillStyle = baseDark;
   ctx.fillRect(0, 0, W, H);
-
   // Wood plank fill
   ctx.fillStyle = baseMid;
   ctx.fillRect(1, 1, W - 2, H - 2);
-
-  // Top highlight band (1px)
+  // Top highlight
   ctx.fillStyle = baseLight;
   ctx.fillRect(1, 1, W - 2, 1);
-
-  // Bottom darker band (1px) - separates plank from nameplate
+  // Darker band above nameplate
   ctx.fillStyle = baseDark;
-  ctx.fillRect(1, H - 14, W - 2, 1);
-
-  // Wood grain horizontal lines (irregular, hand-placed)
+  ctx.fillRect(1, H - 10, W - 2, 1);
+  // A couple of grain seams + speckle pixels
   ctx.fillStyle = grainDark;
-  ctx.fillRect(1, 7,  W - 2, 1);
-  ctx.fillRect(1, 18, W - 2, 1);
-  ctx.fillRect(1, 30, W - 2, 1);
+  ctx.fillRect(1, 6, W - 2, 1);
+  ctx.fillRect(1, 16, W - 2, 1);
+  ctx.fillRect(7, 11, 1, 1);
+  ctx.fillRect(28, 19, 1, 1);
 
-  // A few darker specks for knot/grain detail
-  ctx.fillRect(8,  12, 1, 1);
-  ctx.fillRect(20, 22, 1, 1);
-  ctx.fillRect(46, 14, 1, 1);
-  ctx.fillRect(36, 26, 1, 1);
-
-  // Brass nails at top corners
+  // Brass nails at top corners (3x3 with a 1px highlight)
   if (filled) {
     ctx.fillStyle = '#1a0c05';
-    ctx.fillRect(3, 3, 5, 5);
-    ctx.fillRect(W - 8, 3, 5, 5);
+    ctx.fillRect(2, 2, 4, 4);
+    ctx.fillRect(W - 6, 2, 4, 4);
     ctx.fillStyle = '#c89858';
-    ctx.fillRect(4, 4, 3, 3);
-    ctx.fillRect(W - 7, 4, 3, 3);
+    ctx.fillRect(3, 3, 2, 2);
+    ctx.fillRect(W - 5, 3, 2, 2);
     ctx.fillStyle = '#fde898';
-    ctx.fillRect(4, 4, 1, 1);
-    ctx.fillRect(W - 7, 4, 1, 1);
+    ctx.fillRect(3, 3, 1, 1);
+    ctx.fillRect(W - 5, 3, 1, 1);
   } else {
-    // dim nail dots
     ctx.fillStyle = '#1a0c05';
-    ctx.fillRect(4, 4, 3, 3);
-    ctx.fillRect(W - 7, 4, 3, 3);
-    ctx.fillStyle = '#3a1c0a';
-    ctx.fillRect(5, 5, 1, 1);
-    ctx.fillRect(W - 6, 5, 1, 1);
+    ctx.fillRect(3, 3, 2, 2);
+    ctx.fillRect(W - 5, 3, 2, 2);
   }
 
-  // Fish art (centered horizontally, below the nails). FISH_ART rows are
-  // 12 tall, 24 wide; rendered at 1.4x.
+  // Fish art - 24x12 source rendered at 1.0x (no scale). Centered horizontally
+  // between the nails, vertically above the nameplate.
   if (fish && FISH_ART[fish.id]) {
-    const scale = 1.4;
-    const fishW = Math.floor(24 * scale);
-    const fishX = Math.floor((W - fishW) / 2);
-    const fishY = 11;
+    const fishX = Math.floor((W - 24) / 2);
+    const fishY = 9;
     const art = FISH_ART[fish.id];
     for (let y = 0; y < art.length; y++) {
       const row = art[y];
@@ -4008,41 +3979,47 @@ function drawPlaque(canvas, fish) {
         const color = PALETTE[ch];
         if (color) {
           ctx.fillStyle = color;
-          ctx.fillRect(fishX + Math.floor(x * scale), fishY + Math.floor(y * scale), Math.ceil(scale), Math.ceil(scale));
+          ctx.fillRect(fishX + x, fishY + y, 1, 1);
         }
       }
     }
   } else {
-    // Empty plaque "?" mark, drawn in pixels (no font smoothing).
-    ctx.fillStyle = 'rgba(255,232,160,0.22)';
-    ctx.font = 'bold 16px "Baloo 2", cursive';
+    // Empty plaque "?" mark
+    ctx.fillStyle = 'rgba(255,232,160,0.25)';
+    ctx.font = 'bold 12px "Baloo 2", cursive';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('?', W / 2, 18);
+    ctx.fillText('?', W / 2, 14);
   }
 
-  // Nameplate band - engraved into the lower portion of the plaque.
-  const npY = H - 13;
+  // Nameplate band (engraved, 9px tall at the bottom)
+  const npY = H - 9;
   ctx.fillStyle = '#1a0805';
-  ctx.fillRect(2, npY, W - 4, 11);
+  ctx.fillRect(2, npY, W - 4, 7);
   ctx.fillStyle = '#3a1c08';
-  ctx.fillRect(2, npY, W - 4, 1);          // top groove
+  ctx.fillRect(2, npY, W - 4, 1);
   ctx.fillStyle = '#5a3018';
-  ctx.fillRect(2, npY + 10, W - 4, 1);     // bottom groove highlight
+  ctx.fillRect(2, npY + 6, W - 4, 1);
 
-  // Name text
+  // Name text - small to fit the narrower plaque. Long names auto-shrink.
   if (fish) {
     ctx.fillStyle = '#fde898';
-    ctx.font = 'bold 7px "Baloo 2", cursive';
+    let nameSize = 6;
+    ctx.font = `bold ${nameSize}px "Baloo 2", cursive`;
+    let text = fish.name.toUpperCase();
+    while (ctx.measureText(text).width > W - 5 && nameSize > 4) {
+      nameSize -= 1;
+      ctx.font = `bold ${nameSize}px "Baloo 2", cursive`;
+    }
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(fish.name.toUpperCase(), W / 2, npY + 6);
+    ctx.fillText(text, W / 2, npY + 4);
   } else {
     ctx.fillStyle = 'rgba(255,232,160,0.32)';
-    ctx.font = 'bold 7px "Baloo 2", cursive';
+    ctx.font = 'bold 6px "Baloo 2", cursive';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('LOCKED', W / 2, npY + 6);
+    ctx.fillText('LOCKED', W / 2, npY + 4);
   }
 }
 
@@ -4073,8 +4050,8 @@ function renderCabin() {
     const plaque = document.createElement('div');
     plaque.className = 'cabin-mount-plaque';
     const cv = document.createElement('canvas');
-    cv.width = 64; cv.height = 56;
-    cv.style.width = '64px'; cv.style.height = '56px';
+    cv.width = 44; cv.height = 38;
+    cv.style.width = '44px'; cv.style.height = '38px';
     plaque.appendChild(cv);
     const fish = caught[i] ? caught[i].fish : null;
     drawPlaque(cv, fish);
