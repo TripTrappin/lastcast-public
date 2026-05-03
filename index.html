@@ -1791,7 +1791,21 @@ font-size: 12px; font-weight: 600;
 letter-spacing: 1px;
 color: var(--text-dim);
 text-transform: uppercase;
+margin-bottom: 18px;
 }
+.pause-restart {
+height: 36px; padding: 0 22px; border-radius: 999px; border: none;
+background: linear-gradient(135deg, #ff7043, #d32f2f);
+color: white;
+font-family: 'Baloo 2', cursive;
+font-size: 12px; font-weight: 800;
+letter-spacing: 1.4px;
+text-transform: uppercase;
+cursor: pointer;
+transition: transform 0.12s, filter 0.12s;
+}
+.pause-restart:active { transform: scale(0.95); }
+.pause-restart:hover  { filter: brightness(1.05); }
 
 </style>
 </head>
@@ -2036,9 +2050,10 @@ text-transform: uppercase;
 
   <!-- Pause overlay -->
   <div id="pause-overlay" onclick="togglePause()">
-    <div class="pause-card">
+    <div class="pause-card" onclick="event.stopPropagation()">
       <div class="pause-title">Paused</div>
-      <div class="pause-sub">Tap to resume</div>
+      <div class="pause-sub">Tap outside to resume</div>
+      <button class="pause-restart" onclick="restartFromPause(event)">Restart Game</button>
     </div>
   </div>
 
@@ -4222,6 +4237,14 @@ function hidePauseOverlay() {
   if (btn) btn.classList.remove('on');
   const overlay = document.getElementById('pause-overlay');
   if (overlay) overlay.classList.remove('show');
+}
+
+function restartFromPause(e) {
+  if (e) e.stopPropagation();
+  if (!confirm('Restart from Day 1? Your current run will be wiped.')) return;
+  // restartFromGameOver does the full reset + hides the pause overlay
+  // + sends you back to the title screen.
+  restartFromGameOver();
 }
 
 function flashDayBanner() {
