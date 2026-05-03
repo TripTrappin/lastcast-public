@@ -1433,17 +1433,21 @@ overflow: hidden;
 border: 2px solid #1a0d05;
 box-shadow: 0 4px 16px rgba(0,0,0,0.5);
 background: #1a0c05 url('bg-cabin.png') center / cover no-repeat;
+/* The room artwork has strong perspective; we set the same vanishing point
+   here so plaques on the side walls can rotate to match. */
+perspective: 1000px;
+perspective-origin: 50% 55%;
 }
 
 /* === Trophy mounts: small enough to fit the dark wood borders === */
 .cabin-mount {
 position: absolute;
-width: 50px; height: 44px;
+width: 60px; height: 52px;
 display: flex; flex-direction: column; align-items: center; justify-content: center;
 z-index: 3;
 }
 .cabin-mount-plaque {
-width: 48px; height: 42px;
+width: 58px; height: 50px;
 background:
   linear-gradient(180deg,
     transparent 0%, transparent 68%,
@@ -1502,11 +1506,40 @@ line-height: 1;
 /* Mount slot positions on the bg-cabin.png artwork.
    The image has narrow dark-wood borders: top ~7%, sides ~7-8%, bottom ~15%.
    Plaques are 50x44 = roughly 11-12% of a square room. */
-.cabin-mount[data-mount="0"] { left: 18%;  top: 1%; }   /* top-left of upper wall */
-.cabin-mount[data-mount="1"] { right: 18%; top: 1%; }   /* top-right of upper wall */
-.cabin-mount[data-mount="2"] { left: 1%;   top: 38%; }  /* mid-left, above lantern */
-.cabin-mount[data-mount="3"] { right: 1%;  top: 38%; }  /* mid-right side */
-.cabin-mount[data-mount="4"] { right: 18%; bottom: 1%; } /* bottom sill, right of lantern */
+/* Layout matches the new full-room artwork. Slots 0-3 sit on the
+   *receding side walls* (outer 8-15% of width) and rotate around Y to
+   match the perspective angle of those walls. Slot 4 sits flat on the
+   back wall below the window. */
+.cabin-mount[data-mount="0"] {
+  left: 7%; top: 27%;
+  transform: rotateY(30deg);
+  transform-origin: right center;
+}
+.cabin-mount[data-mount="1"] {
+  right: 7%; top: 27%;
+  transform: rotateY(-30deg);
+  transform-origin: left center;
+}
+.cabin-mount[data-mount="2"] {
+  left: 7%; top: 50%;
+  transform: rotateY(30deg);
+  transform-origin: right center;
+}
+.cabin-mount[data-mount="3"] {
+  right: 7%; top: 50%;
+  transform: rotateY(-30deg);
+  transform-origin: left center;
+}
+.cabin-mount[data-mount="4"] {
+  left: 50%; top: 67%;
+  transform: translateX(-50%);
+}
+
+/* Tap-feedback: keep the press-scale even with the rotation in place. */
+.cabin-mount[data-mount="0"] .cabin-mount-plaque:active,
+.cabin-mount[data-mount="2"] .cabin-mount-plaque:active { transform: scale(0.95); }
+.cabin-mount[data-mount="1"] .cabin-mount-plaque:active,
+.cabin-mount[data-mount="3"] .cabin-mount-plaque:active { transform: scale(0.95); }
 
 /* Decor placeholders (Phase 3 will toggle visible) */
 .cabin-slot {
@@ -3936,14 +3969,14 @@ function renderCabin() {
       const { fish, entry } = caught[i];
       plaque.classList.add('filled');
       const cv = document.createElement('canvas');
-      cv.width = 24 * 1.4; cv.height = 12 * 1.4;
-      cv.style.width = '34px'; cv.style.height = '17px';
+      cv.width = 24 * 1.7; cv.height = 12 * 1.7;
+      cv.style.width = '41px'; cv.style.height = '20px';
       plaque.appendChild(cv);
       const nameplate = document.createElement('div');
       nameplate.className = 'cabin-mount-nameplate';
       nameplate.textContent = fish.name;
       plaque.appendChild(nameplate);
-      if (FISH_ART[fish.id]) renderPixelArt(cv, FISH_ART[fish.id], 1.4);
+      if (FISH_ART[fish.id]) renderPixelArt(cv, FISH_ART[fish.id], 1.7);
       plaque.addEventListener('click', () => showMountPopup(fish, entry));
     } else {
       plaque.classList.add('empty');
