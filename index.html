@@ -1566,6 +1566,23 @@ color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase;
 }
 .cabin-progress .progress-num { color: var(--gold); font-weight: 800; }
 
+.cabin-preview-btn {
+height: 26px; padding: 0 12px; border-radius: 999px;
+background: rgba(20, 10, 18, 0.55);
+border: 1px solid rgba(255,232,212,0.25);
+color: var(--text-dim);
+font-family: 'Baloo 2', cursive; font-size: 10px; font-weight: 700;
+letter-spacing: 1px; text-transform: uppercase;
+cursor: pointer;
+transition: transform 0.15s, background 0.15s, color 0.15s;
+}
+.cabin-preview-btn:active { transform: scale(0.94); }
+.cabin-preview-btn.on {
+background: rgba(232, 132, 58, 0.85);
+color: var(--bg);
+border-color: rgba(232, 132, 58, 0.95);
+}
+
 /* === Mount detail popup === */
 #mount-popup {
 position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -1800,6 +1817,7 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
       <div class="cabin-progress">
         Trophies: <span class="progress-num" id="cabin-trophy-count">0</span> / 5
       </div>
+      <button class="cabin-preview-btn" id="cabin-preview-btn" onclick="toggleCabinPreview()">Preview</button>
     </div>
   </div>
 
@@ -3920,6 +3938,15 @@ function equipRod(id) {
 // Phase 3 will add buyable decor that fills the empty slots.
 // ============================================================
 let cabinCameFromTitle = false;
+let cabinPreviewMode = false;  // when true, all 5 legendaries render as-if caught at max size
+
+function toggleCabinPreview() {
+  cabinPreviewMode = !cabinPreviewMode;
+  const btn = document.getElementById('cabin-preview-btn');
+  if (btn) btn.classList.toggle('on', cabinPreviewMode);
+  sfxButtonClick();
+  renderCabin();
+}
 
 function openCabin() {
   sfxButtonClick();
@@ -3950,14 +3977,24 @@ function closeCabin() {
 
 function renderCabin() {
   // Auto-fill up to 5 mount slots from the player's legendary catches,
-  // ordered by personal best size descending.
+  // ordered by personal best size descending. In preview mode, all 5
+  // legendaries are shown at their max size so you can see the filled
+  // wall before actually catching them.
   const legendaries = FISH.filter(f => f.rarity === 'legendary');
-  const caught = legendaries
-    .map(f => ({ fish: f, entry: collection[f.id] }))
-    .filter(x => x.entry && x.entry.count > 0)
-    .sort((a, b) => b.entry.personalBest - a.entry.personalBest);
+  let caught;
+  if (cabinPreviewMode) {
+    caught = legendaries.map(f => ({
+      fish: f,
+      entry: { count: 1, personalBest: f.maxSz },
+    }));
+  } else {
+    caught = legendaries
+      .map(f => ({ fish: f, entry: collection[f.id] }))
+      .filter(x => x.entry && x.entry.count > 0)
+      .sort((a, b) => b.entry.personalBest - a.entry.personalBest);
+  }
 
-  $('cabin-trophy-count').textContent = caught.length;
+  $('cabin-trophy-count').textContent = cabinPreviewMode ? '5' : caught.length;
 
   for (let i = 0; i < 5; i++) {
     const mount = document.querySelector(`.cabin-mount[data-mount="${i}"]`);
