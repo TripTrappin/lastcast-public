@@ -3911,7 +3911,7 @@ const POWERUPS = [
     id: 'time_stretcher',
     name: 'Time Stretcher',
     cost: 400,
-    description: "When less than 2 hours remain on today's clock with quota unmet, buys you another 2 hours.",
+    description: "When less than 2 hours remain on today's clock with quota unmet, buys you another 12 hours.",
   },
   {
     id: 'card_counter',
@@ -4466,14 +4466,14 @@ function tickGambling() {
   itch = Math.min(ITCH_MAX, itch + itchRate);
 
   // Time Stretcher: when less than 2 in-game hours remain with the quota
-  // unmet, push the clock back another 2 in-game hours.
+  // unmet, push the clock back HALF a day (12 in-game hours).
   const TS_TRIGGER_MS = (2/24) * DAY_DURATION_MS;
-  const TS_GIVEN_MS   = (2/24) * DAY_DURATION_MS;
+  const TS_GIVEN_MS   = (12/24) * DAY_DURATION_MS;
   const remaining = DAY_DURATION_MS - dayElapsedMs;
   if (remaining > 0 && remaining <= TS_TRIGGER_MS && dayPaid < currentQuota() && powerupCharges('time_stretcher') > 0) {
     if (consumePowerup('time_stretcher')) {
       dayElapsedMs = Math.max(0, dayElapsedMs - TS_GIVEN_MS);
-      showPowerupToast('⏱️', "Time stretched. +2 hours.");
+      showPowerupToast('⏱️', "Time stretched. +12 hours.");
     }
   }
   dayElapsedMs += 1000;
@@ -4488,6 +4488,10 @@ function gameIsHalted() {
   if (!hasCast) return true;   // hold the day timer until the first cast
   const title = document.getElementById('title-screen');
   if (title && title.classList.contains('active')) return true;
+  // Shopping is a "time out" - freeze the day clock and itch growth so
+  // the player isn't bleeding seconds while they shop powerups.
+  const shop = document.getElementById('shop-screen');
+  if (shop && shop.classList.contains('active')) return true;
   if (gameOverShown || winShown) return true;
   return false;
 }
