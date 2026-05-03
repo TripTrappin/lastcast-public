@@ -1396,237 +1396,95 @@ background: rgba(232, 132, 58, 0.92); color: var(--bg);
 font-family: 'Baloo 2', cursive; font-size: 11px; font-weight: 700;
 letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
 }
+
+/* Cabin room: square, image-driven. The artwork bakes in walls, window,
+   sunset, sill, and lantern - we just overlay trophy plaques on top. */
 .cabin-room {
-flex: 1; position: relative; margin: 0 16px 16px;
-border-radius: 12px; overflow: hidden;
+position: relative;
+width: calc(100% - 32px);
+margin: 0 16px 16px;
+aspect-ratio: 1 / 1;
+max-height: 70vh;
+align-self: center;
+border-radius: 12px;
+overflow: hidden;
 border: 2px solid #1a0d05;
 box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+background: #1a0c05 url('bg-cabin.png') center / cover no-repeat;
 }
 
-/* Soft warm wood wall - layered gradients + subtle grain noise instead of stripes */
-.cabin-wall {
-position: absolute; left: 0; right: 0; top: 0; height: 60%;
-background:
-  /* faint vertical grain */
-  repeating-linear-gradient(90deg,
-    rgba(0,0,0,0.0) 0px, rgba(0,0,0,0.0) 9px,
-    rgba(0,0,0,0.06) 9px, rgba(0,0,0,0.06) 10px),
-  /* warm gradient: lit at top from window glow, darker in upper corners */
-  radial-gradient(ellipse 90% 60% at 50% 80%,
-    #6a3818 0%, #4a2410 60%, #2a1408 100%);
-}
-/* Two faint vertical support beams flanking the window */
-.cabin-wall::before, .cabin-wall::after {
-content: ''; position: absolute; top: 0; bottom: 0; width: 12px;
-background: linear-gradient(90deg, rgba(0,0,0,0.35), rgba(0,0,0,0) 50%, rgba(0,0,0,0.35));
-}
-.cabin-wall::before { left: 18%; }
-.cabin-wall::after  { right: 18%; }
-
-/* Worn wood-plank floor with perspective fade and grain noise */
-.cabin-floor {
-position: absolute; left: 0; right: 0; bottom: 0; height: 40%;
-background:
-  /* plank seams - thinner, less obtrusive */
-  repeating-linear-gradient(90deg,
-    rgba(0,0,0,0) 0px, rgba(0,0,0,0) 60px,
-    rgba(0,0,0,0.45) 60px, rgba(0,0,0,0.45) 61px),
-  /* faint grain */
-  repeating-linear-gradient(180deg,
-    rgba(0,0,0,0) 0px, rgba(0,0,0,0) 6px,
-    rgba(0,0,0,0.05) 6px, rgba(0,0,0,0.05) 7px),
-  /* warm wood gradient: lighter near front, darker at the back wall edge */
-  linear-gradient(180deg, #4a2812 0%, #6a3a1a 30%, #2a1408 100%);
-}
-/* Soft drop-shadow line where wall meets floor */
-.cabin-floor::before {
-content: ''; position: absolute; left: 0; right: 0; top: 0; height: 14px;
-background: linear-gradient(180deg, rgba(0,0,0,0.55), transparent);
-pointer-events: none;
-}
-
-/* Window - the hero of the room: bigger, framed, with a real sill */
-.cabin-window {
-position: absolute; left: 24%; right: 24%; top: 8%; height: 44%;
-background-image: url('bg-title.png');
-background-size: 200% auto;
-background-position: 50% 0%;
-border: 6px solid #2a1808;
-border-radius: 4px;
-box-shadow:
-  inset 0 0 18px rgba(0,0,0,0.6),
-  0 4px 8px rgba(0,0,0,0.6);
-}
-/* Mullions (cross + horizontal divider) */
-.cabin-window::before, .cabin-window::after {
-content: ''; position: absolute; background: #2a1808;
-}
-.cabin-window::before { left: 50%; top: 0; bottom: 0; width: 5px; transform: translateX(-50%); }
-.cabin-window::after  { top: 50%; left: 0; right: 0; height: 5px; transform: translateY(-50%); }
-
-/* Window sill below the window */
-.cabin-sill {
-position: absolute; left: 18%; right: 18%; top: 50%; height: 12px;
-background: linear-gradient(180deg, #6a3818, #3a1c08);
-border: 2px solid #1a0d05;
-border-radius: 2px;
-box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-z-index: 2;
-}
-
-/* Curtains tied at the sides of the window */
-.cabin-curtain {
-position: absolute; top: 6%; height: 46%; width: 14%;
-background:
-  repeating-linear-gradient(180deg,
-    rgba(255,200,140,0.06) 0px, rgba(255,200,140,0.06) 4px,
-    rgba(0,0,0,0.18) 4px, rgba(0,0,0,0.18) 5px),
-  linear-gradient(180deg, #6a1818, #3a0808 70%, #2a0404);
-border: 2px solid #1a0d05; border-radius: 0 0 60% 0 / 0 0 30% 0;
-box-shadow: inset 2px 0 4px rgba(0,0,0,0.5);
-z-index: 1;
-}
-.cabin-curtain.left  { left: 12%;  border-radius: 0 0 0 60% / 0 0 0 30%; }
-.cabin-curtain.right { right: 12%; }
-/* curtain tie-back gold band */
-.cabin-curtain::after {
-content: ''; position: absolute; top: 60%; left: -2px; right: -2px; height: 5px;
-background: linear-gradient(180deg, #d8a838, #8a6818);
-border-top: 1px solid rgba(0,0,0,0.5);
-border-bottom: 1px solid rgba(0,0,0,0.7);
-}
-
-/* Warm sunset glow spilling INTO the room from the window */
-.cabin-glow {
-position: absolute; inset: 0; pointer-events: none;
-background:
-  radial-gradient(ellipse 70% 60% at 50% 30%,
-    rgba(255,180,100,0.22) 0%,
-    rgba(255,140,60,0.10) 35%,
-    rgba(0,0,0,0) 70%);
-mix-blend-mode: screen;
-}
-
-/* Subtle vignette - corners darker for cozy framing */
-.cabin-vignette {
-position: absolute; inset: 0; pointer-events: none;
-background:
-  radial-gradient(ellipse 100% 90% at 50% 50%,
-    rgba(0,0,0,0) 55%,
-    rgba(0,0,0,0.45) 100%);
-}
-
-/* Hanging lantern in the upper corner - small glowing point of light */
-.cabin-lantern {
-position: absolute; top: 4%; right: 4%;
-width: 18px; height: 38px;
-}
-.cabin-lantern::before {
-content: ''; position: absolute; left: 50%; top: 0; width: 1px; height: 8px;
-background: #1a0a05; transform: translateX(-50%);
-}
-.cabin-lantern-body {
-position: absolute; left: 0; top: 8px; width: 18px; height: 22px;
-background: linear-gradient(180deg, #3a2008 0%, #5a3210 50%, #3a2008 100%);
-border: 1.5px solid #1a0a05; border-radius: 4px 4px 6px 6px;
-box-shadow: 0 0 12px rgba(255,180,90,0.55), 0 0 26px rgba(255,160,60,0.35);
-}
-.cabin-lantern-flame {
-position: absolute; left: 50%; top: 13px; transform: translateX(-50%);
-width: 4px; height: 6px; background: #ffd86a; border-radius: 50%;
-box-shadow: 0 0 8px rgba(255,200,80,0.9);
-animation: lanternFlicker 2.4s ease-in-out infinite;
-}
-@keyframes lanternFlicker {
-  0%,100% { opacity: 1;   transform: translateX(-50%) scale(1); }
-  45%     { opacity: 0.85;transform: translateX(-50%) scale(0.92,1.05); }
-  60%     { opacity: 1;   transform: translateX(-50%) scale(1.03,0.98); }
-}
-
-/* === Trophy mounts: bigger plaques, integrated nameplate, gold rarity glow === */
+/* === Trophy mounts: small enough to fit the dark wood borders === */
 .cabin-mount {
 position: absolute;
-width: 76px; height: 64px;
+width: 50px; height: 44px;
 display: flex; flex-direction: column; align-items: center; justify-content: center;
 z-index: 3;
 }
 .cabin-mount-plaque {
-width: 72px; height: 60px;
+width: 48px; height: 42px;
 background:
-  /* nameplate band at the bottom of the plaque */
   linear-gradient(180deg,
-    transparent 0%, transparent 70%,
-    rgba(0,0,0,0.55) 70%, rgba(0,0,0,0.55) 100%),
-  /* main plaque wood */
-  linear-gradient(180deg, #6a3a1c 0%, #3a1c08 100%);
+    transparent 0%, transparent 68%,
+    rgba(0,0,0,0.6) 68%, rgba(0,0,0,0.6) 100%),
+  linear-gradient(180deg, #6a3a1c 0%, #2a1408 100%);
 border: 2px solid #1a0c05;
-border-radius: 10px 10px 6px 6px / 14px 14px 4px 4px;
+border-radius: 6px 6px 4px 4px / 8px 8px 3px 3px;
 box-shadow:
-  0 3px 6px rgba(0,0,0,0.6),
+  2px 3px 4px rgba(0,0,0,0.7),
   inset 0 1px 0 rgba(255,200,140,0.18);
 display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-padding: 4px 4px 0;
+padding: 3px 2px 0;
 position: relative;
 cursor: pointer;
 transition: transform 0.12s, box-shadow 0.18s;
 }
-/* Brass corner accents */
-.cabin-mount-plaque::before, .cabin-mount-plaque::after {
-content: ''; position: absolute; width: 4px; height: 4px;
-background: #d8a838; border: 1px solid #1a0c05;
-border-radius: 50%;
-top: 4px;
-}
-.cabin-mount-plaque::before { left: 4px; }
-.cabin-mount-plaque::after  { right: 4px; }
 .cabin-mount-plaque:active { transform: scale(0.95); }
 
 /* Filled (legendary owned) - gold rim glow */
 .cabin-mount-plaque.filled {
 border-color: #d8a838;
 box-shadow:
-  0 3px 6px rgba(0,0,0,0.6),
-  inset 0 1px 0 rgba(255,232,160,0.25),
-  0 0 14px rgba(255,200,90,0.35);
+  2px 3px 4px rgba(0,0,0,0.7),
+  inset 0 1px 0 rgba(255,232,160,0.3),
+  0 0 10px rgba(255,200,90,0.5);
 }
 .cabin-mount-plaque canvas {
 image-rendering: pixelated;
 filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.7));
-margin-top: 4px;
 }
 .cabin-mount-nameplate {
-position: absolute; left: 4px; right: 4px; bottom: 3px;
-font-family: 'Baloo 2', cursive; font-size: 7px; font-weight: 800;
-color: #fde898; letter-spacing: 0.5px;
+position: absolute; left: 2px; right: 2px; bottom: 2px;
+font-family: 'Baloo 2', cursive; font-size: 6px; font-weight: 800;
+color: #fde898; letter-spacing: 0.3px;
 text-transform: uppercase; text-align: center;
 text-shadow: 0 1px 0 rgba(0,0,0,0.9);
 overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
-/* Empty plaque - subdued, with a faint silhouette and a "?" */
+/* Empty plaque */
 .cabin-mount-plaque.empty {
-background: linear-gradient(180deg, rgba(40,20,10,0.6), rgba(20,8,4,0.6));
+background: linear-gradient(180deg, rgba(40,20,10,0.55), rgba(20,8,4,0.55));
 border-color: rgba(120,80,50,0.4);
 box-shadow: inset 0 0 6px rgba(0,0,0,0.4);
-}
-.cabin-mount-plaque.empty::before, .cabin-mount-plaque.empty::after {
-background: rgba(120,80,50,0.4);
 }
 .cabin-mount-plaque.empty .cabin-mount-nameplate {
 color: rgba(255,232,160,0.35);
 }
 .empty-mark {
-font-family: 'Baloo 2', cursive; font-size: 22px; font-weight: 800;
+font-family: 'Baloo 2', cursive; font-size: 18px; font-weight: 800;
 color: rgba(255,232,160,0.18);
-margin-top: 6px;
+margin-top: 4px;
+line-height: 1;
 }
 
-/* Mount slot positions - laid out around the bigger window */
-.cabin-mount[data-mount="0"] { left: 2%;  top: 4%; }
-.cabin-mount[data-mount="1"] { right: 2%; top: 4%; }
-.cabin-mount[data-mount="2"] { left: 2%;  top: 30%; }
-.cabin-mount[data-mount="3"] { left: 50%; top: 53%; transform: translate(-50%, 0); }
-.cabin-mount[data-mount="4"] { right: 2%; top: 30%; }
+/* Mount slot positions on the bg-cabin.png artwork.
+   The image has narrow dark-wood borders: top ~7%, sides ~7-8%, bottom ~15%.
+   Plaques are 50x44 = roughly 11-12% of a square room. */
+.cabin-mount[data-mount="0"] { left: 18%;  top: 1%; }   /* top-left of upper wall */
+.cabin-mount[data-mount="1"] { right: 18%; top: 1%; }   /* top-right of upper wall */
+.cabin-mount[data-mount="2"] { left: 1%;   top: 38%; }  /* mid-left, above lantern */
+.cabin-mount[data-mount="3"] { right: 1%;  top: 38%; }  /* mid-right side */
+.cabin-mount[data-mount="4"] { right: 18%; bottom: 1%; } /* bottom sill, right of lantern */
 
 /* Decor placeholders (Phase 3 will toggle visible) */
 .cabin-slot {
@@ -1641,9 +1499,6 @@ text-transform: uppercase; letter-spacing: 1px;
 pointer-events: none;
 }
 .cabin-slot.show { display: flex; }
-.cabin-slot[data-slot="floor-left"]  { left: 4%;  bottom: 6%; width: 80px;  height: 70px; }
-.cabin-slot[data-slot="floor-right"] { right: 4%; bottom: 6%; width: 80px;  height: 70px; }
-.cabin-slot[data-slot="rug"]         { left: 50%; bottom: 4%; transform: translateX(-50%); width: 180px; height: 28px; }
 
 .cabin-footer {
 display: flex; align-items: center; justify-content: space-between;
@@ -1879,24 +1734,11 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
       <button class="cabin-back" onclick="closeCabin()">CLOSE</button>
     </div>
     <div class="cabin-room" id="cabin-room">
-      <div class="cabin-wall"></div>
-      <div class="cabin-floor"></div>
-      <div class="cabin-window"></div>
-      <div class="cabin-curtain left"></div>
-      <div class="cabin-curtain right"></div>
-      <div class="cabin-sill"></div>
-      <div class="cabin-glow"></div>
-      <div class="cabin-vignette"></div>
-      <div class="cabin-lantern"><div class="cabin-lantern-body"></div><div class="cabin-lantern-flame"></div></div>
       <div class="cabin-mount" data-mount="0"></div>
       <div class="cabin-mount" data-mount="1"></div>
       <div class="cabin-mount" data-mount="2"></div>
       <div class="cabin-mount" data-mount="3"></div>
       <div class="cabin-mount" data-mount="4"></div>
-      <!-- Decor placeholders for Phase 3 -->
-      <div class="cabin-slot" data-slot="floor-left">slot</div>
-      <div class="cabin-slot" data-slot="floor-right">slot</div>
-      <div class="cabin-slot" data-slot="rug">rug</div>
     </div>
     <div class="cabin-footer">
       <div class="cabin-progress">
@@ -4063,14 +3905,14 @@ function renderCabin() {
       const { fish, entry } = caught[i];
       plaque.classList.add('filled');
       const cv = document.createElement('canvas');
-      cv.width = 24 * 2; cv.height = 12 * 2;
-      cv.style.width = '48px'; cv.style.height = '24px';
+      cv.width = 24 * 1.4; cv.height = 12 * 1.4;
+      cv.style.width = '34px'; cv.style.height = '17px';
       plaque.appendChild(cv);
       const nameplate = document.createElement('div');
       nameplate.className = 'cabin-mount-nameplate';
       nameplate.textContent = fish.name;
       plaque.appendChild(nameplate);
-      if (FISH_ART[fish.id]) renderPixelArt(cv, FISH_ART[fish.id], 2);
+      if (FISH_ART[fish.id]) renderPixelArt(cv, FISH_ART[fish.id], 1.4);
       plaque.addEventListener('click', () => showMountPopup(fish, entry));
     } else {
       plaque.classList.add('empty');
