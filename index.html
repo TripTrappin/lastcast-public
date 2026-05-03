@@ -3675,15 +3675,15 @@ const ITCH_PER_SEC = 1;        // passive growth per real-time second
 const ITCH_PER_CAST = 4;       // bumps per cast
 const ITCH_DRAIN_PER_ROLL = 25;// each dice roll relieves itch
 
-// Day / quota system. 25 escalating daily quotas (arithmetic
-// progression: $8k -> $32k, +$1k each day). Cumulative across all
-// 25 days is $500,000 - the secret final debt target. The player
+// Day / quota system. 11 daily quotas, each day's goal is *double*
+// the previous (250, 500, 1k, 2k, 4k, ... 256k). Cumulative across
+// all 11 days is ~$511k - the secret final debt target. The player
 // only ever sees the current day's quota.
 // Each day lasts DAY_DURATION_MS in real time. End of day with quota
-// unmet -> game over. Pay all 25 days (debt -> 0) -> win.
+// unmet -> game over. Pay all 11 days (debt -> 0) -> win.
 const DAY_DURATION_MS = 5 * 60 * 1000;
-const DAILY_QUOTAS = [8000,9000,10000,11000,12000,13000,14000,15000,16000,17000,18000,19000,20000,21000,22000,23000,24000,25000,26000,27000,28000,29000,30000,31000,32000];
-const TOTAL_DEBT = DAILY_QUOTAS.reduce((a, b) => a + b, 0); // 1,000,000
+const DAILY_QUOTAS = [250,500,1000,2000,4000,8000,16000,32000,64000,128000,256000];
+const TOTAL_DEBT = DAILY_QUOTAS.reduce((a, b) => a + b, 0); // 511,750
 const DEBT_START = TOTAL_DEBT;
 
 let itch = 0;
