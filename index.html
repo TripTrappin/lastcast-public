@@ -430,6 +430,28 @@ transition: transform 0.15s;
 }
 #shop-btn:active { transform: scale(0.92); }
 
+#cabin-btn {
+position: absolute;
+top: 24px; right: 196px;
+width: 64px; height: 36px;
+background: rgba(20, 10, 18, 0.55);
+backdrop-filter: blur(8px);
+border: 1px solid rgba(255,232,212,0.25);
+border-radius: 999px;
+color: var(--text);
+font-family: 'Baloo 2', cursive;
+font-size: 12px;
+font-weight: 700;
+letter-spacing: 1.5px;
+cursor: pointer;
+z-index: 30;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: transform 0.15s;
+}
+#cabin-btn:active { transform: scale(0.92); }
+
 #mute-btn {
 position: absolute;
 top: 24px; right: 152px;
@@ -1639,6 +1661,7 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
 
 <button id="fishdex-btn" onclick="openFishdex()">DEX</button>
 <button id="shop-btn" onclick="openShop()">SHOP</button>
+<button id="cabin-btn" onclick="openCabin()">CABIN</button>
 <button id="mute-btn" onclick="toggleMute()">🔊</button>
 
 <div id="status-overlay">
@@ -3864,6 +3887,14 @@ function equipRod(id) {
 // Phase 3 will add buyable decor that fills the empty slots.
 // ============================================================
 let cabinCameFromTitle = false;
+
+function openCabin() {
+  sfxButtonClick();
+  $('fishing-screen').classList.remove('active');
+  $('cabin-screen').classList.add('active');
+  cabinCameFromTitle = false;
+  renderCabin();
+}
 
 function openCabinFromTitle() {
   sfxButtonClick();
