@@ -433,9 +433,36 @@ transition: transform 0.15s;
 }
 #shop-btn:active { transform: scale(0.92); }
 
-#mute-btn {
+#pause-btn {
 position: absolute;
 top: 24px; right: 152px;
+width: 36px; height: 36px;
+background: rgba(20, 10, 18, 0.55);
+backdrop-filter: blur(8px);
+border: 1px solid rgba(255,232,212,0.25);
+border-radius: 50%;
+color: var(--text);
+font-family: 'Baloo 2', cursive;
+font-size: 13px;
+font-weight: 800;
+letter-spacing: 0;
+cursor: pointer;
+z-index: 30;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: transform 0.15s, background 0.15s;
+}
+#pause-btn:active { transform: scale(0.92); }
+#pause-btn.on {
+background: rgba(232, 132, 58, 0.85);
+color: var(--bg);
+border-color: rgba(232, 132, 58, 0.95);
+}
+
+#mute-btn {
+position: absolute;
+top: 24px; right: 196px;
 width: 36px; height: 36px;
 background: rgba(20, 10, 18, 0.55);
 backdrop-filter: blur(8px);
@@ -1732,6 +1759,40 @@ opacity: 0; pointer-events: none; transition: opacity 0.4s;
 background: linear-gradient(135deg, #6fb069, #2e7831) !important;
 }
 
+/* === PAUSE OVERLAY === */
+#pause-overlay {
+position: fixed; inset: 0;
+display: flex; align-items: center; justify-content: center;
+background: rgba(0,0,0,0.72);
+z-index: 350;
+opacity: 0; pointer-events: none;
+transition: opacity 0.18s;
+cursor: pointer;
+}
+#pause-overlay.show { opacity: 1; pointer-events: all; }
+.pause-card {
+text-align: center;
+padding: 24px 32px;
+background: var(--surface-solid);
+border: 1px solid rgba(255,232,212,0.25);
+border-radius: 16px;
+}
+.pause-title {
+font-family: 'Baloo 2', cursive;
+font-size: 26px; font-weight: 800;
+letter-spacing: 4px;
+text-transform: uppercase;
+color: var(--accent2);
+margin-bottom: 6px;
+}
+.pause-sub {
+font-family: 'Baloo 2', cursive;
+font-size: 12px; font-weight: 600;
+letter-spacing: 1px;
+color: var(--text-dim);
+text-transform: uppercase;
+}
+
 </style>
 </head>
 <body>
@@ -1814,6 +1875,7 @@ background: linear-gradient(135deg, #6fb069, #2e7831) !important;
 </div>
 
 <button id="shop-btn" onclick="openShop()">SHOP</button>
+<button id="pause-btn" onclick="togglePause()" aria-label="Pause">❚❚</button>
 <button id="mute-btn" onclick="toggleMute()">🔊</button>
 
 <div id="status-overlay">
@@ -1972,6 +2034,14 @@ background: linear-gradient(135deg, #6fb069, #2e7831) !important;
 
   </div>
 
+  <!-- Pause overlay -->
+  <div id="pause-overlay" onclick="togglePause()">
+    <div class="pause-card">
+      <div class="pause-title">Paused</div>
+      <div class="pause-sub">Tap to resume</div>
+    </div>
+  </div>
+
   <!-- Game over modal -->
   <div id="gameover-popup">
     <div class="gameover-card">
@@ -2056,10 +2126,10 @@ function saveGame() {
       itch,
       debt,
       dayNumber,
-      dayStartMs,
+      dayElapsedMs,
       dayPaid,
       muted: isMuted,
-      version: 10,
+      version: 11,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
   } catch (e) {
@@ -2080,10 +2150,11 @@ function loadGame() {
     }
     if (!raw) return;
     const save = JSON.parse(raw);
-    // Accept v1 through v10. v10 added the day/quota system. v9 saves
-    // had a tiny starting debt that no longer makes sense; reset to TOTAL_DEBT
-    // on load.
-    if (![1,2,3,4,5,6,7,8,9,10].includes(save.version)) return;
+    // Accept v1 through v11. v11 switched the day timer from a wall-clock
+    // start timestamp to an in-game elapsed-ms accumulator (so it pauses on
+    // the title screen). v9-and-earlier saves had a tiny starting debt that
+    // no longer makes sense; reset to TOTAL_DEBT on load.
+    if (![1,2,3,4,5,6,7,8,9,10,11].includes(save.version)) return;
     
     // Rehydrate collection with fish object refs
     if (save.collection) {
@@ -2139,18 +2210,18 @@ function loadGame() {
       debt = DEBT_START;
     }
 
-    // v10 fields - day/quota
-    if (save.version >= 10) {
-      dayNumber  = save.dayNumber  || 1;
-      dayPaid    = save.dayPaid    || 0;
-      dayStartMs = save.dayStartMs || Date.now();
-      // If a saved dayStart is way in the past, reset so the player isn't
-      // game-overed on first load after a long break.
-      if (Date.now() - dayStartMs > DAY_DURATION_MS) dayStartMs = Date.now();
+    // v10 fields - day/quota. v11 switched dayStartMs (wall clock) for
+    // dayElapsedMs (accumulator, only advances while playing).
+    if (save.version >= 11) {
+      dayNumber    = save.dayNumber    || 1;
+      dayPaid      = save.dayPaid      || 0;
+      dayElapsedMs = save.dayElapsedMs || 0;
     } else {
-      dayNumber = 1;
-      dayPaid = 0;
-      dayStartMs = Date.now();
+      // v10 saves used a wall-clock start. Don't try to migrate: just reset
+      // the day timer to the start of the day.
+      dayNumber    = (save.version === 10 && save.dayNumber)  ? save.dayNumber  : 1;
+      dayPaid      = (save.version === 10 && save.dayPaid)    ? save.dayPaid    : 0;
+      dayElapsedMs = 0;
     }
   } catch (e) {
     console.warn('Load failed:', e);
@@ -3619,9 +3690,10 @@ let itch = 0;
 let debt = DEBT_START;
 let gameOverShown = false;
 let winShown = false;
-let dayNumber = 1;       // 1..10
-let dayStartMs = Date.now();
+let dayNumber = 1;            // 1..25
+let dayElapsedMs = 0;         // ms ticked within the current day; only advances while playing
 let dayPaid = 0;
+let paused = false;           // pause button state (in-memory only)
 
 loadGame();
 updateStats();
@@ -4089,14 +4161,26 @@ function equipRod(id) {
 // ============================================================
 
 function tickGambling() {
-  // Itch grows
+  // Pause both itch and day timer when on the title screen, on a fully-stopped
+  // popup (game over / win), or when the player has hit Pause.
+  if (gameIsHalted()) {
+    updateGamblingUI();
+    return;
+  }
   itch = Math.min(ITCH_MAX, itch + ITCH_PER_SEC);
-  // Day timer
-  const elapsed = Date.now() - dayStartMs;
-  if (elapsed >= DAY_DURATION_MS) {
+  dayElapsedMs += 1000;
+  if (dayElapsedMs >= DAY_DURATION_MS) {
     endDay();
   }
   updateGamblingUI();
+}
+
+function gameIsHalted() {
+  if (paused) return true;
+  const title = document.getElementById('title-screen');
+  if (title && title.classList.contains('active')) return true;
+  if (gameOverShown || winShown) return true;
+  return false;
 }
 
 function currentQuota() {
@@ -4117,10 +4201,27 @@ function endDay() {
     return;
   }
   dayNumber++;
-  dayStartMs = Date.now();
+  dayElapsedMs = 0;
   dayPaid = 0;
   flashDayBanner();
   saveGame();
+}
+
+function togglePause() {
+  paused = !paused;
+  const btn = document.getElementById('pause-btn');
+  if (btn) btn.classList.toggle('on', paused);
+  const overlay = document.getElementById('pause-overlay');
+  if (overlay) overlay.classList.toggle('show', paused);
+  sfxButtonClick();
+}
+
+function hidePauseOverlay() {
+  paused = false;
+  const btn = document.getElementById('pause-btn');
+  if (btn) btn.classList.remove('on');
+  const overlay = document.getElementById('pause-overlay');
+  if (overlay) overlay.classList.remove('show');
 }
 
 function flashDayBanner() {
@@ -4169,9 +4270,9 @@ function updateGamblingUI() {
   const banner = document.getElementById('day-banner');
   if (dayN) dayN.textContent = String(dayNumber);
   if (dayT) {
-    const remaining = Math.max(0, DAY_DURATION_MS - (Date.now() - dayStartMs));
+    const remaining = Math.max(0, DAY_DURATION_MS - dayElapsedMs);
     dayT.textContent = fmtTime(remaining);
-    if (banner) banner.classList.toggle('urgent', remaining <= 60000);
+    if (banner) banner.classList.toggle('urgent', remaining <= 60000 && !gameIsHalted());
   }
   if (dayQ) {
     const q = currentQuota();
@@ -4653,8 +4754,10 @@ function restartFromGameOver() {
   debt = DEBT_START;
   itch = 0;
   dayNumber = 1;
-  dayStartMs = Date.now();
+  dayElapsedMs = 0;
   dayPaid = 0;
+  paused = false;
+  hidePauseOverlay();
   ownedRods = ['cane'];
   equippedRodId = 'cane';
   baitInventory = { worms: Infinity };
