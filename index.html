@@ -1316,6 +1316,68 @@ color: var(--gold) !important;
 text-shadow: 0 0 6px rgba(255,213,79,0.4);
 }
 
+/* === Confirm-purchase modal === */
+#confirm-popup {
+position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+z-index: 300; background: rgba(0,0,0,0.7);
+opacity: 0; pointer-events: none; transition: opacity 0.18s;
+}
+#confirm-popup.show { opacity: 1; pointer-events: all; }
+.confirm-card {
+background: var(--surface-solid);
+border: 1px solid var(--border);
+border-radius: 16px;
+padding: 22px 22px 18px;
+width: min(86%, 320px);
+text-align: center;
+transform: scale(0.92);
+transition: transform 0.18s;
+}
+#confirm-popup.show .confirm-card { transform: scale(1); }
+.confirm-title {
+font-family: 'Baloo 2', cursive; font-size: 18px; font-weight: 700;
+color: var(--text); margin-bottom: 8px;
+}
+.confirm-cost {
+font-family: 'Baloo 2', cursive; font-size: 22px; font-weight: 800;
+color: var(--gold); margin-bottom: 18px;
+}
+.confirm-actions { display: flex; gap: 10px; }
+.confirm-cancel, .confirm-ok {
+flex: 1; height: 40px; border-radius: 999px; border: none;
+font-family: 'Baloo 2', cursive; font-size: 13px; font-weight: 700;
+letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+transition: transform 0.1s;
+}
+.confirm-cancel { background: rgba(80,70,65,0.7); color: var(--text); }
+.confirm-ok     { background: linear-gradient(135deg, #ff7043, #d32f2f); color: white; }
+.confirm-cancel:active, .confirm-ok:active { transform: scale(0.96); }
+
+/* === State badges (OWNED / LOCKED / FULL) === */
+.state-badge {
+display: inline-flex; align-items: center; justify-content: center;
+height: 28px; padding: 0 12px; border-radius: 999px;
+font-family: 'Baloo 2', cursive; font-size: 11px; font-weight: 700;
+letter-spacing: 1px; text-transform: uppercase;
+}
+.state-badge.owned    { background: rgba(165,214,167,0.2); color: var(--common-green); border: 1px solid rgba(165,214,167,0.35); }
+.state-badge.locked   { background: rgba(80,70,65,0.4);   color: var(--text-dim);     border: 1px solid rgba(255,255,255,0.08); }
+.state-badge.full     { background: rgba(255,213,79,0.18); color: var(--gold);        border: 1px solid rgba(255,213,79,0.4); }
+
+/* === Coin burst (purchase feedback) === */
+.coin-burst {
+position: fixed; pointer-events: none; z-index: 250;
+font-family: 'Baloo 2', cursive; font-weight: 800; font-size: 18px;
+color: var(--gold);
+animation: coin-burst-anim 0.7s ease-out forwards;
+text-shadow: 0 0 8px rgba(255,213,79,0.6);
+}
+@keyframes coin-burst-anim {
+  0%   { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  20%  { transform: translate(-50%, -60%) scale(1.1); opacity: 1; }
+  100% { transform: translate(-50%, -110%) scale(1.0); opacity: 0; }
+}
+
 </style>
 </head>
 <body>
@@ -1485,8 +1547,7 @@ text-shadow: 0 0 6px rgba(255,213,79,0.4);
     <div class="shop-tabs">
       <button class="shop-tab active" data-tab="rods" onclick="setShopTab('rods')">Rods</button>
       <button class="shop-tab" data-tab="bait" onclick="setShopTab('bait')">Bait</button>
-      <button class="shop-tab disabled" disabled>Upgrades</button>
-      <button class="shop-tab disabled" disabled>Spots</button>
+      <button class="shop-tab" data-tab="upgrades" onclick="setShopTab('upgrades')">Upgrades</button>
     </div>
     <div class="shop-scroll" id="shop-scroll"></div>
   </div>
@@ -1500,6 +1561,17 @@ text-shadow: 0 0 6px rgba(255,213,79,0.4);
       <div id="popup-rarity" class="rarity-badge"></div>
       <div class="catch-quality" id="popup-quality"></div>
       <button class="catch-dismiss" id="dismiss-btn">Continue</button>
+    </div>
+  </div>
+
+  <div id="confirm-popup">
+    <div class="confirm-card">
+      <div class="confirm-title" id="confirm-title">Buy this?</div>
+      <div class="confirm-cost" id="confirm-cost"></div>
+      <div class="confirm-actions">
+        <button class="confirm-cancel" id="confirm-cancel">Cancel</button>
+        <button class="confirm-ok" id="confirm-ok">Buy</button>
+      </div>
     </div>
   </div>
 
@@ -1542,8 +1614,9 @@ function saveGame() {
         Object.entries(baitInventory).filter(([id]) => id !== 'worms')
       ),
       selectedBaitId,
+      ownedUpgrades,
       muted: isMuted,
-      version: 3,
+      version: 4,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
   } catch (e) {
@@ -1564,8 +1637,8 @@ function loadGame() {
     }
     if (!raw) return;
     const save = JSON.parse(raw);
-    // Accept v1 (legacy), v2, and v3
-    if (save.version !== 1 && save.version !== 2 && save.version !== 3) return;
+    // Accept v1 (legacy), v2, v3, and v4
+    if (save.version !== 1 && save.version !== 2 && save.version !== 3 && save.version !== 4) return;
     
     // Rehydrate collection with fish object refs
     if (save.collection) {
@@ -1604,6 +1677,11 @@ function loadGame() {
     if (selectedBaitId !== 'worms' && (!baitInventory[selectedBaitId] || baitInventory[selectedBaitId] <= 0)) {
       selectedBaitId = 'worms';
     }
+
+    // v4 fields - upgrades
+    ownedUpgrades = Array.isArray(save.ownedUpgrades)
+      ? save.ownedUpgrades.filter(id => UPGRADES.find(u => u.id === id))
+      : [];
   } catch (e) {
     console.warn('Load failed:', e);
   }
@@ -1619,6 +1697,7 @@ function resetSave() {
   equippedRodId = 'cane';
   baitInventory = { worms: Infinity };
   selectedBaitId = 'worms';
+  ownedUpgrades = [];
   updateStats();
   renderFishdex();
 }
@@ -2315,8 +2394,50 @@ const BAITS = [
 
 function getBait(id) { return BAITS.find(b => b.id === id) || BAITS[0]; }
 
-// Default inventory cap per bait type (will be raised by Tackle Box upgrade later)
-const BAIT_CAP = 5;
+
+// ============================================================
+// UPGRADES - one-time purchases with permanent passive effects
+// ============================================================
+const UPGRADES = [
+  {
+    id: 'tackle2',
+    name: 'Tackle Box II',
+    cost: 500,
+    description: 'Stash more bait. Inventory cap 5 -> 10.',
+    requires: null,
+  },
+  {
+    id: 'quickHands',
+    name: 'Quick Hands',
+    cost: 800,
+    description: 'Bites arrive 20% faster, regardless of bait.',
+    requires: null,
+  },
+  {
+    id: 'luckyCharm',
+    name: 'Lucky Charm',
+    cost: 1500,
+    description: '+3% rare odds, always - stacks with rods and bait.',
+    requires: null,
+  },
+  {
+    id: 'tackle3',
+    name: 'Tackle Box III',
+    cost: 2000,
+    description: 'Even more bait. Inventory cap 10 -> 20.',
+    requires: 'tackle2',
+  },
+];
+
+function getUpgrade(id) { return UPGRADES.find(u => u.id === id); }
+
+function getBaitCap() {
+  if (ownedUpgrades.includes('tackle3')) return 20;
+  if (ownedUpgrades.includes('tackle2')) return 10;
+  return 5;
+}
+function quickHandsMult() { return ownedUpgrades.includes('quickHands') ? 0.8 : 1.0; }
+function luckyCharmBonus() { return ownedUpgrades.includes('luckyCharm') ? 3 : 0; }
 
 
 function renderPixelArt(canvas, art, scale) {
@@ -2341,6 +2462,7 @@ let equippedRodId = 'cane';
 // Bait inventory: { worms: Infinity, minnows: 3, cricket: 0, ... }
 let baitInventory = { worms: Infinity };
 let selectedBaitId = 'worms';
+let ownedUpgrades = [];   // ids of purchased upgrades from UPGRADES
 let bobberPos = { x: 195, y: 320 };
 let activeFish = null, biteTimer = null, missTimer = null, curiousLoopTimer = null;
 let markerPos = 0, markerDirection = 1, markerSpeed = 0;
@@ -2414,7 +2536,7 @@ function weightedPick() {
   // Apply rod's rare bonus AND bait effects
   const rod = getRod(equippedRodId);
   const bait = getBait(window._activeBaitId || 'worms');
-  const rareBonus = rod.rareBonus + bait.rareBoost;
+  const rareBonus = rod.rareBonus + bait.rareBoost + luckyCharmBonus();
   const uncommonBonus = bait.uncommonBoost;
   
   // Build adjusted weights array
@@ -2514,7 +2636,7 @@ function scheduleCuriousTells() {
   // Apply active bait's bite-speed multiplier (lower = faster bite)
   const activeBait = getBait(window._activeBaitId || 'worms');
   const baseDelay = 6000 + Math.random() * 8000;
-  biteTimer = setTimeout(triggerBite, baseDelay * activeBait.biteSpeedMult);
+  biteTimer = setTimeout(triggerBite, baseDelay * activeBait.biteSpeedMult * quickHandsMult());
 }
 
 function doCuriousTell() {
@@ -2985,7 +3107,128 @@ function renderShop() {
     renderRodShop(scroll);
   } else if (currentShopTab === 'bait') {
     renderBaitShop(scroll);
+  } else if (currentShopTab === 'upgrades') {
+    renderUpgradesShop(scroll);
   }
+}
+
+// ---- Confirmation modal & purchase feedback -------------------------------
+function confirmPurchase(name, cost, onConfirm) {
+  // Skip the modal for cheap items so casual buying stays snappy.
+  if (cost <= 1000) { onConfirm(); return; }
+  const popup = $('confirm-popup');
+  $('confirm-title').textContent = `Buy ${name}?`;
+  $('confirm-cost').innerHTML = `<span class="coin-icon">●</span> ${cost}`;
+  popup.classList.add('show');
+  const ok = $('confirm-ok'), cancel = $('confirm-cancel');
+  const cleanup = () => {
+    popup.classList.remove('show');
+    ok.onclick = null;
+    cancel.onclick = null;
+  };
+  ok.onclick = () => { cleanup(); onConfirm(); };
+  cancel.onclick = () => { sfxButtonClick(); cleanup(); };
+}
+
+function purchaseFeedback(buttonEl, cost) {
+  sfxCatch();  // satisfying chord, already used for rod buys
+  if (!buttonEl) return;
+  const rect = buttonEl.getBoundingClientRect();
+  const burst = document.createElement('div');
+  burst.className = 'coin-burst';
+  burst.textContent = `-${cost}`;
+  burst.style.left = (rect.left + rect.width / 2) + 'px';
+  burst.style.top  = (rect.top + rect.height / 2) + 'px';
+  document.body.appendChild(burst);
+  setTimeout(() => burst.remove(), 750);
+}
+
+// ---- Upgrades shop --------------------------------------------------------
+function renderUpgradesShop(scroll) {
+  const intro = document.createElement('div');
+  intro.className = 'shop-bait-intro';
+  intro.textContent = 'One-time purchases. Effects are permanent and stack with rods and bait.';
+  scroll.appendChild(intro);
+
+  UPGRADES.forEach((up, i) => {
+    const owned = ownedUpgrades.includes(up.id);
+    const prereqMet = !up.requires || ownedUpgrades.includes(up.requires);
+    const canAfford = coins >= up.cost;
+
+    const item = document.createElement('div');
+    item.className = 'shop-item' + (owned ? ' equipped' : '') + (!owned && !prereqMet ? ' locked' : '');
+
+    const icon = document.createElement('div');
+    icon.className = 'shop-item-icon';
+    icon.textContent = up.name.charAt(0);
+    item.appendChild(icon);
+
+    const info = document.createElement('div');
+    info.className = 'shop-item-info';
+
+    const name = document.createElement('div');
+    name.className = 'shop-item-name';
+    name.textContent = up.name;
+    info.appendChild(name);
+
+    const desc = document.createElement('div');
+    desc.className = 'shop-item-desc';
+    desc.textContent = up.description;
+    info.appendChild(desc);
+
+    if (up.requires && !owned && !prereqMet) {
+      const need = getUpgrade(up.requires);
+      const stats = document.createElement('div');
+      stats.className = 'shop-item-stats';
+      stats.appendChild(makePill(`Requires ${need ? need.name : up.requires}`));
+      info.appendChild(stats);
+    }
+
+    item.appendChild(info);
+
+    const action = document.createElement('div');
+    action.className = 'shop-item-action';
+
+    if (owned) {
+      const badge = document.createElement('div');
+      badge.className = 'state-badge owned';
+      badge.textContent = 'Owned';
+      action.appendChild(badge);
+    } else if (!prereqMet) {
+      const badge = document.createElement('div');
+      badge.className = 'state-badge locked';
+      badge.textContent = 'Locked';
+      action.appendChild(badge);
+    } else {
+      const buy = document.createElement('button');
+      buy.className = 'shop-buy-btn';
+      buy.disabled = !canAfford;
+      if (!canAfford) buy.classList.add('cant-afford');
+      buy.innerHTML = `<span class="coin-icon">●</span> ${up.cost}`;
+      buy.onclick = (e) => {
+        if (!canAfford) return;
+        confirmPurchase(up.name, up.cost, () => buyUpgrade(up.id, e.currentTarget));
+      };
+      action.appendChild(buy);
+    }
+
+    item.appendChild(action);
+    scroll.appendChild(item);
+  });
+}
+
+function buyUpgrade(id, buttonEl) {
+  const up = getUpgrade(id);
+  if (!up || ownedUpgrades.includes(id)) return;
+  if (up.requires && !ownedUpgrades.includes(up.requires)) return;
+  if (coins < up.cost) return;
+  coins -= up.cost;
+  ownedUpgrades.push(id);
+  purchaseFeedback(buttonEl, up.cost);
+  updateStats();
+  updateBaitDisplay();  // cap may have changed
+  renderShop();
+  saveGame();
 }
 
 function renderBaitShop(scroll) {
@@ -3039,38 +3282,43 @@ function renderBaitShop(scroll) {
       badge.textContent = 'Always';
       action.appendChild(badge);
     } else {
-      // Buy button
-      const buy = document.createElement('button');
-      buy.className = 'shop-buy-btn';
       const owned = baitInventory[bait.id] || 0;
-      const atCap = owned >= BAIT_CAP;
+      const atCap = owned >= getBaitCap();
       const canAfford = coins >= bait.cost;
-      buy.disabled = !canAfford || atCap;
-      if (!canAfford || atCap) buy.classList.add('cant-afford');
-      
+
       if (atCap) {
-        buy.innerHTML = `FULL (${BAIT_CAP})`;
+        const fullBadge = document.createElement('div');
+        fullBadge.className = 'state-badge full';
+        fullBadge.textContent = `Full (${getBaitCap()})`;
+        action.appendChild(fullBadge);
       } else {
+        const buy = document.createElement('button');
+        buy.className = 'shop-buy-btn';
+        buy.disabled = !canAfford;
+        if (!canAfford) buy.classList.add('cant-afford');
         buy.innerHTML = `<span class="coin-icon">●</span> ${bait.cost}`;
+        buy.onclick = (e) => {
+          if (!canAfford) return;
+          confirmPurchase(bait.name, bait.cost, () => buyBait(bait.id, e.currentTarget));
+        };
+        action.appendChild(buy);
       }
-      buy.onclick = () => buyBait(bait.id);
-      action.appendChild(buy);
     }
     item.appendChild(action);
     scroll.appendChild(item);
   });
 }
 
-function buyBait(id) {
+function buyBait(id, buttonEl) {
   const bait = getBait(id);
   if (!bait || bait.infinite) return;
   if (coins < bait.cost) return;
   const owned = baitInventory[id] || 0;
-  if (owned >= BAIT_CAP) return;
-  
+  if (owned >= getBaitCap()) return;
+
   coins -= bait.cost;
   baitInventory[id] = owned + 1;
-  sfxButtonClick();
+  purchaseFeedback(buttonEl, bait.cost);
   updateStats();
   updateBaitDisplay();
   renderShop();
@@ -3150,14 +3398,16 @@ function renderRodShop(scroll) {
       if (!canAfford) buy.classList.add('cant-afford');
       buy.disabled = !canAfford;
       buy.innerHTML = `<span class="coin-icon">●</span> ${rod.cost}`;
-      buy.onclick = () => buyRod(rod.id);
+      buy.onclick = (e) => {
+        if (!canAfford) return;
+        confirmPurchase(rod.name, rod.cost, () => buyRod(rod.id, e.currentTarget));
+      };
       action.appendChild(buy);
     } else {
-      const locked = document.createElement('button');
-      locked.className = 'shop-buy-btn cant-afford';
-      locked.disabled = true;
-      locked.textContent = 'LOCKED';
-      action.appendChild(locked);
+      const lockedBadge = document.createElement('div');
+      lockedBadge.className = 'state-badge locked';
+      lockedBadge.textContent = 'Locked';
+      action.appendChild(lockedBadge);
     }
     item.appendChild(action);
     scroll.appendChild(item);
@@ -3171,14 +3421,14 @@ function makePill(text) {
   return p;
 }
 
-function buyRod(id) {
+function buyRod(id, buttonEl) {
   const rod = getRod(id);
   if (!rod || ownedRods.includes(id)) return;
   if (coins < rod.cost) return;
   coins -= rod.cost;
   ownedRods.push(id);
   equippedRodId = id;  // auto-equip the new rod
-  sfxCatch();          // play a satisfying purchase sound
+  purchaseFeedback(buttonEl, rod.cost);
   updateStats();
   renderShop();
   saveGame();
