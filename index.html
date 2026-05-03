@@ -3404,6 +3404,20 @@ function updateStats() {
 }
 
 // Load save on startup, then update UI
+// Gambling state hoisted above loadGame() so loadGame's writes to debt/itch
+// don't hit a temporal-dead-zone ReferenceError.
+const ITCH_MAX = 100;
+const ITCH_PER_SEC = 1;        // passive growth per real-time second
+const ITCH_PER_CAST = 4;       // bumps per cast
+const ITCH_DRAIN_PER_ROLL = 25;// each dice roll relieves itch
+const DEBT_INTEREST_PER_MIN = 0.01;   // +1% per real-time minute
+const DEBT_GAME_OVER = 5000;
+const DEBT_START = 500;
+
+let itch = 0;
+let debt = DEBT_START;
+let gameOverShown = false;
+
 loadGame();
 updateStats();
 
@@ -3880,17 +3894,6 @@ function equipRod(id) {
 // GAMBLING ADDICTION CORE
 // State: itch (0-100), debt (coins owed to Boudreaux).
 // ============================================================
-const ITCH_MAX = 100;
-const ITCH_PER_SEC = 1;        // passive growth per real-time second
-const ITCH_PER_CAST = 4;       // bumps per cast
-const ITCH_DRAIN_PER_ROLL = 25;// each dice roll relieves itch
-const DEBT_INTEREST_PER_MIN = 0.01;   // +1% per real-time minute
-const DEBT_GAME_OVER = 5000;
-const DEBT_START = 500;
-
-let itch = 0;
-let debt = DEBT_START;
-let gameOverShown = false;
 
 function tickGambling() {
   // Itch grows
