@@ -1439,143 +1439,55 @@ perspective: 1000px;
 perspective-origin: 50% 55%;
 }
 
-/* === Trophy mounts: small enough to fit the dark wood borders === */
+/* === Trophy mounts: pixel-art canvases drawn the same way as the rod
+   sprite, so they live in the same rendering pipeline as the rest of the
+   pixel art and don't read as web UI overlaid on a painted scene. === */
 .cabin-mount {
 position: absolute;
-width: 60px; height: 52px;
-display: flex; flex-direction: column; align-items: center; justify-content: center;
+width: 64px; height: 56px;
 z-index: 3;
 }
 .cabin-mount-plaque {
-width: 58px; height: 50px;
-/* Solid wood plank, color matched to the cabin's warm wall tone */
-background: #6a3818;
-/* Subtle horizontal grain via inset shadow lines */
-box-shadow:
-  inset 0 1px 0 rgba(255,200,140,0.22),
-  inset 0 -1px 0 rgba(0,0,0,0.5),
-  inset 0 8px 0 -7px rgba(0,0,0,0.18),
-  inset 0 16px 0 -15px rgba(0,0,0,0.18),
-  /* directional drop-shadow from the overhead lantern */
-  3px 5px 0 rgba(0,0,0,0.55),
-  4px 7px 8px rgba(0,0,0,0.5);
-border: 1px solid #1a0c05;
-border-radius: 2px;
-display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-padding: 5px 2px 0;
+width: 100%; height: 100%;
+display: block;
 position: relative;
 cursor: pointer;
 transition: transform 0.12s;
-}
-.cabin-mount-plaque:active { transform: scale(0.95); }
-
-/* Two old brass nails / screws at the top corners. */
-.cabin-mount-plaque::before,
-.cabin-mount-plaque::after {
-content: '';
-position: absolute; top: 2px;
-width: 4px; height: 4px;
-background: radial-gradient(circle at 30% 30%, #fde898 0%, #c89858 50%, #5a3818 100%);
-border: 1px solid #1a0c05;
-border-radius: 50%;
-box-shadow: inset 0 -1px 0 rgba(0,0,0,0.5);
-}
-.cabin-mount-plaque::before { left: 3px; }
-.cabin-mount-plaque::after  { right: 3px; }
-
-/* Filled (legendary owned) - subtle warm rim, no glowy halo */
-.cabin-mount-plaque.filled {
-background: #7a4220;
-border-color: #2a1408;
-box-shadow:
-  inset 0 1px 0 rgba(255,232,160,0.4),
-  inset 0 -1px 0 rgba(0,0,0,0.55),
-  inset 0 8px 0 -7px rgba(0,0,0,0.18),
-  inset 0 16px 0 -15px rgba(0,0,0,0.18),
-  3px 5px 0 rgba(0,0,0,0.6),
-  4px 7px 8px rgba(0,0,0,0.55);
+background: none;
+border: none;
 }
 .cabin-mount-plaque canvas {
+display: block;
+width: 100%; height: 100%;
 image-rendering: pixelated;
-filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.7));
 }
-.cabin-mount-nameplate {
-position: absolute; left: 3px; right: 3px; bottom: 3px;
-height: 11px;
-display: flex; align-items: center; justify-content: center;
-font-family: 'Baloo 2', cursive; font-size: 6px; font-weight: 800;
-color: #fde898; letter-spacing: 0.3px;
-text-transform: uppercase; text-align: center;
-text-shadow: 0 1px 0 rgba(0,0,0,0.9);
-/* Engraved brass band: dark groove with gold inner */
-background: linear-gradient(180deg, #5a3010 0%, #2a1408 100%);
-border-top: 1px solid rgba(0,0,0,0.6);
-border-bottom: 1px solid rgba(255,200,140,0.22);
-border-radius: 1px;
-overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-
-/* Empty plaque - desaturated wood, no nail highlight, dim nameplate */
-.cabin-mount-plaque.empty {
-background: #4a2a14;
-border-color: #2a1408;
-box-shadow:
-  inset 0 1px 0 rgba(255,200,140,0.1),
-  inset 0 -1px 0 rgba(0,0,0,0.4),
-  3px 5px 0 rgba(0,0,0,0.45),
-  4px 7px 8px rgba(0,0,0,0.4);
-}
-.cabin-mount-plaque.empty::before,
-.cabin-mount-plaque.empty::after {
-background: radial-gradient(circle at 30% 30%, #6a4a28 0%, #4a2810 50%, #2a1408 100%);
-}
-.cabin-mount-plaque.empty .cabin-mount-nameplate {
-color: rgba(255,232,160,0.35);
-}
-.empty-mark {
-font-family: 'Baloo 2', cursive; font-size: 18px; font-weight: 800;
-color: rgba(255,232,160,0.18);
-margin-top: 4px;
-line-height: 1;
-}
+.cabin-mount-plaque:active { transform: scale(0.95); }
 
 /* Mount slot positions on the bg-cabin.png artwork.
    The image has narrow dark-wood borders: top ~7%, sides ~7-8%, bottom ~15%.
    Plaques are 50x44 = roughly 11-12% of a square room. */
-/* Layout matches the new full-room artwork. Slots 0-3 sit on the
-   *receding side walls* (outer 8-15% of width) and rotate around Y to
-   match the perspective angle of those walls. Slot 4 sits flat on the
-   back wall below the window. */
+/* Layout: 4 plaques flanking the window. Each rotates around Y to match
+   the perspective angle of the receding side walls. */
 .cabin-mount[data-mount="0"] {
-  left: 7%; top: 27%;
+  left: 7%; top: 25%;
   transform: rotateY(30deg);
   transform-origin: right center;
 }
 .cabin-mount[data-mount="1"] {
-  right: 7%; top: 27%;
+  right: 7%; top: 25%;
   transform: rotateY(-30deg);
   transform-origin: left center;
 }
 .cabin-mount[data-mount="2"] {
-  left: 7%; top: 50%;
+  left: 7%; top: 48%;
   transform: rotateY(30deg);
   transform-origin: right center;
 }
 .cabin-mount[data-mount="3"] {
-  right: 7%; top: 50%;
+  right: 7%; top: 48%;
   transform: rotateY(-30deg);
   transform-origin: left center;
 }
-.cabin-mount[data-mount="4"] {
-  left: 50%; top: 67%;
-  transform: translateX(-50%);
-}
-
-/* Tap-feedback: keep the press-scale even with the rotation in place. */
-.cabin-mount[data-mount="0"] .cabin-mount-plaque:active,
-.cabin-mount[data-mount="2"] .cabin-mount-plaque:active { transform: scale(0.95); }
-.cabin-mount[data-mount="1"] .cabin-mount-plaque:active,
-.cabin-mount[data-mount="3"] .cabin-mount-plaque:active { transform: scale(0.95); }
 
 /* Decor placeholders (Phase 3 will toggle visible) */
 .cabin-slot {
@@ -1847,11 +1759,10 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
       <div class="cabin-mount" data-mount="1"></div>
       <div class="cabin-mount" data-mount="2"></div>
       <div class="cabin-mount" data-mount="3"></div>
-      <div class="cabin-mount" data-mount="4"></div>
     </div>
     <div class="cabin-footer">
       <div class="cabin-progress">
-        Trophies: <span class="progress-num" id="cabin-trophy-count">0</span> / 5
+        Trophies: <span class="progress-num" id="cabin-trophy-count">0</span> / 4
       </div>
       <button class="cabin-preview-btn" id="cabin-preview-btn" onclick="toggleCabinPreview()">Preview</button>
     </div>
@@ -4011,18 +3922,140 @@ function closeCabin() {
   }
 }
 
+// Renders one pixel-art trophy plaque onto a canvas. Drawing technique mirrors
+// the rod sprite (fillRect only, no smoothing, no gradients) so the plaques sit
+// in the same chunky-pixel resolution as the cabin background art.
+function drawPlaque(canvas, fish) {
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Canvas is 64x56; the plaque sits at (0,0)-(60,52); a hard cast shadow is
+  // painted in the lower-right margin so the plaque looks raised off the wall.
+  const W = 60, H = 52;
+
+  // Cast shadow first (behind everything)
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillRect(3, 4, W, H);
+
+  const filled = !!fish;
+  const baseDark   = filled ? '#3a1808' : '#2a1408';
+  const baseMid    = filled ? '#6a3618' : '#4a2810';
+  const baseLight  = filled ? '#8a4a20' : '#5a3018';
+  const grainDark  = filled ? '#3a1808' : '#2a1408';
+
+  // 1px outer dark border
+  ctx.fillStyle = baseDark;
+  ctx.fillRect(0, 0, W, H);
+
+  // Wood plank fill
+  ctx.fillStyle = baseMid;
+  ctx.fillRect(1, 1, W - 2, H - 2);
+
+  // Top highlight band (1px)
+  ctx.fillStyle = baseLight;
+  ctx.fillRect(1, 1, W - 2, 1);
+
+  // Bottom darker band (1px) - separates plank from nameplate
+  ctx.fillStyle = baseDark;
+  ctx.fillRect(1, H - 14, W - 2, 1);
+
+  // Wood grain horizontal lines (irregular, hand-placed)
+  ctx.fillStyle = grainDark;
+  ctx.fillRect(1, 7,  W - 2, 1);
+  ctx.fillRect(1, 18, W - 2, 1);
+  ctx.fillRect(1, 30, W - 2, 1);
+
+  // A few darker specks for knot/grain detail
+  ctx.fillRect(8,  12, 1, 1);
+  ctx.fillRect(20, 22, 1, 1);
+  ctx.fillRect(46, 14, 1, 1);
+  ctx.fillRect(36, 26, 1, 1);
+
+  // Brass nails at top corners
+  if (filled) {
+    ctx.fillStyle = '#1a0c05';
+    ctx.fillRect(3, 3, 5, 5);
+    ctx.fillRect(W - 8, 3, 5, 5);
+    ctx.fillStyle = '#c89858';
+    ctx.fillRect(4, 4, 3, 3);
+    ctx.fillRect(W - 7, 4, 3, 3);
+    ctx.fillStyle = '#fde898';
+    ctx.fillRect(4, 4, 1, 1);
+    ctx.fillRect(W - 7, 4, 1, 1);
+  } else {
+    // dim nail dots
+    ctx.fillStyle = '#1a0c05';
+    ctx.fillRect(4, 4, 3, 3);
+    ctx.fillRect(W - 7, 4, 3, 3);
+    ctx.fillStyle = '#3a1c0a';
+    ctx.fillRect(5, 5, 1, 1);
+    ctx.fillRect(W - 6, 5, 1, 1);
+  }
+
+  // Fish art (centered horizontally, below the nails). FISH_ART rows are
+  // 12 tall, 24 wide; rendered at 1.4x.
+  if (fish && FISH_ART[fish.id]) {
+    const scale = 1.4;
+    const fishW = Math.floor(24 * scale);
+    const fishX = Math.floor((W - fishW) / 2);
+    const fishY = 11;
+    const art = FISH_ART[fish.id];
+    for (let y = 0; y < art.length; y++) {
+      const row = art[y];
+      for (let x = 0; x < row.length; x++) {
+        const ch = row[x];
+        const color = PALETTE[ch];
+        if (color) {
+          ctx.fillStyle = color;
+          ctx.fillRect(fishX + Math.floor(x * scale), fishY + Math.floor(y * scale), Math.ceil(scale), Math.ceil(scale));
+        }
+      }
+    }
+  } else {
+    // Empty plaque "?" mark, drawn in pixels (no font smoothing).
+    ctx.fillStyle = 'rgba(255,232,160,0.22)';
+    ctx.font = 'bold 16px "Baloo 2", cursive';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('?', W / 2, 18);
+  }
+
+  // Nameplate band - engraved into the lower portion of the plaque.
+  const npY = H - 13;
+  ctx.fillStyle = '#1a0805';
+  ctx.fillRect(2, npY, W - 4, 11);
+  ctx.fillStyle = '#3a1c08';
+  ctx.fillRect(2, npY, W - 4, 1);          // top groove
+  ctx.fillStyle = '#5a3018';
+  ctx.fillRect(2, npY + 10, W - 4, 1);     // bottom groove highlight
+
+  // Name text
+  if (fish) {
+    ctx.fillStyle = '#fde898';
+    ctx.font = 'bold 7px "Baloo 2", cursive';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(fish.name.toUpperCase(), W / 2, npY + 6);
+  } else {
+    ctx.fillStyle = 'rgba(255,232,160,0.32)';
+    ctx.font = 'bold 7px "Baloo 2", cursive';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('LOCKED', W / 2, npY + 6);
+  }
+}
+
 function renderCabin() {
-  // Auto-fill up to 5 mount slots from the player's legendary catches,
-  // ordered by personal best size descending. In preview mode, all 5
-  // legendaries are shown at their max size so you can see the filled
-  // wall before actually catching them.
+  // Up to 4 legendary mounts, ordered by personal best size descending.
+  // Preview mode shows all legendaries (sorted by max size) so the wall
+  // can be inspected fully filled before any catches.
   const legendaries = FISH.filter(f => f.rarity === 'legendary');
   let caught;
   if (cabinPreviewMode) {
-    caught = legendaries.map(f => ({
-      fish: f,
-      entry: { count: 1, personalBest: f.maxSz },
-    }));
+    caught = legendaries
+      .map(f => ({ fish: f, entry: { count: 1, personalBest: f.maxSz } }))
+      .sort((a, b) => b.fish.maxSz - a.fish.maxSz);
   } else {
     caught = legendaries
       .map(f => ({ fish: f, entry: collection[f.id] }))
@@ -4030,37 +4063,24 @@ function renderCabin() {
       .sort((a, b) => b.entry.personalBest - a.entry.personalBest);
   }
 
-  $('cabin-trophy-count').textContent = cabinPreviewMode ? '5' : caught.length;
+  const TOTAL_SLOTS = 4;
+  $('cabin-trophy-count').textContent = String(Math.min(TOTAL_SLOTS, caught.length));
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < TOTAL_SLOTS; i++) {
     const mount = document.querySelector(`.cabin-mount[data-mount="${i}"]`);
     if (!mount) continue;
     mount.innerHTML = '';
     const plaque = document.createElement('div');
     plaque.className = 'cabin-mount-plaque';
+    const cv = document.createElement('canvas');
+    cv.width = 64; cv.height = 56;
+    cv.style.width = '64px'; cv.style.height = '56px';
+    plaque.appendChild(cv);
+    const fish = caught[i] ? caught[i].fish : null;
+    drawPlaque(cv, fish);
     if (caught[i]) {
-      const { fish, entry } = caught[i];
-      plaque.classList.add('filled');
-      const cv = document.createElement('canvas');
-      cv.width = 24 * 1.7; cv.height = 12 * 1.7;
-      cv.style.width = '41px'; cv.style.height = '20px';
-      plaque.appendChild(cv);
-      const nameplate = document.createElement('div');
-      nameplate.className = 'cabin-mount-nameplate';
-      nameplate.textContent = fish.name;
-      plaque.appendChild(nameplate);
-      if (FISH_ART[fish.id]) renderPixelArt(cv, FISH_ART[fish.id], 1.7);
+      const { entry } = caught[i];
       plaque.addEventListener('click', () => showMountPopup(fish, entry));
-    } else {
-      plaque.classList.add('empty');
-      const mark = document.createElement('div');
-      mark.className = 'empty-mark';
-      mark.textContent = '?';
-      plaque.appendChild(mark);
-      const nameplate = document.createElement('div');
-      nameplate.className = 'cabin-mount-nameplate';
-      nameplate.textContent = 'Locked';
-      plaque.appendChild(nameplate);
     }
     mount.appendChild(plaque);
   }
