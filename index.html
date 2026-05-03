@@ -1808,6 +1808,51 @@ transition: transform 0.12s, filter 0.12s;
 .pause-restart:active { transform: scale(0.95); }
 .pause-restart:hover  { filter: brightness(1.05); }
 
+.powerup-charges {
+display: inline-block;
+margin-left: 4px;
+padding: 1px 7px;
+border-radius: 999px;
+background: rgba(232, 132, 58, 0.85);
+color: var(--bg);
+font-size: 11px;
+font-weight: 800;
+}
+
+#shop-screen .shop-bait-intro {
+text-align: center;
+font-style: italic;
+color: var(--text-dim);
+font-size: 11px;
+padding: 0 8px 12px;
+}
+
+/* Toast that pops when a powerup auto-fires */
+.powerup-toast {
+position: fixed; left: 50%; top: 70px;
+transform: translate(-50%, -10px);
+display: flex; align-items: center;
+gap: 8px;
+padding: 8px 14px;
+border-radius: 999px;
+background: rgba(20, 10, 18, 0.92);
+border: 1px solid rgba(255, 213, 79, 0.6);
+color: var(--gold);
+font-family: 'Baloo 2', cursive;
+font-size: 12px; font-weight: 700;
+letter-spacing: 0.6px;
+box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+z-index: 350;
+opacity: 0;
+transition: opacity 0.2s, transform 0.2s;
+}
+.powerup-toast.show {
+opacity: 1;
+transform: translate(-50%, 0);
+}
+.powerup-toast .pt-emoji { font-size: 16px; }
+.powerup-toast .pt-text { color: var(--text); font-weight: 600; }
+
 </style>
 </head>
 <body>
@@ -2037,11 +2082,6 @@ transition: transform 0.12s, filter 0.12s;
         </div>
       </div>
     </div>
-    <div class="shop-tabs">
-      <button class="shop-tab active" data-tab="rods" onclick="setShopTab('rods')">Rods</button>
-      <button class="shop-tab" data-tab="bait" onclick="setShopTab('bait')">Bait</button>
-      <button class="shop-tab" data-tab="upgrades" onclick="setShopTab('upgrades')">Upgrades</button>
-    </div>
     <div class="shop-scroll" id="shop-scroll"></div>
   </div>
 
@@ -2139,13 +2179,14 @@ function saveGame() {
       ),
       selectedBaitId,
       ownedUpgrades,
+      ownedPowerups,
       itch,
       debt,
       dayNumber,
       dayElapsedMs,
       dayPaid,
       muted: isMuted,
-      version: 11,
+      version: 12,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
   } catch (e) {
@@ -2170,7 +2211,7 @@ function loadGame() {
     // start timestamp to an in-game elapsed-ms accumulator (so it pauses on
     // the title screen). v9-and-earlier saves had a tiny starting debt that
     // no longer makes sense; reset to TOTAL_DEBT on load.
-    if (![1,2,3,4,5,6,7,8,9,10,11].includes(save.version)) return;
+    if (![1,2,3,4,5,6,7,8,9,10,11,12].includes(save.version)) return;
     
     // Rehydrate collection with fish object refs
     if (save.collection) {
@@ -2216,6 +2257,10 @@ function loadGame() {
       : [];
 
     // v5+ cabin fields are no longer loaded (cabin removed in v8).
+
+    // v12 fields - powerups
+    ownedPowerups = (save.ownedPowerups && typeof save.ownedPowerups === 'object')
+      ? save.ownedPowerups : {};
 
     // v9 fields - itch + debt. v9-or-earlier saves had a 500-coin debt that
     // no longer fits the daily-quota system; reset such old saves.
@@ -3765,8 +3810,76 @@ function initTitleEffects() {
 // ============================================================
 // SHOP LOGIC
 // ============================================================
-let currentShopTab = 'rods';
 let shopCameFromTitle = false;
+
+// ============================================================
+// POWERUPS - consumable charges that tilt gambling (and sanity) in
+// the player's favor. Each entry has a per-charge cost; buying one
+// adds 1 charge to ownedPowerups[id].charges. Effects auto-fire at
+// the relevant code points (no extra UI buttons during gameplay).
+// ============================================================
+const POWERUPS = [
+  {
+    id: 'stiff_drink',
+    name: 'Stiff Drink',
+    cost: 150,
+    description: 'When the itch is bad, takes the edge off for 60 seconds. Auto-pours when you need it most.',
+  },
+  {
+    id: 'rabbit_foot',
+    name: "Rabbit's Foot",
+    cost: 200,
+    description: 'Refunds your next losing bet on the dice or the felt. One foot, one refund.',
+  },
+  {
+    id: 'loaded_dice',
+    name: 'Loaded Dice',
+    cost: 300,
+    description: 'Slips into the next come-out roll. Heavily biased toward 7 or 11.',
+  },
+  {
+    id: 'time_stretcher',
+    name: 'Time Stretcher',
+    cost: 400,
+    description: "When today's clock drops below 30 seconds with the quota unmet, buys you another minute.",
+  },
+  {
+    id: 'card_counter',
+    name: 'Card Counter',
+    cost: 500,
+    description: "Sneaks a glance at the dealer's hole card on the next blackjack deal.",
+  },
+];
+
+let ownedPowerups = {};   // { id: { charges: N } }
+
+function powerupCharges(id) {
+  return (ownedPowerups[id] && ownedPowerups[id].charges) || 0;
+}
+function consumePowerup(id) {
+  if (powerupCharges(id) <= 0) return false;
+  ownedPowerups[id].charges -= 1;
+  saveGame();
+  return true;
+}
+function showPowerupToast(emoji, text) {
+  const el = document.createElement('div');
+  el.className = 'powerup-toast';
+  el.innerHTML = `<span class="pt-emoji">${emoji}</span><span class="pt-text">${text}</span>`;
+  document.body.appendChild(el);
+  setTimeout(() => el.classList.add('show'), 10);
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }, 2200);
+}
+
+// Active state for Stiff Drink (a single timestamp; refreshed on each fire).
+let stiffDrinkActiveUntilMs = 0;
+function isDrinkActive() { return Date.now() < stiffDrinkActiveUntilMs; }
+
+// Tracks Card Counter peek + Loaded Dice arming for the *next* event.
+let cardCounterArmed = false;
+let loadedDiceArmed = false;
+
+
 
 function openShop() {
   sfxButtonClick();
@@ -3795,14 +3908,6 @@ function closeShop() {
   }
 }
 
-function setShopTab(tab) {
-  currentShopTab = tab;
-  document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
-  const btn = document.querySelector(`.shop-tab[data-tab="${tab}"]`);
-  if (btn) btn.classList.add('active');
-  renderShop();
-}
-
 function updateShop() {
   // Just refresh the coin display if shop is visible
   const shopCoins = $('shop-coins');
@@ -3813,14 +3918,68 @@ function renderShop() {
   $('shop-coins').textContent = coins;
   const scroll = $('shop-scroll');
   scroll.innerHTML = '';
-  
-  if (currentShopTab === 'rods') {
-    renderRodShop(scroll);
-  } else if (currentShopTab === 'bait') {
-    renderBaitShop(scroll);
-  } else if (currentShopTab === 'upgrades') {
-    renderUpgradesShop(scroll);
-  }
+  renderPowerupsShop(scroll);
+}
+
+
+function renderPowerupsShop(scroll) {
+  const intro = document.createElement('div');
+  intro.className = 'shop-bait-intro';
+  intro.textContent = 'Charges fire automatically when you need them. Stockpile what you can afford.';
+  scroll.appendChild(intro);
+
+  POWERUPS.forEach(item => {
+    const charges = powerupCharges(item.id);
+    const canAfford = coins >= item.cost;
+
+    const row = document.createElement('div');
+    row.className = 'shop-item';
+
+    const icon = document.createElement('div');
+    icon.className = 'shop-item-icon';
+    icon.textContent = item.name.charAt(0);
+    row.appendChild(icon);
+
+    const info = document.createElement('div');
+    info.className = 'shop-item-info';
+    const name = document.createElement('div');
+    name.className = 'shop-item-name';
+    name.innerHTML = item.name + (charges > 0 ? ` <span class="powerup-charges">x${charges}</span>` : '');
+    info.appendChild(name);
+    const desc = document.createElement('div');
+    desc.className = 'shop-item-desc';
+    desc.textContent = item.description;
+    info.appendChild(desc);
+    row.appendChild(info);
+
+    const action = document.createElement('div');
+    action.className = 'shop-item-action';
+    const buy = document.createElement('button');
+    buy.className = 'shop-buy-btn';
+    buy.disabled = !canAfford;
+    if (!canAfford) buy.classList.add('cant-afford');
+    buy.innerHTML = `<span class="coin-icon">●</span> ${item.cost}`;
+    buy.onclick = (e) => {
+      if (!canAfford) return;
+      confirmPurchase(item.name, item.cost, () => buyPowerup(item.id, e.currentTarget));
+    };
+    action.appendChild(buy);
+    row.appendChild(action);
+
+    scroll.appendChild(row);
+  });
+}
+
+function buyPowerup(id, buttonEl) {
+  const item = POWERUPS.find(p => p.id === id);
+  if (!item || coins < item.cost) return;
+  coins -= item.cost;
+  if (!ownedPowerups[id]) ownedPowerups[id] = { charges: 0 };
+  ownedPowerups[id].charges += 1;
+  purchaseFeedback(buttonEl, item.cost);
+  updateStats();
+  renderShop();
+  saveGame();
 }
 
 // ---- Confirmation modal & purchase feedback -------------------------------
@@ -4183,7 +4342,26 @@ function tickGambling() {
     updateGamblingUI();
     return;
   }
-  itch = Math.min(ITCH_MAX, itch + ITCH_PER_SEC);
+  // Stiff Drink: when the itch crosses the danger zone, auto-pop a charge
+  // for 60s of slowed itch growth.
+  if (itch >= 80 && !isDrinkActive() && powerupCharges('stiff_drink') > 0) {
+    if (consumePowerup('stiff_drink')) {
+      stiffDrinkActiveUntilMs = Date.now() + 60000;
+      showPowerupToast('🥃', "Drink takes the edge off.");
+    }
+  }
+  const itchRate = isDrinkActive() ? ITCH_PER_SEC * 0.7 : ITCH_PER_SEC;
+  itch = Math.min(ITCH_MAX, itch + itchRate);
+
+  // Time Stretcher: when today is about to expire with quota unmet, push the
+  // clock back a minute.
+  const remaining = DAY_DURATION_MS - dayElapsedMs;
+  if (remaining > 0 && remaining <= 30000 && dayPaid < currentQuota() && powerupCharges('time_stretcher') > 0) {
+    if (consumePowerup('time_stretcher')) {
+      dayElapsedMs = Math.max(0, dayElapsedMs - 60000);
+      showPowerupToast('⏱️', "Time stretched. +60s.");
+    }
+  }
   dayElapsedMs += 1000;
   if (dayElapsedMs >= DAY_DURATION_MS) {
     endDay();
@@ -4491,7 +4669,13 @@ function bjDeal() {
   bjDealer = [bjDeck.pop(), bjDeck.pop()];
   bjPhase = 'playing';
   bjSetResult('', null);
-  bjRender(true);
+  // Card Counter: peek the hole card if a charge is available.
+  cardCounterArmed = false;
+  if (powerupCharges('card_counter') > 0 && consumePowerup('card_counter')) {
+    cardCounterArmed = true;
+    showPowerupToast('🃏', `Hole card: ${bjDealer[1].r}${bjDealer[1].s}`);
+  }
+  bjRender(!cardCounterArmed);
   bjSetButtons();
   sfxButtonClick();
 
@@ -4547,6 +4731,13 @@ function bjResolve(kind, message) {
   else if (kind === 'win')  { payout = bjBet * 2;              won = true; }
   else if (kind === 'push') { payout = bjBet;                  won = null; }
   else if (kind === 'lose') { payout = 0;                      won = false; }
+  // Rabbit's Foot: refund a losing bet.
+  if (kind === 'lose' && consumePowerup('rabbit_foot')) {
+    payout = bjBet;
+    won = null;
+    message = `${message} Foot saved you.`;
+    showPowerupToast('🐰', `Rabbit's foot refunded $${bjBet}.`);
+  }
   if (payout > 0) coins += payout;
   bjSetResult(message + (won === true ? ` Won ${payout - bjBet}.` : (won === false ? ` Lost ${bjBet}.` : '')), won);
   if (won === true)  sfxCatch();
@@ -4620,7 +4811,7 @@ function resetCrapsRound() {
 }
 
 function rollCraps() {
-  // Come-out: lock in a fresh bet from the input.
+  // Come-out: lock in a fresh bet, optionally arm Loaded Dice.
   if (crapsPhase === 'come-out') {
     const betEl = document.getElementById('dice-bet');
     let bet = Math.max(10, Math.min(coins, parseInt(betEl.value, 10) || 0));
@@ -4631,15 +4822,39 @@ function rollCraps() {
     betEl.value = bet;
     coins -= bet;
     crapsBet = bet;
+    // Loaded Dice: auto-spend a charge to bias this come-out roll.
+    if (powerupCharges('loaded_dice') > 0 && consumePowerup('loaded_dice')) {
+      loadedDiceArmed = true;
+      showPowerupToast('🎲', "Loaded dice slipped in.");
+    }
   }
 
   itch = Math.max(0, itch - ITCH_DRAIN_PER_ROLL);
   updateStats();
   updateGamblingUI();
 
-  const d1 = 1 + Math.floor(Math.random() * 6);
-  const d2 = 1 + Math.floor(Math.random() * 6);
-  const sum = d1 + d2;
+  let d1, d2, sum;
+  if (loadedDiceArmed) {
+    // Bias: 65% chance to land on 7 or 11. The rest is a fair roll.
+    if (Math.random() < 0.65) {
+      // Pick 7 or 11 (slight lean toward 7 since it's the more common natural).
+      const target = Math.random() < 0.7 ? 7 : 11;
+      // Decompose target into two dice values.
+      const min = Math.max(1, target - 6);
+      const max = Math.min(6, target - 1);
+      d1 = min + Math.floor(Math.random() * (max - min + 1));
+      d2 = target - d1;
+    } else {
+      d1 = 1 + Math.floor(Math.random() * 6);
+      d2 = 1 + Math.floor(Math.random() * 6);
+    }
+    sum = d1 + d2;
+    loadedDiceArmed = false;
+  } else {
+    d1 = 1 + Math.floor(Math.random() * 6);
+    d2 = 1 + Math.floor(Math.random() * 6);
+    sum = d1 + d2;
+  }
   animateDice(d1, d2);
 
   setTimeout(() => {
@@ -4651,13 +4866,19 @@ function rollCraps() {
         sfxCatch();
         resetCrapsRound();
       } else if (sum === 2 || sum === 3 || sum === 12) {
-        const lines = [
-          `Rolled ${sum}. Craps. House wins.`,
-          `Rolled ${sum}. ${sum === 12 ? 'Boxcars' : sum === 2 ? 'Snake eyes' : 'Ace deuce'}. Bet's gone.`,
-          `Rolled ${sum}. Out the gate.`,
-        ];
-        setDiceResult(lines[Math.floor(Math.random() * lines.length)], false);
-        sfxTapMiss();
+        if (consumePowerup('rabbit_foot')) {
+          coins += crapsBet;
+          showPowerupToast('🐰', `Rabbit's foot refunded $${crapsBet}.`);
+          setDiceResult(`Rolled ${sum}. Foot saved you.`, null);
+        } else {
+          const lines = [
+            `Rolled ${sum}. Craps. House wins.`,
+            `Rolled ${sum}. ${sum === 12 ? 'Boxcars' : sum === 2 ? 'Snake eyes' : 'Ace deuce'}. Bet's gone.`,
+            `Rolled ${sum}. Out the gate.`,
+          ];
+          setDiceResult(lines[Math.floor(Math.random() * lines.length)], false);
+          sfxTapMiss();
+        }
         resetCrapsRound();
       } else {
         crapsPoint = sum;
@@ -4674,13 +4895,19 @@ function rollCraps() {
         sfxCatch();
         resetCrapsRound();
       } else if (sum === 7) {
-        const lines = [
-          `Rolled 7. Seven out. Bet's gone.`,
-          `Rolled 7. Should've stayed home.`,
-          `Rolled 7. Boudreaux smiles.`,
-        ];
-        setDiceResult(lines[Math.floor(Math.random() * lines.length)], false);
-        sfxTapMiss();
+        if (consumePowerup('rabbit_foot')) {
+          coins += crapsBet;
+          showPowerupToast('🐰', `Rabbit's foot refunded $${crapsBet}.`);
+          setDiceResult(`Rolled 7. Foot saved you.`, null);
+        } else {
+          const lines = [
+            `Rolled 7. Seven out. Bet's gone.`,
+            `Rolled 7. Should've stayed home.`,
+            `Rolled 7. Boudreaux smiles.`,
+          ];
+          setDiceResult(lines[Math.floor(Math.random() * lines.length)], false);
+          sfxTapMiss();
+        }
         resetCrapsRound();
       } else {
         const lines = [
@@ -4781,6 +5008,10 @@ function restartFromGameOver() {
   dayElapsedMs = 0;
   dayPaid = 0;
   paused = false;
+  ownedPowerups = {};
+  stiffDrinkActiveUntilMs = 0;
+  cardCounterArmed = false;
+  loadedDiceArmed = false;
   hidePauseOverlay();
   ownedRods = ['cane'];
   equippedRodId = 'cane';
