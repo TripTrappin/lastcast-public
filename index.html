@@ -1942,7 +1942,9 @@ function drawRod(canvas) {
   const [br, bg, bb] = P.rodBlankBase;
   const [tr, tg, tb] = P.rodBlankTip;
   // If a tipAccent is set, the topmost 60px of the blank shifts to that color.
-  const tipAccentStart = P.tipAccent ? rodLength - 60 : -1;
+  // Use Infinity (not -1) when no accent so the gating `if` below never enters
+  // its branch and tries to slice a null tipAccent string.
+  const tipAccentStart = P.tipAccent ? rodLength - 60 : Infinity;
   for (let i = 0; i < rodLength; i++) {
     const t = i / rodLength;
     const thickness = 10 - t * 7.5;
