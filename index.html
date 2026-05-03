@@ -772,19 +772,6 @@ justify-content: center;
 padding: 0 30px;
 }
 
-.title-tagline-top {
-font-family: 'Baloo 2', cursive;
-font-size: 11px;
-font-weight: 600;
-color: var(--accent2);
-letter-spacing: 6px;
-text-transform: uppercase;
-text-shadow: 0 2px 8px rgba(0,0,0,0.9);
-margin-bottom: 18px;
-opacity: 0;
-animation: fadeSlideIn 1.2s ease-out 0.2s forwards;
-}
-
 .title-main {
 font-family: 'Baloo 2', cursive;
 font-size: 64px;
@@ -868,26 +855,6 @@ border: 1px solid rgba(255,232,212,0.25);
 .title-btn.secondary:active {
 transform: scale(0.97);
 background: rgba(20, 10, 18, 0.75);
-}
-
-#save-indicator {
-position: absolute;
-bottom: 30px;
-left: 0; right: 0;
-text-align: center;
-font-family: 'Baloo 2', cursive;
-font-size: 11px;
-font-weight: 600;
-color: var(--text-dim);
-letter-spacing: 1.2px;
-text-transform: uppercase;
-text-shadow: 0 1px 4px rgba(0,0,0,0.9);
-opacity: 0;
-animation: fadeSlideIn 1s ease-out 1.4s forwards;
-}
-#save-indicator .save-progress {
-color: var(--accent2);
-font-weight: 800;
 }
 
 #title-mute-btn {
@@ -1783,7 +1750,6 @@ background: linear-gradient(135deg, #6fb069, #2e7831) !important;
 
 <!-- Title content -->
 <div id="title-content">
-  <div class="title-tagline-top">A FISHING GAME ABOUT MAKING RENT</div>
   <h1 class="title-main">Last Cast</h1>
   <div class="title-tagline-bot">one more cast. just one.</div>
 
@@ -1791,12 +1757,7 @@ background: linear-gradient(135deg, #6fb069, #2e7831) !important;
     <button class="title-btn primary" id="play-btn" onclick="startGame()">
       <span class="btn-label" id="play-btn-label">Cast Off</span>
     </button>
-    <button class="title-btn secondary" onclick="openShopFromTitle()">
-      <span class="btn-label">Shop</span>
-    </button>
   </div>
-
-  <div id="save-indicator"></div>
 </div>
 
 <!-- Mute button on title (top-right) -->
@@ -3680,19 +3641,7 @@ function startGame() {
 
 function updateTitleScreen() {
   const playLabel = document.getElementById('play-btn-label');
-  const saveIndicator = document.getElementById('save-indicator');
-
-  if (totalCaught > 0) {
-    if (playLabel) playLabel.textContent = 'Continue';
-    if (saveIndicator) {
-      saveIndicator.innerHTML = `<span class="save-progress">${totalCaught}</span> catches · <span class="save-progress">${Math.floor(debt)}</span> owed`;
-    }
-  } else {
-    if (playLabel) playLabel.textContent = 'Cast Off';
-    if (saveIndicator) {
-      saveIndicator.innerHTML = 'Tap "Cast Off" to begin';
-    }
-  }
+  if (playLabel) playLabel.textContent = totalCaught > 0 ? 'Continue' : 'Cast Off';
 
   const tmb = document.getElementById('title-mute-btn');
   if (tmb) {
