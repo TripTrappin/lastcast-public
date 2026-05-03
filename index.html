@@ -1560,33 +1560,39 @@ color: #fde898;
 font-family: 'Baloo 2', cursive; font-size: 12px; font-weight: 800;
 text-align: center;
 }
-.dice-choices {
-display: flex; gap: 6px;
-}
-.dice-choice {
-flex: 1; height: 48px;
-display: flex; flex-direction: column; align-items: center; justify-content: center;
-gap: 1px;
-border-radius: 8px;
-background: rgba(20,10,18,0.55);
-border: 1px solid rgba(255,140,80,0.35);
-color: var(--text);
-font-family: 'Baloo 2', cursive;
-cursor: pointer;
-transition: transform 0.12s;
-}
-.dice-choice:active { transform: scale(0.96); }
-.dice-choice.lucky {
-border-color: #ffd54f;
+/* Tiny "Point X" chip that only appears once a point is set */
+.craps-point {
+align-self: center;
+padding: 2px 10px;
+border-radius: 999px;
 background: rgba(80, 50, 10, 0.55);
-}
-.dice-choice .dc-name {
-font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+border: 1px solid #ffd54f;
+color: #ffd54f;
+font-family: 'Baloo 2', cursive;
+font-size: 10px; font-weight: 800;
+letter-spacing: 1.2px;
 text-transform: uppercase;
 }
-.dice-choice .dc-pay {
+/* Single big roll button */
+.craps-roll-btn {
+height: 44px;
+border-radius: 999px;
+border: 1px solid rgba(255,140,80,0.7);
+background: linear-gradient(180deg, #ff7f50 0%, #c8362a 100%);
+color: #fff;
+font-family: 'Baloo 2', cursive;
 font-size: 14px; font-weight: 800;
-color: var(--gold);
+letter-spacing: 1.4px;
+text-transform: uppercase;
+cursor: pointer;
+box-shadow: 0 3px 0 rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+transition: transform 0.12s;
+}
+.craps-roll-btn:active { transform: translateY(1px); box-shadow: 0 2px 0 rgba(0,0,0,0.5); }
+.craps-roll-btn:disabled {
+opacity: 0.55;
+cursor: not-allowed;
+filter: grayscale(0.4);
 }
 .dice-bottom-row {
 display: flex; align-items: center; justify-content: space-between;
@@ -1720,28 +1726,16 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
           <div class="die" id="die-2"><div class="die-face" data-face="1">⚀</div></div>
         </div>
         <div class="dice-result" id="dice-result"></div>
-        <div class="dice-bet-row">
-          <span class="dice-bet-label">Bet</span>
+        <div class="craps-point" id="craps-point" style="display:none">Point <span id="craps-point-val">—</span></div>
+        <div class="dice-bet-row" id="dice-bet-row">
+          <span class="dice-bet-label">Pass</span>
           <button class="dice-step" onclick="adjDiceBet(-50)">−50</button>
           <button class="dice-step" onclick="adjDiceBet(-10)">−10</button>
           <input id="dice-bet" type="number" min="10" step="10" value="50" inputmode="numeric"/>
           <button class="dice-step" onclick="adjDiceBet(10)">+10</button>
           <button class="dice-step" onclick="adjDiceBet(50)">+50</button>
         </div>
-        <div class="dice-choices">
-          <button class="dice-choice" data-choice="under" onclick="rollDice('under')">
-            <div class="dc-name">Under 7</div>
-            <div class="dc-pay">2×</div>
-          </button>
-          <button class="dice-choice lucky" data-choice="seven" onclick="rollDice('seven')">
-            <div class="dc-name">Lucky 7</div>
-            <div class="dc-pay">5×</div>
-          </button>
-          <button class="dice-choice" data-choice="over" onclick="rollDice('over')">
-            <div class="dc-name">Over 7</div>
-            <div class="dc-pay">2×</div>
-          </button>
-        </div>
+        <button class="craps-roll-btn" id="craps-roll-btn" onclick="rollCraps()">Roll</button>
         <div class="dice-bottom-row">
           <span class="dice-coins-line">Coins <span class="dice-num" id="dice-coins">0</span></span>
           <span class="dice-debt-line">Owed <span class="dice-num bad" id="dice-debt">0</span></span>
@@ -3939,6 +3933,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function openPhone() {
   sfxButtonClick();
   refreshDiceScreen();
+  resetCrapsRound();
   const overlay = document.getElementById('phone-overlay');
   if (overlay) overlay.classList.add('show');
 }
@@ -3982,50 +3977,104 @@ function adjDiceBet(d) {
 
 const DIE_FACE_GLYPH = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
-function rollDice(choice) {
-  const betEl = document.getElementById('dice-bet');
-  let bet = Math.max(10, Math.min(coins, parseInt(betEl.value, 10) || 0));
-  if (bet > coins || coins < 10) {
-    setDiceResult("Boudreaux: \"Come back when you got money.\"", false);
-    return;
-  }
-  betEl.value = bet;
+// ---- Craps state machine (in-memory only) ----
+// Pass Line bet. Come-out roll: 7/11 wins, 2/3/12 loses, anything else
+// sets the point. Point phase: roll the point again to win, roll 7 to lose.
+let crapsPhase = 'come-out';   // 'come-out' | 'point'
+let crapsPoint = null;
+let crapsBet = 0;
 
-  // Lock in the bet
-  coins -= bet;
+function refreshCrapsStatus() {
+  const chip = document.getElementById('craps-point');
+  const val  = document.getElementById('craps-point-val');
+  if (!chip || !val) return;
+  if (crapsPhase === 'point') {
+    val.textContent = String(crapsPoint);
+    chip.style.display = '';
+  } else {
+    chip.style.display = 'none';
+  }
+}
+
+function resetCrapsRound() {
+  crapsPhase = 'come-out';
+  crapsPoint = null;
+  crapsBet = 0;
+  refreshCrapsStatus();
+}
+
+function rollCraps() {
+  // Come-out: lock in a fresh bet from the input.
+  if (crapsPhase === 'come-out') {
+    const betEl = document.getElementById('dice-bet');
+    let bet = Math.max(10, Math.min(coins, parseInt(betEl.value, 10) || 0));
+    if (bet > coins || coins < 10) {
+      setDiceResult("Boudreaux: \"Come back when you got money.\"", false);
+      return;
+    }
+    betEl.value = bet;
+    coins -= bet;
+    crapsBet = bet;
+  }
+
   itch = Math.max(0, itch - ITCH_DRAIN_PER_ROLL);
   updateStats();
   updateGamblingUI();
 
-  // Roll
   const d1 = 1 + Math.floor(Math.random() * 6);
   const d2 = 1 + Math.floor(Math.random() * 6);
   const sum = d1 + d2;
-
   animateDice(d1, d2);
 
-  // Determine outcome (resolved after the roll animation)
   setTimeout(() => {
-    let payout = 0;
-    let won = false;
-    if (choice === 'under' && sum < 7)      { payout = bet * 2; won = true; }
-    else if (choice === 'over' && sum > 7)  { payout = bet * 2; won = true; }
-    else if (choice === 'seven' && sum === 7) { payout = bet * 5; won = true; }
-
-    if (won) {
-      coins += payout;
-      const profit = payout - bet;
-      setDiceResult(`Rolled ${sum}. Won ${profit}.`, true);
-      sfxCatch();
+    if (crapsPhase === 'come-out') {
+      // Naturals
+      if (sum === 7 || sum === 11) {
+        coins += crapsBet * 2;
+        setDiceResult(`Rolled ${sum}. Pass Line natural — won ${crapsBet}.`, true);
+        sfxCatch();
+        resetCrapsRound();
+      } else if (sum === 2 || sum === 3 || sum === 12) {
+        const lines = [
+          `Rolled ${sum}. Craps. House wins.`,
+          `Rolled ${sum}. ${sum === 12 ? 'Boxcars' : sum === 2 ? 'Snake eyes' : 'Ace deuce'}. Bet's gone.`,
+          `Rolled ${sum}. Out the gate.`,
+        ];
+        setDiceResult(lines[Math.floor(Math.random() * lines.length)], false);
+        sfxTapMiss();
+        resetCrapsRound();
+      } else {
+        crapsPoint = sum;
+        crapsPhase = 'point';
+        setDiceResult(`Rolled ${sum}. Point is ${sum}. Keep rolling.`, null);
+        sfxButtonClick();
+        refreshCrapsStatus();
+      }
     } else {
-      const lines = [
-        `Rolled ${sum}. Boudreaux pockets the ${bet}.`,
-        `Rolled ${sum}. House wins again.`,
-        `Rolled ${sum}. Should've gone the other way.`,
-        `Rolled ${sum}. So close.`,
-      ];
-      setDiceResult(lines[Math.floor(Math.random() * lines.length)], false);
-      sfxTapMiss();
+      // Point phase
+      if (sum === crapsPoint) {
+        coins += crapsBet * 2;
+        setDiceResult(`Rolled ${sum}. Hit the point — won ${crapsBet}.`, true);
+        sfxCatch();
+        resetCrapsRound();
+      } else if (sum === 7) {
+        const lines = [
+          `Rolled 7. Seven out. Bet's gone.`,
+          `Rolled 7. Should've stayed home.`,
+          `Rolled 7. Boudreaux smiles.`,
+        ];
+        setDiceResult(lines[Math.floor(Math.random() * lines.length)], false);
+        sfxTapMiss();
+        resetCrapsRound();
+      } else {
+        const lines = [
+          `Rolled ${sum}. Not the point. Roll again.`,
+          `Rolled ${sum}. Try again.`,
+          `Rolled ${sum}. Need ${crapsPoint}.`,
+        ];
+        setDiceResult(lines[Math.floor(Math.random() * lines.length)], null);
+        sfxButtonClick();
+      }
     }
     updateStats();
     updateGamblingUI();
