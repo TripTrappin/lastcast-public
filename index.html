@@ -3344,11 +3344,26 @@ function weightedPick() {
   const bait = getBait(window._activeBaitId || 'worms');
   const rareBonus = rod.rareBonus + bait.rareBoost + luckyCharmBonus();
   const uncommonBonus = bait.uncommonBoost;
-  
+
+  // Bait powerup floors (consumed in the cast handler, applied here once).
+  const floor = nextCastRarityFloor;
+  nextCastRarityFloor = null;
+
+  function passesFloor(f) {
+    if (floor === 'rare+')      return f.rarity === 'rare' || f.rarity === 'legendary';
+    if (floor === 'uncommon+')  return f.rarity === 'uncommon' || f.rarity === 'rare' || f.rarity === 'legendary';
+    return true;
+  }
+
   // Build adjusted weights array
   const adjusted = FISH.map(f => {
     let w = f.weight;
-    
+
+    // Bait powerup: filter the pool first.
+    if (!passesFloor(f)) {
+      return { fish: f, weight: 0 };
+    }
+
     // Bait skipJunk: zero out junk catches
     if (bait.skipJunk && f.rarity === 'junk') {
       return { fish: f, weight: 0 };
@@ -3420,6 +3435,15 @@ function cast() {
   bobber.style.display = 'block'; bobber.className = '';
   drawLine(x, y);
   bumpItchOnCast();
+
+  // Consume a bait powerup charge (Trophy preferred over Live).
+  if (powerupCharges('trophy_bait') > 0 && consumePowerup('trophy_bait')) {
+    nextCastRarityFloor = 'rare+';
+    showPowerupToast('🎣', 'Trophy bait on the line.');
+  } else if (powerupCharges('live_bait') > 0 && consumePowerup('live_bait')) {
+    nextCastRarityFloor = 'uncommon+';
+    showPowerupToast('🐟', 'Live bait — bigger fish only.');
+  }
   setTimeout(() => {
     spawnRipple(x, y);
     sfxBobberSettle();
@@ -3849,6 +3873,18 @@ const POWERUPS = [
     cost: 500,
     description: "Sneaks a glance at the dealer's hole card on the next blackjack deal.",
   },
+  {
+    id: 'live_bait',
+    name: 'Live Bait',
+    cost: 350,
+    description: 'Next bite is uncommon or better. No commons, no junk.',
+  },
+  {
+    id: 'trophy_bait',
+    name: 'Trophy Bait',
+    cost: 800,
+    description: 'Next bite is rare or legendary. Big game only.',
+  },
 ];
 
 let ownedPowerups = {};   // { id: { charges: N } }
@@ -3878,6 +3914,11 @@ function isDrinkActive() { return Date.now() < stiffDrinkActiveUntilMs; }
 // Tracks Card Counter peek + Loaded Dice arming for the *next* event.
 let cardCounterArmed = false;
 let loadedDiceArmed = false;
+
+// Bait powerups: when set, the next bite's rarity pool is filtered.
+//   'uncommon+' allows uncommon, rare, legendary
+//   'rare+'     allows rare, legendary only
+let nextCastRarityFloor = null;
 
 
 
@@ -5012,6 +5053,7 @@ function restartFromGameOver() {
   stiffDrinkActiveUntilMs = 0;
   cardCounterArmed = false;
   loadedDiceArmed = false;
+  nextCastRarityFloor = null;
   hidePauseOverlay();
   ownedRods = ['cane'];
   equippedRodId = 'cane';
