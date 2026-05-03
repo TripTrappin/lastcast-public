@@ -1379,6 +1379,181 @@ text-shadow: 0 0 8px rgba(255,213,79,0.6);
   100% { transform: translate(-50%, -110%) scale(1.0); opacity: 0; }
 }
 
+/* === CABIN SCREEN === */
+#cabin-screen { background: var(--bg); }
+.cabin-header {
+display: flex; align-items: center; justify-content: space-between;
+padding: 14px 20px 10px;
+flex-shrink: 0;
+}
+.cabin-header-title {
+font-family: 'Baloo 2', cursive; font-size: 20px; font-weight: 800;
+color: var(--accent2); letter-spacing: 1px;
+}
+.cabin-back {
+height: 28px; padding: 0 14px; border-radius: 999px; border: none;
+background: rgba(232, 132, 58, 0.92); color: var(--bg);
+font-family: 'Baloo 2', cursive; font-size: 11px; font-weight: 700;
+letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+}
+.cabin-room {
+flex: 1; position: relative; margin: 0 16px 16px;
+border-radius: 12px; overflow: hidden;
+border: 2px solid #1a0d05;
+box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+/* Wood-plank wall */
+.cabin-wall {
+position: absolute; left: 0; right: 0; top: 0; height: 65%;
+background:
+  repeating-linear-gradient(180deg,
+    #4a2818 0px, #4a2818 22px,
+    #1a0c05 22px, #1a0c05 23px,
+    #5a3220 23px, #5a3220 45px,
+    #1a0c05 45px, #1a0c05 46px),
+  linear-gradient(180deg, #3a1810, #5a3018);
+}
+/* Wood-plank floor */
+.cabin-floor {
+position: absolute; left: 0; right: 0; bottom: 0; height: 35%;
+background:
+  repeating-linear-gradient(90deg,
+    #3a200f 0px, #3a200f 38px,
+    #1a0c05 38px, #1a0c05 39px,
+    #4a2818 39px, #4a2818 78px,
+    #1a0c05 78px, #1a0c05 79px),
+  linear-gradient(180deg, #2a1810 0%, #1a0c05 100%);
+}
+/* Window cut into the back wall - reuses the title bg for the swamp view */
+.cabin-window {
+position: absolute; left: 28%; right: 28%; top: 8%; height: 38%;
+background-image: url('bg-title.png');
+background-size: 200% auto;
+background-position: 50% 0%;
+border: 4px solid #2a1808;
+border-radius: 4px;
+box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+}
+/* Window mullions */
+.cabin-window::before, .cabin-window::after {
+content: ''; position: absolute; background: #2a1808;
+}
+.cabin-window::before { left: 50%; top: 0; bottom: 0; width: 4px; transform: translateX(-50%); }
+.cabin-window::after  { top: 50%; left: 0; right: 0; height: 4px; transform: translateY(-50%); }
+
+/* Trophy mounts - 5 slots: 2 above the window, 3 below it */
+.cabin-mount {
+position: absolute;
+width: 60px; height: 50px;
+display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.cabin-mount-plaque {
+width: 56px; height: 38px;
+background: linear-gradient(180deg, #5a3220, #2a1810);
+border: 2px solid #1a0c05;
+border-radius: 8px 8px 6px 6px / 12px 12px 4px 4px;
+box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,200,140,0.15);
+display: flex; align-items: center; justify-content: center;
+position: relative;
+cursor: pointer;
+transition: transform 0.12s;
+}
+.cabin-mount-plaque:active { transform: scale(0.95); }
+.cabin-mount-plaque canvas {
+image-rendering: pixelated;
+filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.6));
+}
+.cabin-mount-plaque.empty {
+background: rgba(20, 8, 4, 0.4);
+border-color: rgba(255,232,212,0.18);
+border-style: dashed;
+box-shadow: none;
+}
+.cabin-mount-name {
+font-family: 'Baloo 2', cursive; font-size: 8px; font-weight: 700;
+color: var(--gold); letter-spacing: 0.5px;
+text-transform: uppercase;
+margin-top: 2px;
+text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+white-space: nowrap;
+overflow: hidden; text-overflow: ellipsis; max-width: 60px;
+}
+/* Mount slot positions - all on the back wall (top 65% of room) */
+.cabin-mount[data-mount="0"] { left: 8%;  top: 5%; }
+.cabin-mount[data-mount="1"] { right: 8%; top: 5%; }
+.cabin-mount[data-mount="2"] { left: 5%;  top: 36%; }
+.cabin-mount[data-mount="3"] { left: 50%; top: 50%; transform: translateX(-50%); }
+.cabin-mount[data-mount="3"] .cabin-mount-name { white-space: normal; line-height: 1; }
+.cabin-mount[data-mount="4"] { right: 5%; top: 36%; }
+
+/* Decor slots - placeholders for Phase 3 (cabin-shop). Visible only when empty
+   in your own cabin and you tap "Customize" mode. Hidden by default. */
+.cabin-slot {
+position: absolute;
+border: 1px dashed rgba(255,232,212,0.18);
+border-radius: 6px;
+display: none;          /* hidden in v1; Phase 3 will toggle this */
+align-items: center; justify-content: center;
+font-family: 'Baloo 2', cursive; font-size: 9px;
+color: rgba(255,232,212,0.4);
+text-transform: uppercase; letter-spacing: 1px;
+pointer-events: none;
+}
+.cabin-slot.show { display: flex; }
+.cabin-slot[data-slot="floor-left"]  { left: 6%;  bottom: 8%; width: 80px;  height: 70px; }
+.cabin-slot[data-slot="floor-right"] { right: 6%; bottom: 8%; width: 80px;  height: 70px; }
+.cabin-slot[data-slot="rug"]         { left: 50%; bottom: 6%; transform: translateX(-50%); width: 160px; height: 30px; }
+
+.cabin-footer {
+display: flex; align-items: center; justify-content: space-between;
+padding: 0 20px 16px;
+flex-shrink: 0;
+}
+.cabin-progress {
+font-family: 'Baloo 2', cursive; font-size: 12px; font-weight: 700;
+color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase;
+}
+.cabin-progress .progress-num { color: var(--gold); font-weight: 800; }
+
+/* === Mount detail popup === */
+#mount-popup {
+position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+z-index: 300; background: rgba(0,0,0,0.7);
+opacity: 0; pointer-events: none; transition: opacity 0.18s;
+}
+#mount-popup.show { opacity: 1; pointer-events: all; }
+.mount-popup-card {
+background: var(--surface-solid);
+border: 1px solid var(--border);
+border-radius: 16px;
+padding: 22px 22px 18px;
+width: min(86%, 320px);
+text-align: center;
+transform: scale(0.92);
+transition: transform 0.18s;
+}
+#mount-popup.show .mount-popup-card { transform: scale(1); }
+.mount-popup-fish-canvas {
+image-rendering: pixelated;
+margin: 0 auto 10px;
+display: block;
+filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.6));
+}
+.mount-popup-name {
+font-family: 'Baloo 2', cursive; font-size: 18px; font-weight: 800;
+color: var(--gold); margin-bottom: 4px;
+}
+.mount-popup-stats {
+font-family: 'Baloo 2', cursive; font-size: 13px; color: var(--text);
+margin-bottom: 16px;
+}
+.mount-popup-close {
+height: 36px; padding: 0 18px; border-radius: 999px; border: none;
+background: rgba(232, 132, 58, 0.92); color: var(--bg);
+font-family: 'Baloo 2', cursive; font-size: 12px; font-weight: 700;
+letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+}
+
 </style>
 </head>
 <body>
@@ -1407,6 +1582,9 @@ text-shadow: 0 0 8px rgba(255,213,79,0.6);
     </button>
     <button class="title-btn secondary" onclick="openShopFromTitle()">
       <span class="btn-label">Shop</span>
+    </button>
+    <button class="title-btn secondary" onclick="openCabinFromTitle()">
+      <span class="btn-label">Cabin</span>
     </button>
     <button class="title-btn secondary" onclick="openFishdexFromTitle()">
       <span class="btn-label">Fishdex</span>
@@ -1551,6 +1729,42 @@ text-shadow: 0 0 8px rgba(255,213,79,0.6);
       <button class="shop-tab" data-tab="upgrades" onclick="setShopTab('upgrades')">Upgrades</button>
     </div>
     <div class="shop-scroll" id="shop-scroll"></div>
+  </div>
+
+  <!-- ============== CABIN SCREEN ============== -->
+  <div id="cabin-screen" class="screen">
+    <div class="cabin-header">
+      <span class="cabin-header-title" id="cabin-screen-title">My Cabin</span>
+      <button class="cabin-back" onclick="closeCabin()">CLOSE</button>
+    </div>
+    <div class="cabin-room" id="cabin-room">
+      <div class="cabin-wall"></div>
+      <div class="cabin-floor"></div>
+      <div class="cabin-window"></div>
+      <div class="cabin-mount" data-mount="0"></div>
+      <div class="cabin-mount" data-mount="1"></div>
+      <div class="cabin-mount" data-mount="2"></div>
+      <div class="cabin-mount" data-mount="3"></div>
+      <div class="cabin-mount" data-mount="4"></div>
+      <!-- Decor placeholders for Phase 3 -->
+      <div class="cabin-slot" data-slot="floor-left">slot</div>
+      <div class="cabin-slot" data-slot="floor-right">slot</div>
+      <div class="cabin-slot" data-slot="rug">rug</div>
+    </div>
+    <div class="cabin-footer">
+      <div class="cabin-progress">
+        Trophies: <span class="progress-num" id="cabin-trophy-count">0</span> / 5
+      </div>
+    </div>
+  </div>
+
+  <div id="mount-popup">
+    <div class="mount-popup-card">
+      <canvas class="mount-popup-fish-canvas" id="mount-popup-canvas" width="240" height="120"></canvas>
+      <div class="mount-popup-name" id="mount-popup-name"></div>
+      <div class="mount-popup-stats" id="mount-popup-stats"></div>
+      <button class="mount-popup-close" id="mount-popup-close">Close</button>
+    </div>
   </div>
 
   <div id="catch-popup">
@@ -3656,6 +3870,104 @@ function equipRod(id) {
   renderShop();
   saveGame();
 }
+// ============================================================
+// CABIN SCREEN - shows your legendary catches mounted on the wall.
+// Phase 3 will add buyable decor that fills the empty slots.
+// ============================================================
+let cabinCameFromTitle = false;
+
+function openCabinFromTitle() {
+  sfxButtonClick();
+  document.getElementById('title-screen').classList.remove('active');
+  $('cabin-screen').classList.add('active');
+  cabinCameFromTitle = true;
+  renderCabin();
+}
+
+function closeCabin() {
+  sfxButtonClick();
+  $('cabin-screen').classList.remove('active');
+  if (cabinCameFromTitle) {
+    document.getElementById('title-screen').classList.add('active');
+    cabinCameFromTitle = false;
+  } else {
+    $('fishing-screen').classList.add('active');
+  }
+}
+
+function renderCabin() {
+  // Find every legendary fish the player has caught, sorted by personal best
+  // descending. We auto-fill at most 5 mount slots.
+  const legendaries = FISH.filter(f => f.rarity === 'legendary');
+  const caught = legendaries
+    .map(f => ({ fish: f, entry: collection[f.id] }))
+    .filter(x => x.entry && x.entry.count > 0)
+    .sort((a, b) => b.entry.personalBest - a.entry.personalBest);
+
+  $('cabin-trophy-count').textContent = caught.length;
+
+  for (let i = 0; i < 5; i++) {
+    const mount = document.querySelector(`.cabin-mount[data-mount="${i}"]`);
+    if (!mount) continue;
+    mount.innerHTML = '';
+    if (caught[i]) {
+      const { fish, entry } = caught[i];
+      const plaque = document.createElement('div');
+      plaque.className = 'cabin-mount-plaque';
+      const cv = document.createElement('canvas');
+      cv.width = 24 * 2; cv.height = 12 * 2;
+      cv.style.width = '48px'; cv.style.height = '24px';
+      plaque.appendChild(cv);
+      mount.appendChild(plaque);
+      const lbl = document.createElement('div');
+      lbl.className = 'cabin-mount-name';
+      lbl.textContent = fish.name;
+      mount.appendChild(lbl);
+      // Render the fish art into the canvas after the element is in the DOM.
+      if (FISH_ART[fish.id]) renderPixelArt(cv, FISH_ART[fish.id], 2);
+      plaque.addEventListener('click', () => showMountPopup(fish, entry));
+    } else {
+      const plaque = document.createElement('div');
+      plaque.className = 'cabin-mount-plaque empty';
+      mount.appendChild(plaque);
+      const lbl = document.createElement('div');
+      lbl.className = 'cabin-mount-name';
+      lbl.textContent = '???';
+      lbl.style.color = 'rgba(255,232,212,0.35)';
+      mount.appendChild(lbl);
+    }
+  }
+}
+
+function showMountPopup(fish, entry) {
+  sfxButtonClick();
+  const cv = $('mount-popup-canvas');
+  cv.width = 24 * 10; cv.height = 12 * 10;
+  cv.style.width = '240px'; cv.style.height = '120px';
+  if (FISH_ART[fish.id]) renderPixelArt(cv, FISH_ART[fish.id], 10);
+  $('mount-popup-name').textContent = fish.name;
+  $('mount-popup-stats').innerHTML =
+    `Personal best: <strong>${entry.personalBest} cm</strong><br>` +
+    `Caught ${entry.count} time${entry.count === 1 ? '' : 's'}`;
+  $('mount-popup').classList.add('show');
+}
+
+(function wireMountPopup() {
+  // Defer until DOM is built.
+  document.addEventListener('DOMContentLoaded', () => {
+    const popup = document.getElementById('mount-popup');
+    const close = document.getElementById('mount-popup-close');
+    if (close) close.addEventListener('click', () => {
+      sfxButtonClick();
+      popup.classList.remove('show');
+    });
+    if (popup) popup.addEventListener('click', (e) => {
+      if (e.target === popup) popup.classList.remove('show');
+    });
+  });
+})();
+
+
 </script>
 
 </body>
