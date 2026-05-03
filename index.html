@@ -1934,8 +1934,7 @@ background: linear-gradient(135deg, #6fb069, #2e7831) !important;
         <!-- Shared coins / owed / pay row -->
         <div class="dice-bottom-row">
           <span class="dice-coins-line">Coins <span class="dice-num" id="dice-coins">0</span></span>
-          <span class="dice-debt-line">Owed <span class="dice-num bad" id="dice-debt">0</span></span>
-          <button class="dice-pay-btn" onclick="payBoudreaux()">Pay</button>
+          <button class="dice-pay-btn" onclick="payBoudreaux()">Pay Boudreaux</button>
         </div>
       </div>
     </div>
@@ -1946,7 +1945,6 @@ background: linear-gradient(135deg, #6fb069, #2e7831) !important;
 <div id="stats-bar">
   <div class="mini-stat"><div class="ms-val" id="stat-caught">0</div><div class="ms-lbl">Caught</div></div>
   <div class="mini-stat coin-stat"><div class="ms-val" id="stat-coins">0</div><div class="ms-lbl">Coins</div></div>
-  <div class="mini-stat debt-stat"><div class="ms-val" id="stat-debt">0</div><div class="ms-lbl">Debt</div></div>
   <div class="mini-stat itch-stat"><div class="ms-itch"><div class="ms-itch-fill" id="stat-itch-fill"></div></div><div class="ms-lbl">Itch</div></div>
 </div>
 
@@ -3634,12 +3632,14 @@ const ITCH_PER_SEC = 1;        // passive growth per real-time second
 const ITCH_PER_CAST = 4;       // bumps per cast
 const ITCH_DRAIN_PER_ROLL = 25;// each dice roll relieves itch
 
-// Day / quota system. Total debt is $1,000,000 split across 10 escalating
-// daily quotas (arithmetic progression: 55k -> 145k, +10k each day).
+// Day / quota system. Quotas escalate over 25 days (arithmetic
+// progression: $16k -> $64k, +$2k each day). The cumulative total
+// across all 25 days is $1,000,000 - this is the secret final debt
+// target, but the player only ever sees the current day's quota.
 // Each day lasts DAY_DURATION_MS in real time. End of day with quota
-// unmet -> game over. Pay total debt to 0 -> win.
+// unmet -> game over. Pay all 25 days (debt -> 0) -> win.
 const DAY_DURATION_MS = 5 * 60 * 1000;
-const DAILY_QUOTAS = [55000, 65000, 75000, 85000, 95000, 105000, 115000, 125000, 135000, 145000];
+const DAILY_QUOTAS = [16000,18000,20000,22000,24000,26000,28000,30000,32000,34000,36000,38000,40000,42000,44000,46000,48000,50000,52000,54000,56000,58000,60000,62000,64000];
 const TOTAL_DEBT = DAILY_QUOTAS.reduce((a, b) => a + b, 0); // 1,000,000
 const DEBT_START = TOTAL_DEBT;
 
