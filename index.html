@@ -1854,31 +1854,32 @@ transform: translate(-50%, 0);
 .powerup-toast .pt-text { color: var(--text); font-weight: 600; }
 
 /* === Cast prompt === */
-/* Visible at the start of each day until the first cast. Sits just above
-   the control panel so the player notices it before tapping Cast Line. */
+/* Visible at the start of each day until the first cast. Center of the
+   screen so it can't be missed. */
 #cast-prompt {
 position: absolute;
-left: 16px; right: 16px;
-bottom: 156px;
+left: 50%; top: 50%;
+transform: translate(-50%, -50%);
 z-index: 22;
 display: none;
 align-items: center;
 justify-content: center;
-gap: 8px;
-padding: 8px 14px;
-border-radius: 12px;
-background: rgba(20, 10, 18, 0.85);
-border: 1px solid rgba(255, 213, 79, 0.55);
+gap: 10px;
+padding: 14px 22px;
+border-radius: 14px;
+background: rgba(20, 10, 18, 0.88);
+border: 1px solid rgba(255, 213, 79, 0.6);
 backdrop-filter: blur(6px);
 font-family: 'Baloo 2', cursive;
-font-size: 12px;
+font-size: 14px;
 font-weight: 700;
 letter-spacing: 0.6px;
 color: var(--text);
 text-align: center;
-box-shadow: 0 4px 14px rgba(0,0,0,0.55);
+box-shadow: 0 6px 20px rgba(0,0,0,0.6);
 animation: castPromptPulse 2.4s ease-in-out infinite;
 pointer-events: none;
+max-width: min(82%, 320px);
 }
 #cast-prompt.show { display: flex; }
 .cast-prompt-pin {
@@ -3810,7 +3811,7 @@ const ITCH_DRAIN_PER_ROLL = 25;// each dice roll relieves itch
 // only ever sees the current day's quota.
 // Each day lasts DAY_DURATION_MS in real time. End of day with quota
 // unmet -> game over. Pay all 11 days (debt -> 0) -> win.
-const DAY_DURATION_MS = 5 * 60 * 1000;
+const DAY_DURATION_MS = 10 * 60 * 1000;
 const DAILY_QUOTAS = [250,500,1000,2000,4000,8000,16000,32000,64000,128000,256000];
 const TOTAL_DEBT = DAILY_QUOTAS.reduce((a, b) => a + b, 0); // 511,750
 const DEBT_START = TOTAL_DEBT;
@@ -3910,7 +3911,7 @@ const POWERUPS = [
     id: 'time_stretcher',
     name: 'Time Stretcher',
     cost: 400,
-    description: "When today's clock drops below 30 seconds with the quota unmet, buys you another minute.",
+    description: "When less than 2 hours remain on today's clock with quota unmet, buys you another 2 hours.",
   },
   {
     id: 'card_counter',
@@ -4464,13 +4465,15 @@ function tickGambling() {
   const itchRate = isDrinkActive() ? ITCH_PER_SEC * 0.7 : ITCH_PER_SEC;
   itch = Math.min(ITCH_MAX, itch + itchRate);
 
-  // Time Stretcher: when today is about to expire with quota unmet, push the
-  // clock back a minute.
+  // Time Stretcher: when less than 2 in-game hours remain with the quota
+  // unmet, push the clock back another 2 in-game hours.
+  const TS_TRIGGER_MS = (2/24) * DAY_DURATION_MS;
+  const TS_GIVEN_MS   = (2/24) * DAY_DURATION_MS;
   const remaining = DAY_DURATION_MS - dayElapsedMs;
-  if (remaining > 0 && remaining <= 30000 && dayPaid < currentQuota() && powerupCharges('time_stretcher') > 0) {
+  if (remaining > 0 && remaining <= TS_TRIGGER_MS && dayPaid < currentQuota() && powerupCharges('time_stretcher') > 0) {
     if (consumePowerup('time_stretcher')) {
-      dayElapsedMs = Math.max(0, dayElapsedMs - 60000);
-      showPowerupToast('⏱️', "Time stretched. +60s.");
+      dayElapsedMs = Math.max(0, dayElapsedMs - TS_GIVEN_MS);
+      showPowerupToast('⏱️', "Time stretched. +2 hours.");
     }
   }
   dayElapsedMs += 1000;
@@ -4561,10 +4564,13 @@ function fmtMoney(n) {
 }
 
 function fmtTime(ms) {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  const m = Math.floor(s / 60);
-  const r = s % 60;
-  return m + ':' + (r < 10 ? '0' : '') + r;
+  // Display the remaining day as in-game hours:minutes, where the whole
+  // 10-minute real day represents a full 24-hour in-game span.
+  const ratio = Math.max(0, Math.min(1, ms / DAY_DURATION_MS));
+  const totalGameMinutes = Math.floor(ratio * 24 * 60);
+  const h = Math.floor(totalGameMinutes / 60);
+  const m = totalGameMinutes % 60;
+  return h + ':' + (m < 10 ? '0' : '') + m;
 }
 
 function bumpItchOnCast() {
@@ -4605,7 +4611,9 @@ function updateGamblingUI() {
   if (dayT) {
     const remaining = Math.max(0, DAY_DURATION_MS - dayElapsedMs);
     dayT.textContent = fmtTime(remaining);
-    if (banner) banner.classList.toggle('urgent', remaining <= 60000 && !gameIsHalted());
+    // Urgent (red pulse) when less than 2 in-game hours remain.
+    const URGENT_MS = (2/24) * DAY_DURATION_MS;
+    if (banner) banner.classList.toggle('urgent', remaining <= URGENT_MS && !gameIsHalted());
   }
   if (dayQ) {
     const q = currentQuota();
