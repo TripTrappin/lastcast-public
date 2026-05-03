@@ -3372,9 +3372,12 @@ function startReeling() {
   reelGame.classList.add('active');
   hitsLanded = 0; perfectHits = 0; combo = 0; maxCombo = 0; tension = 0;
   markerPos = 0; markerDirection = 1;
-  // Apply equipped rod's marker speed multiplier (higher mult = slower marker = easier)
+  // Apply equipped rod's marker speed multiplier (higher mult = slower marker = easier).
+  // Then apply the itch penalty: shaking hands at high itch make the marker harder to time.
   const rod = getRod(equippedRodId);
   markerSpeed = 100 / (activeFish.markerSpeed * rod.markerSpeedMult / 50);
+  if (itch >= 95)      markerSpeed *= 1.9;   // hands genuinely shaking
+  else if (itch >= 85) markerSpeed *= 1.5;   // jittery
   buildHitZones();
   updateMarker(); updateProgress(); updateCombo();
   $('reel-fish-name').textContent = activeFish.name;
@@ -3384,8 +3387,12 @@ function startReeling() {
 
 function buildHitZones() {
   const rod = getRod(equippedRodId);
-  // Apply rod's hit zone multiplier - bigger = easier
-  const zoneSize = Math.min(activeFish.hitZone * rod.hitZoneMult, 80);
+  // Apply rod's hit zone multiplier - bigger = easier. Then apply itch penalty
+  // (shrink the zone when the fisherman can't focus).
+  let zoneMult = rod.hitZoneMult;
+  if (itch >= 95)      zoneMult *= 0.55;
+  else if (itch >= 85) zoneMult *= 0.7;
+  const zoneSize = Math.min(activeFish.hitZone * zoneMult, 80);
   const minStart = 10, maxStart = 100 - zoneSize - 10;
   hitZoneStart = minStart + Math.random() * Math.max(0, maxStart - minStart);
   hitZoneEnd = hitZoneStart + zoneSize;
@@ -3411,9 +3418,13 @@ function reelTick() {
   if (markerPos >= 100) { markerPos = 100; markerDirection = -1; }
   if (markerPos <= 0) { markerPos = 0; markerDirection = 1; }
   updateMarker();
-  // Apply rod tensionRate multiplier - lower = grows slower = more forgiving
+  // Apply rod tensionRate multiplier - lower = grows slower = more forgiving.
+  // Itch penalty: line tension climbs faster when the player is twitchy.
   const rod = getRod(equippedRodId);
-  tension += 0.15 * rod.tensionRate;
+  let itchTension = 1;
+  if (itch >= 95)      itchTension = 1.6;
+  else if (itch >= 85) itchTension = 1.3;
+  tension += 0.15 * rod.tensionRate * itchTension;
   if (tension >= 100) { lineSnap(); return; }
   updateProgress();
 }
@@ -3593,14 +3604,14 @@ const ITCH_PER_SEC = 1;        // passive growth per real-time second
 const ITCH_PER_CAST = 4;       // bumps per cast
 const ITCH_DRAIN_PER_ROLL = 25;// each dice roll relieves itch
 
-// Day / quota system. Quotas escalate over 25 days (arithmetic
-// progression: $16k -> $64k, +$2k each day). The cumulative total
-// across all 25 days is $1,000,000 - this is the secret final debt
-// target, but the player only ever sees the current day's quota.
+// Day / quota system. 25 escalating daily quotas (arithmetic
+// progression: $8k -> $32k, +$1k each day). Cumulative across all
+// 25 days is $500,000 - the secret final debt target. The player
+// only ever sees the current day's quota.
 // Each day lasts DAY_DURATION_MS in real time. End of day with quota
 // unmet -> game over. Pay all 25 days (debt -> 0) -> win.
 const DAY_DURATION_MS = 5 * 60 * 1000;
-const DAILY_QUOTAS = [16000,18000,20000,22000,24000,26000,28000,30000,32000,34000,36000,38000,40000,42000,44000,46000,48000,50000,52000,54000,56000,58000,60000,62000,64000];
+const DAILY_QUOTAS = [8000,9000,10000,11000,12000,13000,14000,15000,16000,17000,18000,19000,20000,21000,22000,23000,24000,25000,26000,27000,28000,29000,30000,31000,32000];
 const TOTAL_DEBT = DAILY_QUOTAS.reduce((a, b) => a + b, 0); // 1,000,000
 const DEBT_START = TOTAL_DEBT;
 
