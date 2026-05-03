@@ -1493,14 +1493,8 @@ image-rendering: pixelated;
 filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.45));
 }
 
-/* Layout: 4 plaques on the FLAT back wall, flanking the window. The
-   side-wall corners (outer ~20%) are off-limits because plaques there
-   straddle two walls and read as floating. No rotation - back wall is
-   parallel to the camera. */
-.cabin-mount[data-mount="0"] { left: 21%;  top: 33%; }
-.cabin-mount[data-mount="1"] { right: 21%; top: 33%; }
-.cabin-mount[data-mount="2"] { left: 21%;  top: 55%; }
-.cabin-mount[data-mount="3"] { right: 21%; top: 55%; }
+/* Plaque positions are now applied via inline styles in renderCabin so
+   the user can override them in edit mode. Defaults live in PLAQUE_DEFAULTS. */
 
 /* Decor placeholders (Phase 3 will toggle visible) */
 .cabin-slot {
@@ -1542,6 +1536,43 @@ transition: transform 0.15s, background 0.15s, color 0.15s;
 background: rgba(232, 132, 58, 0.85);
 color: var(--bg);
 border-color: rgba(232, 132, 58, 0.95);
+}
+
+/* Edit-mode visuals: dashed outline on every draggable item, glow on the
+   item being dragged. The cabin-room itself gets a subtle "edit" tint. */
+.cabin-room.editing {
+box-shadow: 0 4px 16px rgba(0,0,0,0.5), inset 0 0 0 2px rgba(232,132,58,0.7);
+}
+.cabin-room.editing .cabin-mount,
+.cabin-room.editing .cabin-furniture {
+pointer-events: auto;
+cursor: grab;
+touch-action: none;
+outline: 1px dashed rgba(255,232,212,0.45);
+outline-offset: 1px;
+}
+.cabin-room.editing .cabin-mount.dragging,
+.cabin-room.editing .cabin-furniture.dragging {
+cursor: grabbing;
+outline-color: var(--gold);
+outline-width: 2px;
+filter: brightness(1.15);
+z-index: 50 !important;
+}
+
+/* Hint banner at the top of the room while editing */
+.cabin-edit-hint {
+position: absolute; left: 50%; top: 8px;
+transform: translateX(-50%);
+padding: 4px 10px;
+background: rgba(20, 10, 18, 0.85);
+border: 1px solid var(--accent);
+border-radius: 999px;
+font-family: 'Baloo 2', cursive; font-size: 10px; font-weight: 700;
+letter-spacing: 1px; text-transform: uppercase;
+color: var(--accent2);
+z-index: 60;
+pointer-events: none;
 }
 
 /* === Mount detail popup === */
@@ -1779,6 +1810,8 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
         Trophies: <span class="progress-num" id="cabin-trophy-count">0</span> / 4
       </div>
       <button class="cabin-preview-btn" id="cabin-preview-btn" onclick="toggleCabinPreview()">Preview</button>
+      <button class="cabin-preview-btn" id="cabin-edit-btn" onclick="toggleCabinEdit()">Edit</button>
+      <button class="cabin-preview-btn" id="cabin-reset-btn" onclick="resetCabinLayout()" style="display:none">Reset</button>
     </div>
   </div>
 
@@ -1855,8 +1888,10 @@ function saveGame() {
       selectedBaitId,
       ownedUpgrades,
       ownedFurniture,
+      furnitureLayout,
+      plaqueLayout,
       muted: isMuted,
-      version: 5,
+      version: 6,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
   } catch (e) {
@@ -1877,8 +1912,8 @@ function loadGame() {
     }
     if (!raw) return;
     const save = JSON.parse(raw);
-    // Accept v1 through v5 (older versions just default newer fields).
-    if (![1,2,3,4,5].includes(save.version)) return;
+    // Accept v1 through v6 (older versions just default newer fields).
+    if (![1,2,3,4,5,6].includes(save.version)) return;
     
     // Rehydrate collection with fish object refs
     if (save.collection) {
@@ -1927,6 +1962,12 @@ function loadGame() {
     ownedFurniture = Array.isArray(save.ownedFurniture)
       ? save.ownedFurniture.filter(id => FURNITURE.find(f => f.id === id))
       : [];
+
+    // v6 fields - cabin layout (free placement + flips)
+    furnitureLayout = (save.furnitureLayout && typeof save.furnitureLayout === 'object')
+      ? save.furnitureLayout : {};
+    plaqueLayout    = (save.plaqueLayout    && typeof save.plaqueLayout    === 'object')
+      ? save.plaqueLayout    : {};
   } catch (e) {
     console.warn('Load failed:', e);
   }
@@ -1944,6 +1985,8 @@ function resetSave() {
   selectedBaitId = 'worms';
   ownedUpgrades = [];
   ownedFurniture = [];
+  furnitureLayout = {};
+  plaqueLayout = {};
   updateStats();
   renderFishdex();
 }
@@ -3983,6 +4026,9 @@ function equipRod(id) {
 // ============================================================
 let cabinCameFromTitle = false;
 let cabinPreviewMode = false;  // when true, all 5 legendaries render as-if caught at max size
+let cabinEditMode = false;     // when true, items become drag-and-drop and tap-to-flip
+let furnitureLayout = {};      // { itemId: { left: %, top: %, flipped: bool } }
+let plaqueLayout = {};         // { mountIndex: { left: %, top: % } }
 
 function toggleCabinPreview() {
   cabinPreviewMode = !cabinPreviewMode;
@@ -3990,6 +4036,114 @@ function toggleCabinPreview() {
   if (btn) btn.classList.toggle('on', cabinPreviewMode);
   sfxButtonClick();
   renderCabin();
+}
+
+function toggleCabinEdit() {
+  cabinEditMode = !cabinEditMode;
+  const btn = document.getElementById('cabin-edit-btn');
+  const reset = document.getElementById('cabin-reset-btn');
+  if (btn) btn.classList.toggle('on', cabinEditMode);
+  if (reset) reset.style.display = cabinEditMode ? '' : 'none';
+  const room = document.getElementById('cabin-room');
+  if (room) room.classList.toggle('editing', cabinEditMode);
+  sfxButtonClick();
+  renderCabin();
+}
+
+function resetCabinLayout() {
+  if (!confirm('Reset all cabin items to their default positions?')) return;
+  furnitureLayout = {};
+  plaqueLayout = {};
+  saveGame();
+  renderCabin();
+}
+
+// Make an absolutely-positioned cabin element draggable. Single-tap (no
+// movement) on a furniture item flips it horizontally; on a plaque it does
+// nothing (when editing) or opens the popup (when not editing).
+function attachDragHandlers(el, key, layoutMap, isFurniture) {
+  let dragging = false;
+  let didMove = false;
+  let startCX, startCY, startL, startT;
+  el.addEventListener('pointerdown', (e) => {
+    if (!cabinEditMode) return;
+    e.preventDefault();
+    e.stopPropagation();
+    el.setPointerCapture(e.pointerId);
+    dragging = true; didMove = false;
+    el.classList.add('dragging');
+    startCX = e.clientX; startCY = e.clientY;
+    const room = document.getElementById('cabin-room');
+    const rRect = room.getBoundingClientRect();
+    const eRect = el.getBoundingClientRect();
+    startL = ((eRect.left - rRect.left) / rRect.width) * 100;
+    startT = ((eRect.top  - rRect.top ) / rRect.height) * 100;
+    // Switch to top/left positioning so dragging works regardless of how
+    // the element was originally anchored (right/bottom defaults).
+    el.style.right = ''; el.style.bottom = ''; el.style.transform = '';
+    el.style.left = startL + '%';
+    el.style.top  = startT + '%';
+  });
+  el.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const room = document.getElementById('cabin-room');
+    const rRect = room.getBoundingClientRect();
+    const dx = ((e.clientX - startCX) / rRect.width) * 100;
+    const dy = ((e.clientY - startCY) / rRect.height) * 100;
+    if (Math.abs(dx) + Math.abs(dy) > 1) didMove = true;
+    const elPctW = (el.offsetWidth  / rRect.width)  * 100;
+    const elPctH = (el.offsetHeight / rRect.height) * 100;
+    let newL = Math.max(0, Math.min(100 - elPctW, startL + dx));
+    let newT = Math.max(0, Math.min(100 - elPctH, startT + dy));
+    el.style.left = newL + '%';
+    el.style.top  = newT + '%';
+  });
+  el.addEventListener('pointerup', (e) => {
+    if (!dragging) return;
+    dragging = false;
+    el.classList.remove('dragging');
+    if (didMove) {
+      const left = parseFloat(el.style.left);
+      const top  = parseFloat(el.style.top);
+      layoutMap[key] = layoutMap[key] || {};
+      layoutMap[key].left = left;
+      layoutMap[key].top  = top;
+      saveGame();
+    } else {
+      // Single tap: furniture flips, plaques are no-op while editing
+      if (isFurniture) {
+        const cur = (layoutMap[key] && layoutMap[key].flipped) || false;
+        layoutMap[key] = layoutMap[key] || {};
+        layoutMap[key].flipped = !cur;
+        const cv = el.querySelector('canvas');
+        if (cv) cv.style.transform = layoutMap[key].flipped ? 'scaleX(-1)' : '';
+        sfxButtonClick();
+        saveGame();
+      }
+    }
+  });
+  el.addEventListener('pointercancel', () => {
+    dragging = false;
+    el.classList.remove('dragging');
+  });
+}
+
+// Apply a layout entry (or fall back to default) to an absolutely-positioned
+// element. `defaultPos` is the original CSS-style pos object for this item.
+function applyLayoutTo(el, layout, defaultPos) {
+  // Reset all anchoring properties first.
+  el.style.left = ''; el.style.top = ''; el.style.right = ''; el.style.bottom = '';
+  el.style.transform = '';
+  if (layout && (layout.left != null || layout.top != null)) {
+    if (layout.left != null) el.style.left = layout.left + '%';
+    if (layout.top  != null) el.style.top  = layout.top  + '%';
+  } else if (defaultPos) {
+    if (defaultPos.left)   el.style.left   = defaultPos.left;
+    if (defaultPos.right)  el.style.right  = defaultPos.right;
+    if (defaultPos.top)    el.style.top    = defaultPos.top;
+    if (defaultPos.bottom) el.style.bottom = defaultPos.bottom;
+    if (defaultPos.transform) el.style.transform = defaultPos.transform;
+  }
 }
 
 function openCabin() {
@@ -4470,11 +4624,8 @@ function renderCabinFurniture() {
     if (!showAll && !ownedFurniture.includes(item.id)) return;
     const wrapper = document.createElement('div');
     wrapper.className = 'cabin-furniture';
-    if (item.pos.left)   wrapper.style.left = item.pos.left;
-    if (item.pos.right)  wrapper.style.right = item.pos.right;
-    if (item.pos.bottom) wrapper.style.bottom = item.pos.bottom;
-    if (item.pos.top)    wrapper.style.top = item.pos.top;
-    if (item.pos.transform) wrapper.style.transform = item.pos.transform;
+    const layout = furnitureLayout[item.id];
+    applyLayoutTo(wrapper, layout, item.pos);
     wrapper.style.width  = item.size.w + 'px';
     wrapper.style.height = item.size.h + 'px';
     wrapper.style.zIndex = item.z;
@@ -4482,9 +4633,13 @@ function renderCabinFurniture() {
     cv.width = item.size.w; cv.height = item.size.h;
     cv.style.width  = item.size.w + 'px';
     cv.style.height = item.size.h + 'px';
+    if (layout && layout.flipped) cv.style.transform = 'scaleX(-1)';
     wrapper.appendChild(cv);
     item.draw(cv);
     room.appendChild(wrapper);
+    if (cabinEditMode) {
+      attachDragHandlers(wrapper, item.id, furnitureLayout, true);
+    }
   });
 }
 
@@ -4605,10 +4760,20 @@ function renderCabin() {
   const TOTAL_SLOTS = 4;
   $('cabin-trophy-count').textContent = String(Math.min(TOTAL_SLOTS, caught.length));
 
+  // Default plaque positions (the ones that used to live in CSS).
+  const PLAQUE_DEFAULTS = [
+    { left: '21%', top: '33%' },
+    { right: '21%', top: '33%' },
+    { left: '21%', top: '55%' },
+    { right: '21%', top: '55%' },
+  ];
+
   for (let i = 0; i < TOTAL_SLOTS; i++) {
     const mount = document.querySelector(`.cabin-mount[data-mount="${i}"]`);
     if (!mount) continue;
     mount.innerHTML = '';
+    applyLayoutTo(mount, plaqueLayout[i], PLAQUE_DEFAULTS[i]);
+
     const plaque = document.createElement('div');
     plaque.className = 'cabin-mount-plaque';
     const cv = document.createElement('canvas');
@@ -4621,13 +4786,31 @@ function renderCabin() {
     nameEl.className = 'cabin-mount-name-overlay' + (fish ? '' : ' locked');
     nameEl.textContent = fish ? fish.name : 'Locked';
     plaque.appendChild(nameEl);
-    if (caught[i]) {
+    if (caught[i] && !cabinEditMode) {
       const { entry } = caught[i];
       plaque.addEventListener('click', () => showMountPopup(fish, entry));
     }
     mount.appendChild(plaque);
+
+    if (cabinEditMode) {
+      attachDragHandlers(mount, i, plaqueLayout, false);
+    }
   }
   renderCabinFurniture();
+
+  // Edit hint banner
+  const room = document.getElementById('cabin-room');
+  if (room) {
+    let hint = room.querySelector('.cabin-edit-hint');
+    if (cabinEditMode) {
+      if (!hint) {
+        hint = document.createElement('div');
+        hint.className = 'cabin-edit-hint';
+        hint.textContent = 'Drag to move \u2022 Tap to flip';
+        room.appendChild(hint);
+      }
+    } else if (hint) hint.remove();
+  }
 }
 
 function showMountPopup(fish, entry) {
