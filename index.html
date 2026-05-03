@@ -1433,6 +1433,10 @@ overflow: hidden;
 border: 2px solid #1a0d05;
 box-shadow: 0 4px 16px rgba(0,0,0,0.5);
 background: #1a0c05 url('bg-cabin.png') center / cover no-repeat;
+/* The room artwork has strong perspective; we set the same vanishing point
+   here so plaques on the side walls can rotate to match. */
+perspective: 1000px;
+perspective-origin: 50% 55%;
 }
 
 /* === Trophy mounts: small enough to fit the dark wood borders === */
@@ -1502,13 +1506,40 @@ line-height: 1;
 /* Mount slot positions on the bg-cabin.png artwork.
    The image has narrow dark-wood borders: top ~7%, sides ~7-8%, bottom ~15%.
    Plaques are 50x44 = roughly 11-12% of a square room. */
-/* Layout matches the new full-room artwork: window centered on back wall,
-   plenty of wall on either side. 2x2 grid flanking the window + 1 below. */
-.cabin-mount[data-mount="0"] { left: 12%; top: 30%; }
-.cabin-mount[data-mount="1"] { right: 12%; top: 30%; }
-.cabin-mount[data-mount="2"] { left: 12%; top: 46%; }
-.cabin-mount[data-mount="3"] { right: 12%; top: 46%; }
-.cabin-mount[data-mount="4"] { left: 50%; top: 63%; transform: translateX(-50%); }
+/* Layout matches the new full-room artwork. Slots 0-3 sit on the
+   *receding side walls* (outer 8-15% of width) and rotate around Y to
+   match the perspective angle of those walls. Slot 4 sits flat on the
+   back wall below the window. */
+.cabin-mount[data-mount="0"] {
+  left: 7%; top: 27%;
+  transform: rotateY(30deg);
+  transform-origin: right center;
+}
+.cabin-mount[data-mount="1"] {
+  right: 7%; top: 27%;
+  transform: rotateY(-30deg);
+  transform-origin: left center;
+}
+.cabin-mount[data-mount="2"] {
+  left: 7%; top: 50%;
+  transform: rotateY(30deg);
+  transform-origin: right center;
+}
+.cabin-mount[data-mount="3"] {
+  right: 7%; top: 50%;
+  transform: rotateY(-30deg);
+  transform-origin: left center;
+}
+.cabin-mount[data-mount="4"] {
+  left: 50%; top: 67%;
+  transform: translateX(-50%);
+}
+
+/* Tap-feedback: keep the press-scale even with the rotation in place. */
+.cabin-mount[data-mount="0"] .cabin-mount-plaque:active,
+.cabin-mount[data-mount="2"] .cabin-mount-plaque:active { transform: scale(0.95); }
+.cabin-mount[data-mount="1"] .cabin-mount-plaque:active,
+.cabin-mount[data-mount="3"] .cabin-mount-plaque:active { transform: scale(0.95); }
 
 /* Decor placeholders (Phase 3 will toggle visible) */
 .cabin-slot {
