@@ -2185,8 +2185,9 @@ function saveGame() {
       dayNumber,
       dayElapsedMs,
       dayPaid,
+      hasCast,
       muted: isMuted,
-      version: 12,
+      version: 13,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
   } catch (e) {
@@ -2211,7 +2212,7 @@ function loadGame() {
     // start timestamp to an in-game elapsed-ms accumulator (so it pauses on
     // the title screen). v9-and-earlier saves had a tiny starting debt that
     // no longer makes sense; reset to TOTAL_DEBT on load.
-    if (![1,2,3,4,5,6,7,8,9,10,11,12].includes(save.version)) return;
+    if (![1,2,3,4,5,6,7,8,9,10,11,12,13].includes(save.version)) return;
     
     // Rehydrate collection with fish object refs
     if (save.collection) {
@@ -2261,6 +2262,9 @@ function loadGame() {
     // v12 fields - powerups
     ownedPowerups = (save.ownedPowerups && typeof save.ownedPowerups === 'object')
       ? save.ownedPowerups : {};
+
+    // v13 fields - first-cast gate
+    hasCast = !!save.hasCast;
 
     // v9 fields - itch + debt. v9-or-earlier saves had a 500-coin debt that
     // no longer fits the daily-quota system; reset such old saves.
@@ -3434,6 +3438,7 @@ function cast() {
   bobber.style.left = x + 'px'; bobber.style.top = y + 'px';
   bobber.style.display = 'block'; bobber.className = '';
   drawLine(x, y);
+  hasCast = true;
   bumpItchOnCast();
 
   // Consume a bait powerup charge (Trophy preferred over Live).
@@ -3775,10 +3780,11 @@ let itch = 0;
 let debt = DEBT_START;
 let gameOverShown = false;
 let winShown = false;
-let dayNumber = 1;            // 1..25
+let dayNumber = 1;            // 1..11
 let dayElapsedMs = 0;         // ms ticked within the current day; only advances while playing
 let dayPaid = 0;
 let paused = false;           // pause button state (in-memory only)
+let hasCast = false;          // true once the player makes their first cast of the run
 
 loadGame();
 updateStats();
@@ -4412,6 +4418,7 @@ function tickGambling() {
 
 function gameIsHalted() {
   if (paused) return true;
+  if (!hasCast) return true;   // hold the day timer until the first cast
   const title = document.getElementById('title-screen');
   if (title && title.classList.contains('active')) return true;
   if (gameOverShown || winShown) return true;
@@ -4424,15 +4431,24 @@ function currentQuota() {
 }
 
 function endDay() {
+  // Timer ran out. With auto-advance on quota met, reaching this branch with
+  // quota unmet is the only failure mode. (If quota were somehow met without
+  // having advanced, fall through to advanceDay as a safety net.)
   if (dayPaid < currentQuota()) {
     showGameOverPopup();
     return;
   }
-  // Day cleared
-  if (dayNumber >= DAILY_QUOTAS.length || debt <= 0) {
-    // Made it through every day - win condition is debt=0
-    if (debt <= 0) showWinPopup();
-    else showGameOverPopup();   // out of days, debt remains
+  advanceDay();
+}
+
+function advanceDay() {
+  if (debt <= 0) {
+    showWinPopup();
+    return;
+  }
+  if (dayNumber >= DAILY_QUOTAS.length) {
+    // Out of scheduled days but debt remains; treat as game over.
+    showGameOverPopup();
     return;
   }
   dayNumber++;
@@ -5003,7 +5019,15 @@ function payBoudreaux() {
   updateStats();
   updateGamblingUI();
   saveGame();
-  if (debt <= 0) showWinPopup();
+  if (debt <= 0) {
+    showWinPopup();
+    return;
+  }
+  // Auto-advance to the next day the moment today's quota is met.
+  if (dayPaid >= currentQuota()) {
+    advanceDay();
+    updateGamblingUI();
+  }
 }
 
 // ============================================================
@@ -5049,6 +5073,7 @@ function restartFromGameOver() {
   dayElapsedMs = 0;
   dayPaid = 0;
   paused = false;
+  hasCast = false;
   ownedPowerups = {};
   stiffDrinkActiveUntilMs = 0;
   cardCounterArmed = false;
