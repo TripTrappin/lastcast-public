@@ -1853,6 +1853,44 @@ transform: translate(-50%, 0);
 .powerup-toast .pt-emoji { font-size: 16px; }
 .powerup-toast .pt-text { color: var(--text); font-weight: 600; }
 
+/* === Cast prompt === */
+/* Visible at the start of each day until the first cast. Sits just above
+   the control panel so the player notices it before tapping Cast Line. */
+#cast-prompt {
+position: absolute;
+left: 16px; right: 16px;
+bottom: 156px;
+z-index: 22;
+display: none;
+align-items: center;
+justify-content: center;
+gap: 8px;
+padding: 8px 14px;
+border-radius: 12px;
+background: rgba(20, 10, 18, 0.85);
+border: 1px solid rgba(255, 213, 79, 0.55);
+backdrop-filter: blur(6px);
+font-family: 'Baloo 2', cursive;
+font-size: 12px;
+font-weight: 700;
+letter-spacing: 0.6px;
+color: var(--text);
+text-align: center;
+box-shadow: 0 4px 14px rgba(0,0,0,0.55);
+animation: castPromptPulse 2.4s ease-in-out infinite;
+pointer-events: none;
+}
+#cast-prompt.show { display: flex; }
+.cast-prompt-pin {
+color: var(--gold);
+font-size: 9px;
+filter: drop-shadow(0 0 4px rgba(255, 213, 79, 0.9));
+}
+@keyframes castPromptPulse {
+  0%, 100% { box-shadow: 0 4px 14px rgba(0,0,0,0.55), 0 0 0 0 rgba(255,213,79,0.0); }
+  50%      { box-shadow: 0 4px 14px rgba(0,0,0,0.55), 0 0 0 4px rgba(255,213,79,0.18); }
+}
+
 </style>
 </head>
 <body>
@@ -2031,6 +2069,7 @@ transform: translate(-50%, 0);
   <div class="mini-stat itch-stat"><div class="ms-itch"><div class="ms-itch-fill" id="stat-itch-fill"></div></div><div class="ms-lbl">Itch</div></div>
 </div>
 
+<div id="cast-prompt"><span class="cast-prompt-pin">●</span>The day starts when you cast your first line.</div>
 <div id="control-panel">
   <div id="bait-selector" onclick="cycleBait()">
     <div class="bait-row">
@@ -4479,6 +4518,7 @@ function advanceDay() {
   dayNumber++;
   dayElapsedMs = 0;
   dayPaid = 0;
+  hasCast = false;
   flashDayBanner();
   saveGame();
 }
@@ -4545,6 +4585,15 @@ function updateGamblingUI() {
   if (app) {
     app.classList.toggle('itch-high', itch >= 75);
     app.classList.toggle('itch-very-high', itch >= 90);
+  }
+
+  // Cast prompt - shows whenever the day timer is paused waiting for the
+  // player's first cast of the day. Only relevant on the fishing screen.
+  const cp = document.getElementById('cast-prompt');
+  const fishing = document.getElementById('fishing-screen');
+  if (cp && fishing) {
+    const onFishing = fishing.classList.contains('active');
+    cp.classList.toggle('show', onFishing && !hasCast && !paused && !gameOverShown && !winShown);
   }
 
   // Day banner
