@@ -1328,43 +1328,44 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
 /* === PIXEL PHONE (in pocket) === */
 #phone-pocket {
 position: absolute;
-left: 12px; bottom: 110px;
-width: 36px; height: 56px;
+left: 14px; bottom: 220px;
+width: 50px; height: 80px;
 z-index: 25;
 cursor: pointer;
 display: flex; flex-direction: column; align-items: center;
-filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.6));
+filter: drop-shadow(2px 4px 0 rgba(0,0,0,0.7));
 transition: transform 0.18s;
 }
 #phone-pocket:active { transform: scale(0.94); }
 .phone-pocket-body {
 position: relative;
-width: 32px; height: 48px;
-background: #1a0c05;
-border: 2px solid #3a1c08;
-border-radius: 6px;
-box-shadow: inset 0 2px 0 rgba(255,200,140,0.12);
+width: 46px; height: 70px;
+background: #f8f8f8;
+border: 2px solid #1a1a1a;
+border-radius: 9px;
+box-shadow: inset 0 2px 0 rgba(255,255,255,0.6);
 }
 .phone-pocket-screen {
 position: absolute;
-top: 5px; left: 4px; right: 4px; bottom: 8px;
-background: #2a1408;
-border-radius: 1px;
+top: 7px; left: 5px; right: 5px; bottom: 11px;
+background: #1a0a14;
+border-radius: 2px;
 }
 .phone-pocket-cam {
 position: absolute;
-top: 1px; left: 50%;
+top: 2px; left: 50%;
 transform: translateX(-50%);
-width: 4px; height: 1px;
-background: #5a3018;
+width: 6px; height: 1px;
+background: #5a5a5a;
+border-radius: 1px;
 }
 .phone-pocket-label {
-margin-top: 1px;
+margin-top: 2px;
 font-family: 'Baloo 2', cursive;
-font-size: 7px; font-weight: 800;
-color: rgba(255,232,160,0.55);
-letter-spacing: 0.6px;
-text-shadow: 0 1px 0 rgba(0,0,0,0.8);
+font-size: 9px; font-weight: 800;
+color: rgba(255,232,160,0.85);
+letter-spacing: 0.8px;
+text-shadow: 0 1px 0 rgba(0,0,0,0.9);
 }
 
 /* Buzz when itch is high */
@@ -1409,12 +1410,13 @@ left: 50%; top: 50%;
 width: min(80%, 280px);
 aspect-ratio: 9 / 16;
 max-height: 86%;
-background: linear-gradient(180deg, #281024 0%, #181018 100%);
-border: 5px solid #1a0c05;
+background: linear-gradient(180deg, #ffffff 0%, #e0e0e0 100%);
+border: 4px solid #1a1a1a;
 border-radius: 36px;
 box-shadow:
   0 8px 32px rgba(0,0,0,0.85),
-  inset 0 0 0 2px rgba(255,232,212,0.06);
+  inset 0 0 0 1px rgba(0,0,0,0.15),
+  inset 0 2px 0 rgba(255,255,255,0.7);
 transform: translate(-50%, 120%) rotate(-4deg);
 transition: transform 0.42s cubic-bezier(0.2, 0.85, 0.25, 1.05);
 overflow: hidden;
@@ -1426,18 +1428,18 @@ transform: translate(-50%, -50%) rotate(0);
 position: absolute;
 top: 12px; left: 50%;
 transform: translateX(-50%);
-width: 38px; height: 4px;
-background: #1a0c05;
-border-radius: 2px;
+width: 42px; height: 5px;
+background: #2a2a2a;
+border-radius: 3px;
 }
 .phone-cam {
 position: absolute;
 top: 24px; left: 50%;
 transform: translateX(-50%);
-width: 6px; height: 6px;
-background: #1a0c05;
+width: 7px; height: 7px;
+background: #1a1a1a;
 border-radius: 50%;
-border: 1px solid rgba(255,232,212,0.18);
+border: 1px solid #444;
 }
 .phone-screen {
 position: absolute;
@@ -1473,17 +1475,17 @@ gap: 10px;
 position: absolute;
 bottom: 14px; left: 50%;
 transform: translateX(-50%);
-width: 50px; height: 30px;
-background: #2a1408;
-border: 2px solid #5a3018;
+width: 56px; height: 32px;
+background: #d8d8d8;
+border: 2px solid #1a1a1a;
 border-radius: 999px;
 cursor: pointer;
 transition: transform 0.12s;
 }
 .phone-home-btn::after {
 content: '';
-position: absolute; inset: 4px;
-border: 1px solid rgba(255,232,212,0.2);
+position: absolute; inset: 5px;
+border: 1px solid rgba(0,0,0,0.45);
 border-radius: 999px;
 }
 .phone-home-btn:active { transform: translateX(-50%) scale(0.92); }
@@ -1611,6 +1613,97 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
 }
 .dice-pay-btn:active { transform: scale(0.94); }
 
+/* Phone tabs */
+.phone-tabs {
+display: flex; gap: 4px;
+padding: 4px;
+background: rgba(0, 0, 0, 0.4);
+border-radius: 8px;
+flex-shrink: 0;
+}
+.phone-tab {
+flex: 1;
+height: 28px;
+border: none;
+border-radius: 6px;
+background: transparent;
+color: var(--text-dim);
+font-family: 'Baloo 2', cursive;
+font-size: 11px; font-weight: 800;
+letter-spacing: 1px;
+text-transform: uppercase;
+cursor: pointer;
+transition: background 0.12s, color 0.12s;
+}
+.phone-tab.active {
+background: rgba(255, 140, 80, 0.85);
+color: #1a0c05;
+}
+.phone-game {
+display: flex; flex-direction: column;
+gap: 8px;
+flex: 1;
+min-height: 0;
+}
+
+/* Blackjack rows */
+.bj-row {
+display: flex; flex-direction: column;
+gap: 4px;
+padding: 6px 8px;
+border-radius: 8px;
+background: rgba(20, 10, 18, 0.4);
+border: 1px solid rgba(255,140,80,0.2);
+}
+.bj-row-label {
+font-family: 'Baloo 2', cursive;
+font-size: 10px; font-weight: 700;
+letter-spacing: 1px;
+text-transform: uppercase;
+color: var(--text-dim);
+display: flex; justify-content: space-between; align-items: baseline;
+}
+.bj-score {
+color: var(--gold); font-size: 13px; font-weight: 800;
+}
+.bj-cards {
+display: flex; gap: 4px;
+min-height: 56px;
+align-items: center;
+}
+.bj-card {
+width: 36px; height: 50px;
+background: #ffffff;
+border: 1.5px solid #1a1a1a;
+border-radius: 4px;
+display: flex; flex-direction: column;
+padding: 2px 4px;
+font-family: 'Baloo 2', cursive;
+font-weight: 800;
+position: relative;
+box-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+}
+.bj-card .bj-card-rank {
+font-size: 13px; line-height: 1;
+}
+.bj-card .bj-card-suit {
+font-size: 14px; line-height: 1;
+margin-top: auto;
+align-self: flex-end;
+}
+.bj-card.red { color: #c8261c; }
+.bj-card.black { color: #181818; }
+.bj-card.back {
+background: repeating-linear-gradient(45deg, #2a3848 0 4px, #1a2838 4px 8px);
+border-color: #1a1a1a;
+}
+.bj-actions {
+display: flex; gap: 6px;
+}
+.bj-actions .craps-roll-btn { flex: 1; }
+.bj-hit  { background: linear-gradient(180deg, #6fb069 0%, #2e7831 100%); border-color: rgba(120,200,120,0.5); }
+.bj-stand{ background: linear-gradient(180deg, #f8c850 0%, #c8862a 100%); border-color: rgba(255,200,80,0.5); color: #1a0c05; }
+
 </style>
 </head>
 <body>
@@ -1720,22 +1813,58 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
         <span class="phone-app-battery">12%</span>
       </div>
       <div class="phone-app-body">
-        <div class="dice-flavor" id="dice-flavor">Bet small, win small. Bet big, lose bigger.</div>
-        <div class="dice-pair">
-          <div class="die" id="die-1"><div class="die-face" data-face="1">⚀</div></div>
-          <div class="die" id="die-2"><div class="die-face" data-face="1">⚀</div></div>
+        <div class="phone-tabs">
+          <button class="phone-tab active" data-game="craps" onclick="setPhoneGame('craps')">Craps</button>
+          <button class="phone-tab" data-game="bj" onclick="setPhoneGame('bj')">Blackjack</button>
         </div>
-        <div class="dice-result" id="dice-result"></div>
-        <div class="craps-point" id="craps-point" style="display:none">Point <span id="craps-point-val">—</span></div>
-        <div class="dice-bet-row" id="dice-bet-row">
-          <span class="dice-bet-label">Pass</span>
-          <button class="dice-step" onclick="adjDiceBet(-50)">−50</button>
-          <button class="dice-step" onclick="adjDiceBet(-10)">−10</button>
-          <input id="dice-bet" type="number" min="10" step="10" value="50" inputmode="numeric"/>
-          <button class="dice-step" onclick="adjDiceBet(10)">+10</button>
-          <button class="dice-step" onclick="adjDiceBet(50)">+50</button>
+
+        <!-- Craps game panel -->
+        <div class="phone-game" data-game="craps">
+          <div class="dice-flavor" id="dice-flavor">Bet small, win small. Bet big, lose bigger.</div>
+          <div class="dice-pair">
+            <div class="die" id="die-1"><div class="die-face" data-face="1">⚀</div></div>
+            <div class="die" id="die-2"><div class="die-face" data-face="1">⚀</div></div>
+          </div>
+          <div class="dice-result" id="dice-result"></div>
+          <div class="craps-point" id="craps-point" style="display:none">Point <span id="craps-point-val">—</span></div>
+          <div class="dice-bet-row" id="dice-bet-row">
+            <span class="dice-bet-label">Pass</span>
+            <button class="dice-step" onclick="adjDiceBet(-50)">−50</button>
+            <button class="dice-step" onclick="adjDiceBet(-10)">−10</button>
+            <input id="dice-bet" type="number" min="10" step="10" value="50" inputmode="numeric"/>
+            <button class="dice-step" onclick="adjDiceBet(10)">+10</button>
+            <button class="dice-step" onclick="adjDiceBet(50)">+50</button>
+          </div>
+          <button class="craps-roll-btn" id="craps-roll-btn" onclick="rollCraps()">Roll</button>
         </div>
-        <button class="craps-roll-btn" id="craps-roll-btn" onclick="rollCraps()">Roll</button>
+
+        <!-- Blackjack game panel -->
+        <div class="phone-game" data-game="bj" style="display:none">
+          <div class="bj-row">
+            <div class="bj-row-label">Dealer <span class="bj-score" id="bj-dealer-score">—</span></div>
+            <div class="bj-cards" id="bj-dealer-cards"></div>
+          </div>
+          <div class="bj-row">
+            <div class="bj-row-label">You <span class="bj-score" id="bj-player-score">—</span></div>
+            <div class="bj-cards" id="bj-player-cards"></div>
+          </div>
+          <div class="dice-result" id="bj-result"></div>
+          <div class="dice-bet-row" id="bj-bet-row">
+            <span class="dice-bet-label">Bet</span>
+            <button class="dice-step" onclick="adjBjBet(-50)">−50</button>
+            <button class="dice-step" onclick="adjBjBet(-10)">−10</button>
+            <input id="bj-bet" type="number" min="10" step="10" value="50" inputmode="numeric"/>
+            <button class="dice-step" onclick="adjBjBet(10)">+10</button>
+            <button class="dice-step" onclick="adjBjBet(50)">+50</button>
+          </div>
+          <div class="bj-actions">
+            <button class="craps-roll-btn" id="bj-deal" onclick="bjDeal()">Deal</button>
+            <button class="craps-roll-btn bj-hit" id="bj-hit" onclick="bjHit()" style="display:none">Hit</button>
+            <button class="craps-roll-btn bj-stand" id="bj-stand" onclick="bjStand()" style="display:none">Stand</button>
+          </div>
+        </div>
+
+        <!-- Shared coins / owed / pay row -->
         <div class="dice-bottom-row">
           <span class="dice-coins-line">Coins <span class="dice-num" id="dice-coins">0</span></span>
           <span class="dice-debt-line">Owed <span class="dice-num bad" id="dice-debt">0</span></span>
@@ -3934,6 +4063,8 @@ function openPhone() {
   sfxButtonClick();
   refreshDiceScreen();
   resetCrapsRound();
+  bjReset();
+  setPhoneGame(phoneGame || 'craps');
   const overlay = document.getElementById('phone-overlay');
   if (overlay) overlay.classList.add('show');
 }
@@ -3942,6 +4073,235 @@ function closePhone() {
   const overlay = document.getElementById('phone-overlay');
   if (overlay) overlay.classList.remove('show');
 }
+
+// ============================================================
+// PHONE GAME TABS
+// ============================================================
+let phoneGame = 'craps';
+function setPhoneGame(g) {
+  phoneGame = g;
+  document.querySelectorAll('.phone-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.game === g);
+  });
+  document.querySelectorAll('.phone-game').forEach(p => {
+    p.style.display = p.dataset.game === g ? '' : 'none';
+  });
+  if (g === 'bj') bjReset();
+  sfxButtonClick();
+}
+
+// ============================================================
+// BLACKJACK
+// One player vs dealer. Dealer hits to 17. Blackjack pays 3:2.
+// ============================================================
+let bjDeck = [];
+let bjPlayer = [];
+let bjDealer = [];
+let bjBet = 0;
+let bjPhase = 'idle';   // 'idle' | 'playing' | 'resolved'
+
+function bjNewDeck() {
+  const suits = ['♠','♥','♦','♣'];   // ♠ ♥ ♦ ♣
+  const ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+  const d = [];
+  for (const s of suits) for (const r of ranks) d.push({ s, r });
+  for (let i = d.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [d[i], d[j]] = [d[j], d[i]];
+  }
+  return d;
+}
+
+function bjCardValue(r) {
+  if (r === 'A') return 11;
+  if (r === 'J' || r === 'Q' || r === 'K') return 10;
+  return parseInt(r, 10);
+}
+
+function bjHandScore(hand) {
+  let total = 0, aces = 0;
+  for (const c of hand) {
+    total += bjCardValue(c.r);
+    if (c.r === 'A') aces++;
+  }
+  while (total > 21 && aces > 0) { total -= 10; aces--; }
+  return total;
+}
+
+function bjAdjBet(d) {
+  const el = document.getElementById('bj-bet');
+  if (!el) return;
+  let v = parseInt(el.value, 10) || 0;
+  v = Math.max(10, Math.min(coins, v + d));
+  el.value = v;
+  sfxButtonClick();
+}
+// Alias the existing helper name used in the HTML markup.
+function adjBjBet(d) { bjAdjBet(d); }
+
+function bjRender(hideHole) {
+  const dEl = document.getElementById('bj-dealer-cards');
+  const pEl = document.getElementById('bj-player-cards');
+  const ds  = document.getElementById('bj-dealer-score');
+  const ps  = document.getElementById('bj-player-score');
+  if (!dEl || !pEl) return;
+  dEl.innerHTML = ''; pEl.innerHTML = '';
+
+  bjDealer.forEach((c, i) => {
+    if (i === 1 && hideHole) {
+      dEl.appendChild(bjCardEl(null));
+    } else {
+      dEl.appendChild(bjCardEl(c));
+    }
+  });
+  bjPlayer.forEach(c => pEl.appendChild(bjCardEl(c)));
+
+  ps.textContent = bjPlayer.length ? bjHandScore(bjPlayer) : '—';
+  if (hideHole) {
+    ds.textContent = bjDealer.length ? bjCardValue(bjDealer[0].r) + ' + ?' : '—';
+  } else {
+    ds.textContent = bjDealer.length ? bjHandScore(bjDealer) : '—';
+  }
+}
+
+function bjCardEl(c) {
+  const div = document.createElement('div');
+  div.className = 'bj-card';
+  if (!c) { div.classList.add('back'); return div; }
+  div.classList.add((c.s === '♥' || c.s === '♦') ? 'red' : 'black');
+  const r = document.createElement('div'); r.className = 'bj-card-rank'; r.textContent = c.r;
+  const s = document.createElement('div'); s.className = 'bj-card-suit'; s.textContent = c.s;
+  div.appendChild(r); div.appendChild(s);
+  return div;
+}
+
+function bjSetResult(text, won) {
+  const el = document.getElementById('bj-result');
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'dice-result ' + (won === true ? 'win' : (won === false ? 'lose' : ''));
+}
+
+function bjSetButtons() {
+  const deal  = document.getElementById('bj-deal');
+  const hit   = document.getElementById('bj-hit');
+  const stand = document.getElementById('bj-stand');
+  const betRow = document.getElementById('bj-bet-row');
+  if (!deal || !hit || !stand) return;
+  if (bjPhase === 'playing') {
+    deal.style.display  = 'none';
+    hit.style.display   = '';
+    stand.style.display = '';
+    if (betRow) betRow.style.opacity = '0.55';
+    if (betRow) betRow.querySelectorAll('button, input').forEach(e => e.disabled = true);
+  } else {
+    deal.style.display  = '';
+    hit.style.display   = 'none';
+    stand.style.display = 'none';
+    if (betRow) betRow.style.opacity = '';
+    if (betRow) betRow.querySelectorAll('button, input').forEach(e => e.disabled = false);
+  }
+}
+
+function bjReset() {
+  bjPlayer = [];
+  bjDealer = [];
+  bjPhase = 'idle';
+  bjBet = 0;
+  bjSetResult('', null);
+  bjRender(false);
+  bjSetButtons();
+  // Default bet input to a sane value relative to coins.
+  const el = document.getElementById('bj-bet');
+  if (el) el.value = Math.min(50, Math.max(10, coins));
+}
+
+function bjDeal() {
+  const betEl = document.getElementById('bj-bet');
+  let bet = Math.max(10, Math.min(coins, parseInt(betEl.value, 10) || 0));
+  if (bet > coins || coins < 10) {
+    bjSetResult("Boudreaux: \"Come back when you got money.\"", false);
+    return;
+  }
+  betEl.value = bet;
+  coins -= bet;
+  bjBet = bet;
+  itch = Math.max(0, itch - ITCH_DRAIN_PER_ROLL);
+  updateStats();
+  updateGamblingUI();
+
+  bjDeck = bjNewDeck();
+  bjPlayer = [bjDeck.pop(), bjDeck.pop()];
+  bjDealer = [bjDeck.pop(), bjDeck.pop()];
+  bjPhase = 'playing';
+  bjSetResult('', null);
+  bjRender(true);
+  bjSetButtons();
+  sfxButtonClick();
+
+  // Natural blackjack check
+  if (bjHandScore(bjPlayer) === 21) {
+    if (bjHandScore(bjDealer) === 21) {
+      bjResolve('push', 'Both hit 21. Push.');
+    } else {
+      bjResolve('blackjack', 'Blackjack! Pays 3:2.');
+    }
+  }
+}
+
+function bjHit() {
+  if (bjPhase !== 'playing') return;
+  bjPlayer.push(bjDeck.pop());
+  bjRender(true);
+  sfxButtonClick();
+  const score = bjHandScore(bjPlayer);
+  if (score > 21) {
+    bjResolve('lose', `Bust at ${score}.`);
+  } else if (score === 21) {
+    // Auto-stand on 21 to keep the game moving.
+    bjStand();
+  }
+}
+
+function bjStand() {
+  if (bjPhase !== 'playing') return;
+  bjRender(false);
+  // Dealer hits to 17 (stand on soft 17 for simplicity).
+  while (bjHandScore(bjDealer) < 17) {
+    bjDealer.push(bjDeck.pop());
+  }
+  bjRender(false);
+  const ps = bjHandScore(bjPlayer);
+  const ds = bjHandScore(bjDealer);
+  if (ds > 21) {
+    bjResolve('win', `Dealer busts at ${ds}.`);
+  } else if (ds > ps) {
+    bjResolve('lose', `Dealer wins ${ds} to ${ps}.`);
+  } else if (ds < ps) {
+    bjResolve('win', `You win ${ps} to ${ds}.`);
+  } else {
+    bjResolve('push', `Push at ${ps}.`);
+  }
+}
+
+function bjResolve(kind, message) {
+  bjPhase = 'resolved';
+  let payout = 0, won = null;
+  if (kind === 'blackjack') { payout = Math.floor(bjBet * 2.5); won = true; }
+  else if (kind === 'win')  { payout = bjBet * 2;              won = true; }
+  else if (kind === 'push') { payout = bjBet;                  won = null; }
+  else if (kind === 'lose') { payout = 0;                      won = false; }
+  if (payout > 0) coins += payout;
+  bjSetResult(message + (won === true ? ` Won ${payout - bjBet}.` : (won === false ? ` Lost ${bjBet}.` : '')), won);
+  if (won === true)  sfxCatch();
+  if (won === false) sfxTapMiss();
+  updateStats();
+  updateGamblingUI();
+  saveGame();
+  bjPhase = 'idle';
+  bjSetButtons();
+}
+
 
 function refreshDiceScreen() {
   updateGamblingUI();
