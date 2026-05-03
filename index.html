@@ -1847,26 +1847,26 @@ function drawRod(canvas) {
   const W = canvas.width;
   const H = canvas.height;
 
+  const rod = getRod(equippedRodId);
+  const P = rod.palette || getRod('oak').palette;  // fall back to oak's palette
+
   ctx.save();
   // Anchor at bottom-center; rod extends straight UP
   ctx.translate(W * 0.5, H);
 
-  // === CORK HANDLE (lower part) ===
-  // Cork is from y = -10 (top) down to y = -80 (bottom), centered on x=0
+  // === CORK / BAMBOO HANDLE ===
   const corkBottom = 0;
   const corkTop = -90;
-  
-  // Main cork body (gradient)
   const corkGrad = ctx.createLinearGradient(-9, 0, 9, 0);
-  corkGrad.addColorStop(0, '#7a4f25');
-  corkGrad.addColorStop(0.3, '#a87545');
-  corkGrad.addColorStop(0.5, '#d09060');
-  corkGrad.addColorStop(0.7, '#a87545');
-  corkGrad.addColorStop(1, '#5a3520');
+  corkGrad.addColorStop(0, P.handleDark);
+  corkGrad.addColorStop(0.3, P.handleMid);
+  corkGrad.addColorStop(0.5, P.handleLight);
+  corkGrad.addColorStop(0.7, P.handleMid);
+  corkGrad.addColorStop(1, P.handleDark);
   ctx.fillStyle = corkGrad;
   ctx.fillRect(-9, corkTop, 18, corkBottom - corkTop);
 
-  // Cork texture (small dark speckles)
+  // Handle texture (small dark speckles)
   ctx.fillStyle = 'rgba(60,30,10,0.5)';
   const speckles = [
     [-5, -5], [4, -12], [-3, -22], [6, -32], [-6, -42],
@@ -1877,83 +1877,90 @@ function drawRod(canvas) {
     ctx.fillRect(x + 1, y, 1, 1);
   });
 
-  // Cork end cap (rubber/dark) at the very bottom
-  ctx.fillStyle = '#1a0a05';
+  // Handle end cap
+  ctx.fillStyle = P.handleEnd;
   ctx.fillRect(-10, -6, 20, 8);
-  ctx.fillStyle = '#2d1a0f';
+  ctx.fillStyle = P.handleDark;
   ctx.fillRect(-10, -6, 20, 1);
 
-  // === THREAD WRAPPING above handle ===
-  // Red wrap
-  ctx.fillStyle = '#8a2010';
-  ctx.fillRect(-10, corkTop - 8, 20, 8);
-  for (let i = 0; i < 8; i += 2) {
-    ctx.fillStyle = i % 4 === 0 ? '#c84838' : '#5a1408';
-    ctx.fillRect(-10, corkTop - 8 + i, 20, 1);
+  // === THREAD WRAPPING above handle (some rods skip this) ===
+  let topOfWrap = corkTop;  // y where the wrap begins (above handle)
+  if (P.wrapShow) {
+    ctx.fillStyle = P.wrapPrimary;
+    ctx.fillRect(-10, corkTop - 8, 20, 8);
+    for (let i = 0; i < 8; i += 2) {
+      ctx.fillStyle = i % 4 === 0 ? P.wrapHighlight : P.wrapShadow;
+      ctx.fillRect(-10, corkTop - 8 + i, 20, 1);
+    }
+    topOfWrap = corkTop - 8;
   }
-  // Gold accent band
-  ctx.fillStyle = '#c89858';
-  ctx.fillRect(-10, corkTop - 11, 20, 3);
-  ctx.fillStyle = '#f8d878';
-  ctx.fillRect(-10, corkTop - 11, 20, 1);
+
+  // === GOLD / SILVER ACCENT BAND ===
+  let topOfBand = topOfWrap;
+  if (P.goldBand) {
+    ctx.fillStyle = P.goldBandColor;
+    ctx.fillRect(-10, topOfWrap - 3, 20, 3);
+    ctx.fillStyle = P.goldBandHighlight;
+    ctx.fillRect(-10, topOfWrap - 3, 20, 1);
+    topOfBand = topOfWrap - 3;
+  }
 
   // === REEL SEAT / METAL COLLAR ===
-  ctx.fillStyle = '#3a2818';
-  ctx.fillRect(-11, corkTop - 19, 22, 8);
-  ctx.fillStyle = '#7a5a3a';
-  ctx.fillRect(-11, corkTop - 19, 22, 1);
+  ctx.fillStyle = P.reelSeatPrimary;
+  ctx.fillRect(-11, topOfBand - 8, 22, 8);
+  ctx.fillStyle = P.reelSeatHighlight;
+  ctx.fillRect(-11, topOfBand - 8, 22, 1);
   ctx.fillStyle = '#1a0d05';
-  ctx.fillRect(-11, corkTop - 13, 22, 1);
+  ctx.fillRect(-11, topOfBand - 2, 22, 1);
 
   // === ROD BLANK (tapered, vertical) ===
-  // From y = corkTop - 19 (top of reel seat) up to y = corkTop - 19 - 360
-  const rodBase = corkTop - 19;
+  const rodBase = topOfBand - 8;
   const rodLength = 360;
+  const [br, bg, bb] = P.rodBlankBase;
+  const [tr, tg, tb] = P.rodBlankTip;
   for (let i = 0; i < rodLength; i++) {
     const t = i / rodLength;
-    // Thicker at base, very thin at tip (10px → 2.5px)
     const thickness = 10 - t * 7.5;
     const y = rodBase - i;
-    
+
     // Shadow side (left)
     ctx.fillStyle = '#0a0503';
     ctx.fillRect(-thickness/2, y, 1, 1);
-    // Main rod color (slight gradient toward tip)
-    ctx.fillStyle = `rgb(${30 + t * 12}, ${20 + t * 10}, ${10})`;
+    // Main rod color (lerp base->tip)
+    const r = Math.round(br + (tr - br) * t);
+    const g = Math.round(bg + (tg - bg) * t);
+    const b = Math.round(bb + (tb - bb) * t);
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
     ctx.fillRect(-thickness/2 + 1, y, Math.max(1, thickness - 2), 1);
     // Highlight side (right)
     if (thickness > 3) {
-      ctx.fillStyle = `rgb(${80 + t * 25}, ${50 + t * 18}, ${25})`;
+      ctx.fillStyle = `rgb(${Math.min(255, r+50)},${Math.min(255, g+30)},${Math.min(255, b+15)})`;
       ctx.fillRect(thickness/2 - 1, y, 1, 1);
     }
     // Subtle thread spiral wrap every 50 pixels
     if (i % 50 < 3 && thickness > 4) {
-      ctx.fillStyle = '#5a2818';
+      ctx.fillStyle = P.wrapShow ? P.wrapPrimary : '#5a3818';
       ctx.fillRect(-thickness/2, y, thickness, 1);
     }
   }
 
   // === LINE GUIDES (the metal eyes along the rod) ===
-  // Spaced along the vertical rod
   const guides = [
-    { y: rodBase - 70,  size: 9 },   // first guide (largest)
+    { y: rodBase - 70,  size: 9 },
     { y: rodBase - 140, size: 7 },
     { y: rodBase - 210, size: 6 },
     { y: rodBase - 280, size: 5 },
-    { y: rodBase - 345, size: 4 },   // tip-top guide
+    { y: rodBase - 345, size: 4 },
   ];
   guides.forEach(g => {
-    // Guide foot/stem (small bracket pointing right where line rests)
-    ctx.fillStyle = '#1a1a1a';
+    ctx.fillStyle = P.guideOuter;
     ctx.fillRect(-1.5, g.y - 1, 3, 4);
-    // Guide ring (oval, oriented for line passing through)
-    ctx.strokeStyle = '#1a1a1a';
+    ctx.strokeStyle = P.guideOuter;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.ellipse(0, g.y - g.size, g.size * 0.6, g.size * 0.5, 0, 0, Math.PI * 2);
     ctx.stroke();
-    // Inner ring (lighter metal)
-    ctx.strokeStyle = '#5a5a5a';
+    ctx.strokeStyle = P.guideInner;
     ctx.lineWidth = 0.8;
     ctx.beginPath();
     ctx.ellipse(0, g.y - g.size, g.size * 0.4, g.size * 0.35, 0, 0, Math.PI * 2);
@@ -1963,13 +1970,11 @@ function drawRod(canvas) {
   ctx.restore();
 
   // ============================================================
-  // REEL — drawn separately, mounted on the side of the reel seat
+  // REEL - drawn separately, mounted on the side of the reel seat
   // ============================================================
-  // Position: at the reel seat (corkTop - 15 from anchor, slightly to the right)
-  // Anchor was at (W*0.5, H), so reel position in canvas coords:
-  const reelX = W * 0.5 + 14;  // offset to the right side of rod
-  const reelY = H + (corkTop - 15);  // at the reel seat level
-  
+  const reelX = W * 0.5 + 14;
+  const reelY = H + (topOfBand - 4);
+
   ctx.save();
   ctx.translate(reelX, reelY);
 
@@ -1978,53 +1983,53 @@ function drawRod(canvas) {
   ctx.fillRect(-12, -3, 8, 14);
 
   // === MAIN REEL HOUSING ===
-  ctx.fillStyle = '#0a0a0a';
+  ctx.fillStyle = P.reelOuter;
   ctx.beginPath();
   ctx.arc(0, 0, 16, 0, Math.PI * 2);
   ctx.fill();
-  
-  ctx.fillStyle = '#2a2a2a';
+
+  ctx.fillStyle = P.reelHousing;
   ctx.beginPath();
   ctx.arc(0, 0, 14, 0, Math.PI * 2);
   ctx.fill();
-  
+
   // Highlight rim
-  ctx.strokeStyle = '#5a5a5a';
+  ctx.strokeStyle = P.reelHighlight;
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.arc(0, 0, 13.5, Math.PI * 1.2, Math.PI * 1.8);
   ctx.stroke();
 
   // === SPOOL with wound line ===
-  ctx.fillStyle = '#1a1a1a';
+  ctx.fillStyle = P.spoolDark;
   ctx.beginPath();
   ctx.arc(0, 0, 10, 0, Math.PI * 2);
   ctx.fill();
-  
-  ctx.strokeStyle = '#d4c890';
+
+  ctx.strokeStyle = P.spoolLine;
   ctx.lineWidth = 0.5;
   for (let i = 0; i < 8; i++) {
     ctx.beginPath();
     ctx.arc(0, 0, 9 - i * 0.8, 0, Math.PI * 2);
     ctx.stroke();
   }
-  
-  ctx.fillStyle = '#3a3a3a';
+
+  ctx.fillStyle = P.spoolHub;
   ctx.beginPath();
   ctx.arc(0, 0, 4, 0, Math.PI * 2);
   ctx.fill();
-  
-  ctx.fillStyle = '#1a1a1a';
+
+  ctx.fillStyle = P.spoolDark;
   ctx.beginPath();
   ctx.arc(0, 0, 1.5, 0, Math.PI * 2);
   ctx.fill();
 
   // === DRAG KNOB ===
-  ctx.fillStyle = '#1a1a1a';
+  ctx.fillStyle = P.spoolDark;
   ctx.beginPath();
   ctx.arc(11, -8, 3, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = '#5a5a5a';
+  ctx.fillStyle = P.reelHighlight;
   ctx.beginPath();
   ctx.arc(11, -8, 2, 0, Math.PI * 2);
   ctx.fill();
@@ -2043,12 +2048,15 @@ function drawReelCrank(canvas) {
   const cx = canvas.width / 2;
   const cy = canvas.height / 2;
 
+  const rod = getRod(equippedRodId);
+  const P = rod.palette || getRod('oak').palette;
+
   // Crank arm
   ctx.fillStyle = '#1a1a1a';
   ctx.fillRect(cx - 2, cy - 14, 4, 24);
-  
+
   // Center pivot
-  ctx.fillStyle = '#3a3a3a';
+  ctx.fillStyle = P.spoolHub;
   ctx.beginPath();
   ctx.arc(cx, cy, 3, 0, Math.PI * 2);
   ctx.fill();
@@ -2056,26 +2064,26 @@ function drawReelCrank(canvas) {
   ctx.beginPath();
   ctx.arc(cx, cy, 1.5, 0, Math.PI * 2);
   ctx.fill();
-  
+
   // Knob at end of arm (upper)
-  ctx.fillStyle = '#a87545';
+  ctx.fillStyle = P.crankKnobMid;
   ctx.beginPath();
   ctx.arc(cx, cy - 14, 4, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = '#7a4f25';
+  ctx.fillStyle = P.crankKnobDark;
   ctx.beginPath();
   ctx.arc(cx + 0.5, cy - 13, 2.5, 0, Math.PI * 2);
   ctx.fill();
   // Knob highlight
-  ctx.fillStyle = '#d09060';
+  ctx.fillStyle = P.crankKnobLight;
   ctx.fillRect(cx - 2, cy - 16, 1, 1);
-  
-  // Knob at other end (lower) - slightly different size for visual interest
-  ctx.fillStyle = '#a87545';
+
+  // Knob at other end (lower) - slightly smaller
+  ctx.fillStyle = P.crankKnobMid;
   ctx.beginPath();
   ctx.arc(cx, cy + 10, 3, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = '#7a4f25';
+  ctx.fillStyle = P.crankKnobDark;
   ctx.beginPath();
   ctx.arc(cx + 0.5, cy + 11, 1.8, 0, Math.PI * 2);
   ctx.fill();
@@ -2242,6 +2250,17 @@ const RODS = [
     tensionRate: 1.0,         // 1.0 = default tension growth
     markerSpeedMult: 1.0,
     rareBonus: 0,             // % added to rare odds
+    palette: {
+      // Light bamboo cane, no thread wrap, no gold band, basic reel.
+      handleDark: '#7a6020', handleMid: '#c8a850', handleLight: '#e8d480', handleEnd: '#3a2810',
+      wrapShow: false, goldBand: false,
+      reelSeatPrimary: '#5a4520', reelSeatHighlight: '#a8884a',
+      rodBlankBase: [70, 56, 28], rodBlankTip: [110, 88, 42],
+      guideOuter: '#2a2010', guideInner: '#7a5a2a',
+      reelOuter: '#0a0a0a', reelHousing: '#2a2a2a', reelHighlight: '#5a5a5a',
+      spoolDark: '#1a1a1a', spoolLine: '#d4c890', spoolHub: '#3a3a3a',
+      crankKnobDark: '#7a5a20', crankKnobMid: '#c8a850', crankKnobLight: '#e8d480',
+    },
   },
   {
     id: 'pine',
@@ -2252,6 +2271,17 @@ const RODS = [
     tensionRate: 1.0,
     markerSpeedMult: 1.0,
     rareBonus: 0,
+    palette: {
+      // Pale pinewood cork, basic black reel, no thread wrap.
+      handleDark: '#6a4525', handleMid: '#c8956a', handleLight: '#e8b88a', handleEnd: '#1a0a05',
+      wrapShow: false, goldBand: false,
+      reelSeatPrimary: '#4a3018', reelSeatHighlight: '#8a6a4a',
+      rodBlankBase: [42, 30, 14], rodBlankTip: [78, 56, 28],
+      guideOuter: '#1a1a1a', guideInner: '#5a5a5a',
+      reelOuter: '#0a0a0a', reelHousing: '#2a2a2a', reelHighlight: '#5a5a5a',
+      spoolDark: '#1a1a1a', spoolLine: '#d4c890', spoolHub: '#3a3a3a',
+      crankKnobDark: '#7a4f25', crankKnobMid: '#a87545', crankKnobLight: '#d09060',
+    },
   },
   {
     id: 'oak',
@@ -2262,6 +2292,19 @@ const RODS = [
     tensionRate: 0.80,
     markerSpeedMult: 1.0,
     rareBonus: 0,
+    palette: {
+      // Classic cork handle, red thread wrap, small gold band - the original look.
+      handleDark: '#5a3520', handleMid: '#a87545', handleLight: '#d09060', handleEnd: '#1a0a05',
+      wrapShow: true,
+      wrapPrimary: '#8a2010', wrapHighlight: '#c84838', wrapShadow: '#5a1408',
+      goldBand: true, goldBandColor: '#c89858', goldBandHighlight: '#f8d878',
+      reelSeatPrimary: '#3a2818', reelSeatHighlight: '#7a5a3a',
+      rodBlankBase: [30, 20, 10], rodBlankTip: [55, 38, 18],
+      guideOuter: '#1a1a1a', guideInner: '#5a5a5a',
+      reelOuter: '#0a0a0a', reelHousing: '#2a2a2a', reelHighlight: '#5a5a5a',
+      spoolDark: '#1a1a1a', spoolLine: '#d4c890', spoolHub: '#3a3a3a',
+      crankKnobDark: '#7a4f25', crankKnobMid: '#a87545', crankKnobLight: '#d09060',
+    },
   },
   {
     id: 'cypress',
@@ -2272,6 +2315,19 @@ const RODS = [
     tensionRate: 0.70,
     markerSpeedMult: 1.15,    // slower marker = easier rhythm
     rareBonus: 0,
+    palette: {
+      // Darker grained cork, blue-teal thread wrap, silver collar, silver reel highlights.
+      handleDark: '#4a3220', handleMid: '#8a6440', handleLight: '#b08a60', handleEnd: '#0a0500',
+      wrapShow: true,
+      wrapPrimary: '#1a4858', wrapHighlight: '#3a8898', wrapShadow: '#0a2838',
+      goldBand: true, goldBandColor: '#8898a8', goldBandHighlight: '#d8e0e8',
+      reelSeatPrimary: '#2a3848', reelSeatHighlight: '#7a8898',
+      rodBlankBase: [28, 24, 18], rodBlankTip: [60, 50, 38],
+      guideOuter: '#1a2028', guideInner: '#9aa8b8',
+      reelOuter: '#0a0a0a', reelHousing: '#2a2e36', reelHighlight: '#a8b8c8',
+      spoolDark: '#1a1a1a', spoolLine: '#d4c890', spoolHub: '#5a6878',
+      crankKnobDark: '#3a4858', crankKnobMid: '#7a8898', crankKnobLight: '#c8d8e8',
+    },
   },
   {
     id: 'heirloom',
@@ -2282,6 +2338,19 @@ const RODS = [
     tensionRate: 0.60,
     markerSpeedMult: 1.25,
     rareBonus: 5,
+    palette: {
+      // Heirloom: dark blackwood handle with rich amber wrap and gold everywhere.
+      handleDark: '#2a1810', handleMid: '#4a2818', handleLight: '#6a3828', handleEnd: '#0a0500',
+      wrapShow: true,
+      wrapPrimary: '#8a4810', wrapHighlight: '#c87830', wrapShadow: '#5a2808',
+      goldBand: true, goldBandColor: '#d8a838', goldBandHighlight: '#f8e898',
+      reelSeatPrimary: '#3a2818', reelSeatHighlight: '#d8a838',
+      rodBlankBase: [22, 14, 8], rodBlankTip: [48, 32, 18],
+      guideOuter: '#3a2818', guideInner: '#f0c858',
+      reelOuter: '#1a0a05', reelHousing: '#3a1c10', reelHighlight: '#f0c858',
+      spoolDark: '#1a0a05', spoolLine: '#f8e898', spoolHub: '#c89858',
+      crankKnobDark: '#7a5818', crankKnobMid: '#c89858', crankKnobLight: '#f8e898',
+    },
   },
 ];
 
@@ -3455,16 +3524,25 @@ function buyRod(id, buttonEl) {
   coins -= rod.cost;
   ownedRods.push(id);
   equippedRodId = id;  // auto-equip the new rod
+  redrawEquippedRod();
   purchaseFeedback(buttonEl, rod.cost);
   updateStats();
   renderShop();
   saveGame();
 }
 
+function redrawEquippedRod() {
+  const rc = document.getElementById('rod-canvas');
+  const cc = document.getElementById('reel-crank');
+  if (rc) drawRod(rc);
+  if (cc) drawReelCrank(cc);
+}
+
 function equipRod(id) {
   if (!ownedRods.includes(id)) return;
   equippedRodId = id;
   sfxButtonClick();
+  redrawEquippedRod();
   renderShop();
   saveGame();
 }
