@@ -1157,6 +1157,7 @@ background: linear-gradient(135deg, rgba(165,214,167,0.06), var(--surface-solid)
 .shop-item.locked {
 opacity: 0.5;
 }
+.shop-item-icon svg { width: 32px; height: 32px; display: block; }
 .shop-item-icon {
 width: 48px; height: 48px;
 flex-shrink: 0;
@@ -2431,6 +2432,29 @@ const UPGRADES = [
 
 function getUpgrade(id) { return UPGRADES.find(u => u.id === id); }
 
+const SHOP_ICONS = {
+  // ---- Rods (visual progression: bare pole -> reel -> ornate)
+  cane: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 25 L25 7"/><path d="M25 7 q5 2 4 8"/><path d="M29 15 v6"/><circle cx="29" cy="22" r="1.5" fill="currentColor"/></svg>`,
+  pine: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 25 L25 9"/><circle cx="9" cy="23" r="3"/><path d="M25 9 q5 2 4 8"/><path d="M29 17 v5"/><path d="M27 22 h4 l-2 3 z" fill="currentColor" stroke="none"/></svg>`,
+  oak: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 25 L25 9"/><circle cx="9" cy="23" r="3.5"/><circle cx="9" cy="23" r="1" fill="currentColor"/><path d="M11 21 L8 24" stroke-width="1.2"/><path d="M25 9 q5 2 4 8"/><path d="M29 17 v5"/><path d="M27 22 h4 l-2 3 z" fill="currentColor" stroke="none"/></svg>`,
+  cypress: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 25 L25 9" stroke-width="2.4"/><circle cx="9" cy="23" r="4"/><circle cx="9" cy="23" r="1.5" fill="currentColor"/><path d="M14 18 L11 21" stroke-width="1.2"/><path d="M18 14 L15 17" stroke-width="1.2"/><path d="M25 9 q5 3 4 9"/><path d="M29 18 v4"/><path d="M27 22 h4 l-2 3 z" fill="currentColor" stroke="none"/></svg>`,
+  heirloom: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 25 L25 9"/><circle cx="9" cy="23" r="4.2" stroke="var(--gold)"/><circle cx="9" cy="23" r="2" fill="var(--gold)" stroke="none"/><path d="M25 9 q5 3 4 9" stroke="var(--gold)"/><path d="M29 18 v4" stroke="var(--gold)"/><path d="M27 22 h4 l-2 3 z" fill="var(--gold)" stroke="none"/><path d="M19 4 l1 2.2 2.4 0 -2 1.6 0.8 2.3 -2.2 -1.3 -2.2 1.3 0.8 -2.3 -2 -1.6 2.4 0 z" fill="var(--gold)" stroke="none"/></svg>`,
+
+  // ---- Baits
+  worms: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 18 q3 -7 6 0 t6 0 t6 0 t6 0"/></svg>`,
+  minnows: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16 l8 -5 7 0 4 5 -4 5 -7 0 z"/><path d="M6 16 l-3 -3 0 6 z" fill="currentColor"/><circle cx="22" cy="14" r="1.1" fill="currentColor"/></svg>`,
+  cricket: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="16" cy="18" rx="8" ry="5"/><path d="M22 14 l5 -6"/><path d="M22 14 l5 -2"/><path d="M10 19 l-3 6"/><path d="M14 23 l-2 5"/><path d="M18 23 l3 5"/><circle cx="22" cy="14" r="1.4" fill="currentColor"/></svg>`,
+  lures: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 6 l5 6 -5 6 -5 -6 z"/><circle cx="14" cy="10" r="0.9" fill="currentColor"/><path d="M16 18 v5"/><path d="M16 23 q3 1 3 4 a2 2 0 1 1 -4 0"/></svg>`,
+  stinkbait: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="16" cy="20" r="6.5"/><path d="M16 11 v-3"/><path d="M9 13 l-2 -2"/><path d="M23 13 l2 -2"/><path d="M11 8 l-1.5 -3"/><path d="M21 8 l1.5 -3"/></svg>`,
+
+  // ---- Upgrades
+  tackle2: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="5" y="13" width="22" height="14" rx="2"/><path d="M11 13 v-3 h10 v3"/><path d="M5 19 h22"/><path d="M14 23 h4"/></svg>`,
+  quickHands: `<svg viewBox="0 0 32 32" fill="currentColor" stroke="none"><path d="M17 4 l-9 16 6 0 -3 8 11 -16 -6 0 z"/></svg>`,
+  luckyCharm: `<svg viewBox="0 0 32 32" fill="currentColor" stroke="none"><circle cx="11" cy="13" r="5.2"/><circle cx="21" cy="13" r="5.2"/><circle cx="11" cy="21" r="5.2"/><circle cx="21" cy="21" r="5.2"/><rect x="14" y="14" width="4" height="6" fill="rgba(20,10,18,0.85)"/><path d="M17 25 q3 1 4 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+  tackle3: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="5" y="13" width="22" height="14" rx="2"/><path d="M11 13 v-3 h10 v3"/><path d="M5 19 h22"/><path d="M14 23 h4"/><path d="M9 6 l1 2.2 2.4 0 -2 1.6 0.8 2.3 -2.2 -1.3 -2.2 1.3 0.8 -2.3 -2 -1.6 2.4 0 z" fill="var(--gold)" stroke="none"/><path d="M24 6 l1 2.2 2.4 0 -2 1.6 0.8 2.3 -2.2 -1.3 -2.2 1.3 0.8 -2.3 -2 -1.6 2.4 0 z" fill="var(--gold)" stroke="none"/></svg>`,
+};
+
+
 function getBaitCap() {
   if (ownedUpgrades.includes('tackle3')) return 20;
   if (ownedUpgrades.includes('tackle2')) return 10;
@@ -3160,7 +3184,8 @@ function renderUpgradesShop(scroll) {
 
     const icon = document.createElement('div');
     icon.className = 'shop-item-icon';
-    icon.textContent = up.name.charAt(0);
+    if (SHOP_ICONS[up.id]) icon.innerHTML = SHOP_ICONS[up.id];
+    else icon.textContent = up.name.charAt(0);
     item.appendChild(icon);
 
     const info = document.createElement('div');
@@ -3245,7 +3270,8 @@ function renderBaitShop(scroll) {
     const icon = document.createElement('div');
     icon.className = 'shop-item-icon';
     // Use a single letter for now
-    icon.textContent = bait.name.charAt(0);
+    if (SHOP_ICONS[bait.id]) icon.innerHTML = SHOP_ICONS[bait.id];
+    else icon.textContent = bait.name.charAt(0);
     item.appendChild(icon);
     
     const info = document.createElement('div');
@@ -3346,7 +3372,8 @@ function renderRodShop(scroll) {
     // Icon (a simple roman numeral placeholder representing tier)
     const icon = document.createElement('div');
     icon.className = 'shop-item-icon';
-    icon.textContent = ['I','II','III','IV','V'][i];
+    if (SHOP_ICONS[rod.id]) icon.innerHTML = SHOP_ICONS[rod.id];
+    else icon.textContent = ['I','II','III','IV','V'][i];
     item.appendChild(icon);
     
     // Info
