@@ -1560,32 +1560,18 @@ color: #fde898;
 font-family: 'Baloo 2', cursive; font-size: 12px; font-weight: 800;
 text-align: center;
 }
-/* Craps status banner */
-.craps-status {
-display: flex; flex-direction: column; align-items: center;
-gap: 2px;
-padding: 6px 8px;
-border-radius: 10px;
-background: rgba(20, 10, 18, 0.55);
-border: 1px solid rgba(255,140,80,0.35);
-text-align: center;
-}
-.craps-phase {
-font-family: 'Baloo 2', cursive;
-font-size: 13px; font-weight: 800;
-letter-spacing: 1.4px;
-color: #ff8a60;
-text-transform: uppercase;
-}
-.craps-status.point .craps-phase {
+/* Tiny "Point X" chip that only appears once a point is set */
+.craps-point {
+align-self: center;
+padding: 2px 10px;
+border-radius: 999px;
+background: rgba(80, 50, 10, 0.55);
+border: 1px solid #ffd54f;
 color: #ffd54f;
-}
-.craps-help {
 font-family: 'Baloo 2', cursive;
-font-size: 9px; font-weight: 600;
-letter-spacing: 0.5px;
-color: var(--text-dim);
-line-height: 1.25;
+font-size: 10px; font-weight: 800;
+letter-spacing: 1.2px;
+text-transform: uppercase;
 }
 /* Single big roll button */
 .craps-roll-btn {
@@ -1740,10 +1726,7 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
           <div class="die" id="die-2"><div class="die-face" data-face="1">⚀</div></div>
         </div>
         <div class="dice-result" id="dice-result"></div>
-        <div class="craps-status" id="craps-status">
-          <span class="craps-phase" id="craps-phase">COME OUT</span>
-          <span class="craps-help" id="craps-help">7 or 11 wins • 2/3/12 craps • anything else sets the point</span>
-        </div>
+        <div class="craps-point" id="craps-point" style="display:none">Point <span id="craps-point-val">—</span></div>
         <div class="dice-bet-row" id="dice-bet-row">
           <span class="dice-bet-label">Pass</span>
           <button class="dice-step" onclick="adjDiceBet(-50)">−50</button>
@@ -4001,31 +3984,16 @@ let crapsPhase = 'come-out';   // 'come-out' | 'point'
 let crapsPoint = null;
 let crapsBet = 0;
 
-function setCrapsBetEnabled(enabled) {
-  const row = document.getElementById('dice-bet-row');
-  if (!row) return;
-  row.querySelectorAll('button, input').forEach(el => { el.disabled = !enabled; });
-  row.style.opacity = enabled ? '' : '0.55';
-}
-
 function refreshCrapsStatus() {
-  const status = document.getElementById('craps-status');
-  const phase  = document.getElementById('craps-phase');
-  const help   = document.getElementById('craps-help');
-  const roll   = document.getElementById('craps-roll-btn');
-  if (!status || !phase || !help || !roll) return;
-  if (crapsPhase === 'come-out') {
-    status.classList.remove('point');
-    phase.textContent = 'COME OUT';
-    help.textContent = '7 or 11 wins • 2/3/12 craps • else sets the point';
-    roll.textContent = 'Place Bet & Roll';
+  const chip = document.getElementById('craps-point');
+  const val  = document.getElementById('craps-point-val');
+  if (!chip || !val) return;
+  if (crapsPhase === 'point') {
+    val.textContent = String(crapsPoint);
+    chip.style.display = '';
   } else {
-    status.classList.add('point');
-    phase.textContent = `POINT ${crapsPoint}`;
-    help.textContent = `Roll ${crapsPoint} to win • Roll 7 and you're out`;
-    roll.textContent = 'Roll';
+    chip.style.display = 'none';
   }
-  setCrapsBetEnabled(crapsPhase === 'come-out');
 }
 
 function resetCrapsRound() {
