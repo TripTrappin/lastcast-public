@@ -411,28 +411,6 @@ text-transform: uppercase;
 margin-top: 2px;
 }
 
-#fishdex-btn {
-position: absolute;
-top: 24px; right: 16px;
-width: 56px; height: 36px;
-background: rgba(20, 10, 18, 0.55);
-backdrop-filter: blur(8px);
-border: 1px solid rgba(255,232,212,0.25);
-border-radius: 999px;
-color: var(--text);
-font-family: 'Baloo 2', cursive;
-font-size: 12px;
-font-weight: 700;
-letter-spacing: 1.5px;
-cursor: pointer;
-z-index: 30;
-display: flex;
-align-items: center;
-justify-content: center;
-transition: transform 0.15s;
-}
-#fishdex-btn:active { transform: scale(0.92); }
-
 #shop-btn {
 position: absolute;
 top: 24px; right: 80px;
@@ -454,28 +432,6 @@ justify-content: center;
 transition: transform 0.15s;
 }
 #shop-btn:active { transform: scale(0.92); }
-
-#dice-btn {
-position: absolute;
-top: 24px; right: 196px;
-width: 64px; height: 36px;
-background: rgba(80, 20, 30, 0.7);
-backdrop-filter: blur(8px);
-border: 1px solid rgba(255,140,80,0.45);
-border-radius: 999px;
-color: var(--text);
-font-family: 'Baloo 2', cursive;
-font-size: 12px;
-font-weight: 700;
-letter-spacing: 1.5px;
-cursor: pointer;
-z-index: 30;
-display: flex;
-align-items: center;
-justify-content: center;
-transition: transform 0.15s;
-}
-#dice-btn:active { transform: scale(0.92); }
 
 #mute-btn {
 position: absolute;
@@ -762,14 +718,6 @@ cursor: pointer;
 transition: transform 0.15s;
 }
 .fail-dismiss:active { transform: scale(0.97); }
-
-#fishdex-screen { background: var(--bg); }
-.fishdex-header { padding: 50px 20px 16px; flex-shrink: 0; }
-.fishdex-title {
-font-family: 'Baloo 2', cursive;
-font-size: 28px; font-weight: 800; color: var(--text);
-display: flex; justify-content: space-between; align-items: center;
-}
 .fishdex-back {
 height: 32px;
 padding: 0 14px;
@@ -785,89 +733,6 @@ cursor: pointer;
 display: flex; align-items: center; justify-content: center;
 }
 .fishdex-back:active { transform: scale(0.92); }
-
-.fishdex-header-actions {
-display: flex;
-gap: 8px;
-align-items: center;
-}
-
-.fishdex-reset {
-height: 32px;
-padding: 0 14px;
-background: rgba(20, 10, 18, 0.55);
-border: 1px solid rgba(229,115,115,0.4);
-border-radius: 999px;
-color: #e57373;
-font-family: 'Baloo 2', cursive;
-font-size: 11px;
-font-weight: 700;
-letter-spacing: 1.5px;
-cursor: pointer;
-display: flex; align-items: center; justify-content: center;
-}
-.fishdex-reset:active { transform: scale(0.92); }
-.fishdex-subtitle { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
-.fishdex-progress {
-margin-top: 12px; height: 8px;
-background: var(--surface-solid); border-radius: 4px;
-overflow: hidden; border: 1px solid var(--border);
-}
-.fishdex-progress-fill {
-height: 100%;
-background: linear-gradient(90deg, var(--accent2), var(--accent));
-border-radius: 4px;
-transition: width 0.6s ease;
-box-shadow: 0 0 8px var(--accent);
-}
-.fishdex-scroll { flex: 1; overflow-y: auto; padding: 0 16px 30px; }
-.fishdex-scroll::-webkit-scrollbar { width: 0; }
-.dex-section { margin-bottom: 18px; }
-.dex-section-title {
-font-family: 'Baloo 2', cursive;
-font-size: 14px; font-weight: 700;
-text-transform: uppercase; letter-spacing: 1.2px;
-padding: 8px 4px 6px;
-display: flex; justify-content: space-between; align-items: center;
-}
-.dex-section-title.common-color { color: var(--common-green); }
-.dex-section-title.uncommon-color { color: var(--uncommon-blue); }
-.dex-section-title.rare-color { color: var(--rare-purple); }
-.dex-section-title.legendary-color { color: var(--gold); }
-.dex-section-title.junk-color { color: var(--junk); }
-.dex-section-count { font-size: 11px; color: var(--text-dim); font-weight: 700; }
-.dex-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-.dex-card {
-background: var(--surface-solid); border: 1px solid var(--border);
-border-radius: 14px; padding: 12px 8px;
-text-align: center; position: relative;
-transition: transform 0.15s;
-}
-.dex-card.legendary-card {
-border-color: rgba(255,213,79,0.4);
-background: linear-gradient(135deg, rgba(255,213,79,0.05), var(--surface-solid));
-}
-.dex-card:active { transform: scale(0.97); }
-.dex-fish-canvas {
-display: block; margin: 0 auto 4px;
-image-rendering: pixelated; height: 50px; width: 100px;
-}
-.dex-fish-canvas.locked { filter: brightness(0) opacity(0.3); }
-.dex-fish-name {
-font-family: 'Baloo 2', cursive;
-font-size: 13px; font-weight: 700;
-color: var(--text); margin-bottom: 2px;
-}
-.dex-fish-name.locked { color: var(--text-dim); }
-.dex-fish-stats { font-size: 10px; color: var(--text-dim); font-weight: 600; letter-spacing: 0.3px; }
-.dex-count-badge {
-position: absolute; top: 6px; right: 6px;
-background: var(--accent); color: var(--bg);
-font-size: 10px; font-weight: 800;
-min-width: 22px; height: 22px;
-border-radius: 11px; padding: 0 6px;
-display: flex; align-items: center; justify-content: center;
-}
 /* ============================================================
 TITLE SCREEN
 ============================================================ */
@@ -1426,145 +1291,6 @@ text-shadow: 0 0 8px rgba(255,213,79,0.6);
   100% { transform: translate(-50%, -110%) scale(1.0); opacity: 0; }
 }
 
-/* === DICE SCREEN === */
-#dice-screen { background: linear-gradient(180deg, #1a0a14 0%, #2a1024 100%); }
-.dice-header {
-display: flex; align-items: center; justify-content: space-between;
-padding: 14px 20px 10px;
-flex-shrink: 0;
-}
-.dice-title {
-font-family: 'Baloo 2', cursive; font-size: 20px; font-weight: 800;
-color: #ff8a60; letter-spacing: 1px;
-}
-.dice-close {
-height: 28px; padding: 0 14px; border-radius: 999px; border: none;
-background: rgba(80, 20, 30, 0.85); color: var(--bg);
-font-family: 'Baloo 2', cursive; font-size: 11px; font-weight: 700;
-letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
-}
-.dice-table {
-flex: 1;
-display: flex; flex-direction: column; align-items: center;
-gap: 14px;
-padding: 8px 16px 18px;
-overflow-y: auto;
-}
-.dice-flavor {
-font-family: 'Baloo 2', cursive; font-size: 12px;
-color: var(--text-dim);
-font-style: italic;
-text-align: center;
-}
-.dice-pair {
-display: flex; gap: 14px;
-margin: 4px 0 4px;
-}
-.die {
-width: 60px; height: 60px;
-background: linear-gradient(180deg, #fde8c8 0%, #c8a070 100%);
-border: 2px solid #1a0c05;
-border-radius: 10px;
-box-shadow: 0 4px 8px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.4);
-display: flex; align-items: center; justify-content: center;
-position: relative;
-font-family: 'Baloo 2', cursive;
-font-size: 36px; color: #1a0c05;
-font-weight: 800;
-}
-.die.rolling { animation: dieShake 0.42s ease-in-out; }
-@keyframes dieShake {
-0%, 100% { transform: rotate(0); }
-25%      { transform: rotate(-12deg) translate(-4px, 0); }
-50%      { transform: rotate(8deg) translate(3px, -2px); }
-75%      { transform: rotate(-6deg) translate(-2px, 1px); }
-}
-.die-face {
-width: 36px; height: 36px;
-display: flex; align-items: center; justify-content: center;
-}
-.dice-result {
-font-family: 'Baloo 2', cursive; font-size: 14px; font-weight: 700;
-height: 18px;
-color: var(--text);
-text-align: center;
-}
-.dice-result.win { color: #6fb069; }
-.dice-result.lose { color: #ff5a4a; }
-.dice-bet-row {
-display: flex; align-items: center; gap: 6px;
-margin-top: 4px;
-}
-.dice-bet-label {
-font-family: 'Baloo 2', cursive; font-size: 11px;
-color: var(--text-dim); letter-spacing: 1px;
-text-transform: uppercase; margin-right: 6px;
-}
-.dice-step {
-height: 32px; min-width: 36px; padding: 0 8px;
-border-radius: 8px; border: 1px solid rgba(255,255,255,0.15);
-background: rgba(20,10,18,0.5);
-color: var(--text);
-font-family: 'Baloo 2', cursive; font-size: 12px; font-weight: 700;
-cursor: pointer;
-}
-.dice-step:active { transform: scale(0.94); }
-#dice-bet {
-width: 76px; height: 32px; padding: 0 8px;
-border-radius: 8px; border: 1px solid rgba(255,140,80,0.45);
-background: rgba(20,10,18,0.7);
-color: #fde898;
-font-family: 'Baloo 2', cursive; font-size: 13px; font-weight: 800;
-text-align: center;
-}
-.dice-choices {
-display: flex; gap: 8px; width: 100%;
-margin-top: 4px;
-}
-.dice-choice {
-flex: 1; height: 56px;
-display: flex; flex-direction: column; align-items: center; justify-content: center;
-gap: 2px;
-border-radius: 12px;
-background: rgba(20,10,18,0.55);
-border: 1px solid rgba(255,140,80,0.35);
-color: var(--text);
-font-family: 'Baloo 2', cursive;
-cursor: pointer;
-transition: transform 0.12s, background 0.12s;
-}
-.dice-choice:active { transform: scale(0.96); }
-.dice-choice.lucky {
-border-color: #ffd54f;
-background: rgba(80, 50, 10, 0.55);
-}
-.dice-choice .dc-name {
-font-size: 12px; font-weight: 700; letter-spacing: 1px;
-text-transform: uppercase;
-}
-.dice-choice .dc-pay {
-font-size: 18px; font-weight: 800;
-color: var(--gold);
-}
-.dice-bottom-row {
-margin-top: 6px;
-display: flex; align-items: center; justify-content: space-between;
-gap: 10px;
-width: 100%;
-font-family: 'Baloo 2', cursive; font-size: 12px;
-color: var(--text-dim);
-}
-.dice-num { color: var(--gold); font-weight: 800; font-size: 14px; }
-.dice-num.bad { color: #ff7e5a; }
-.dice-pay-btn {
-height: 30px; padding: 0 14px; border-radius: 999px; border: none;
-background: rgba(232, 132, 58, 0.92); color: var(--bg);
-font-family: 'Baloo 2', cursive; font-size: 11px; font-weight: 700;
-letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
-}
-.dice-pay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.dice-pay-btn:active { transform: scale(0.94); }
-
 /* === GAME OVER === */
 #gameover-popup {
 position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -1599,6 +1325,286 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
 }
 .gameover-restart:active { transform: scale(0.96); }
 
+/* === PIXEL PHONE (in pocket) === */
+#phone-pocket {
+position: absolute;
+left: 12px; bottom: 110px;
+width: 36px; height: 56px;
+z-index: 25;
+cursor: pointer;
+display: flex; flex-direction: column; align-items: center;
+filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.6));
+transition: transform 0.18s;
+}
+#phone-pocket:active { transform: scale(0.94); }
+.phone-pocket-body {
+position: relative;
+width: 32px; height: 48px;
+background: #1a0c05;
+border: 2px solid #3a1c08;
+border-radius: 6px;
+box-shadow: inset 0 2px 0 rgba(255,200,140,0.12);
+}
+.phone-pocket-screen {
+position: absolute;
+top: 5px; left: 4px; right: 4px; bottom: 8px;
+background: #2a1408;
+border-radius: 1px;
+}
+.phone-pocket-cam {
+position: absolute;
+top: 1px; left: 50%;
+transform: translateX(-50%);
+width: 4px; height: 1px;
+background: #5a3018;
+}
+.phone-pocket-label {
+margin-top: 1px;
+font-family: 'Baloo 2', cursive;
+font-size: 7px; font-weight: 800;
+color: rgba(255,232,160,0.55);
+letter-spacing: 0.6px;
+text-shadow: 0 1px 0 rgba(0,0,0,0.8);
+}
+
+/* Buzz when itch is high */
+.itch-high #phone-pocket {
+animation: phoneBuzz 0.16s ease-in-out infinite;
+}
+.itch-high #phone-pocket .phone-pocket-screen {
+background: #5a2018;
+animation: phoneScreenFlicker 0.6s ease-in-out infinite;
+}
+@keyframes phoneBuzz {
+0%, 100% { transform: translate(0, 0) rotate(0deg); }
+20%      { transform: translate(1px, -1px) rotate(-1deg); }
+40%      { transform: translate(-1px, 1px) rotate(0.6deg); }
+60%      { transform: translate(1px, 1px) rotate(-0.6deg); }
+80%      { transform: translate(-1px, -1px) rotate(0.4deg); }
+}
+@keyframes phoneScreenFlicker {
+0%, 100% { background: #5a2018; }
+50%      { background: #ff7e5a; }
+}
+
+/* === PHONE OVERLAY === */
+#phone-overlay {
+position: absolute; inset: 0;
+z-index: 200;
+display: none;
+}
+#phone-overlay.show { display: block; }
+
+#phone-overlay-bg {
+position: absolute; inset: 0;
+background: rgba(0,0,0,0.7);
+opacity: 0;
+transition: opacity 0.32s;
+}
+#phone-overlay.show #phone-overlay-bg { opacity: 1; }
+
+#phone-frame {
+position: absolute;
+left: 50%; top: 50%;
+width: min(80%, 280px);
+aspect-ratio: 9 / 16;
+max-height: 86%;
+background: linear-gradient(180deg, #281024 0%, #181018 100%);
+border: 5px solid #1a0c05;
+border-radius: 36px;
+box-shadow:
+  0 8px 32px rgba(0,0,0,0.85),
+  inset 0 0 0 2px rgba(255,232,212,0.06);
+transform: translate(-50%, 120%) rotate(-4deg);
+transition: transform 0.42s cubic-bezier(0.2, 0.85, 0.25, 1.05);
+overflow: hidden;
+}
+#phone-overlay.show #phone-frame {
+transform: translate(-50%, -50%) rotate(0);
+}
+.phone-speaker {
+position: absolute;
+top: 12px; left: 50%;
+transform: translateX(-50%);
+width: 38px; height: 4px;
+background: #1a0c05;
+border-radius: 2px;
+}
+.phone-cam {
+position: absolute;
+top: 24px; left: 50%;
+transform: translateX(-50%);
+width: 6px; height: 6px;
+background: #1a0c05;
+border-radius: 50%;
+border: 1px solid rgba(255,232,212,0.18);
+}
+.phone-screen {
+position: absolute;
+top: 40px; left: 14px; right: 14px;
+bottom: 60px;
+background: linear-gradient(180deg, #1a0a14 0%, #2a1024 100%);
+border-radius: 10px;
+overflow-y: auto;
+overflow-x: hidden;
+display: flex; flex-direction: column;
+}
+.phone-app-bar {
+display: flex; justify-content: space-between; align-items: center;
+padding: 6px 10px;
+background: rgba(0,0,0,0.4);
+font-family: 'Baloo 2', cursive;
+font-size: 9px; font-weight: 700;
+letter-spacing: 1px;
+color: #fde898;
+text-transform: uppercase;
+flex-shrink: 0;
+}
+.phone-app-name { color: #ff8a60; letter-spacing: 1.2px; }
+.phone-app-battery { color: #ff7e5a; }
+.phone-app-body {
+flex: 1;
+padding: 12px;
+display: flex; flex-direction: column;
+align-items: stretch;
+gap: 10px;
+}
+.phone-home-btn {
+position: absolute;
+bottom: 14px; left: 50%;
+transform: translateX(-50%);
+width: 50px; height: 30px;
+background: #2a1408;
+border: 2px solid #5a3018;
+border-radius: 999px;
+cursor: pointer;
+transition: transform 0.12s;
+}
+.phone-home-btn::after {
+content: '';
+position: absolute; inset: 4px;
+border: 1px solid rgba(255,232,212,0.2);
+border-radius: 999px;
+}
+.phone-home-btn:active { transform: translateX(-50%) scale(0.92); }
+
+/* === DICE GAME (now inside the phone) === */
+.dice-flavor {
+font-family: 'Baloo 2', cursive; font-size: 11px;
+color: var(--text-dim);
+font-style: italic;
+text-align: center;
+}
+.dice-pair {
+display: flex; gap: 12px;
+justify-content: center;
+margin: 2px 0;
+}
+.die {
+width: 44px; height: 44px;
+background: linear-gradient(180deg, #fde8c8 0%, #c8a070 100%);
+border: 2px solid #1a0c05;
+border-radius: 8px;
+box-shadow: 0 3px 6px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.4);
+display: flex; align-items: center; justify-content: center;
+position: relative;
+font-family: 'Baloo 2', cursive;
+font-size: 28px; color: #1a0c05;
+font-weight: 800;
+}
+.die.rolling { animation: dieShake 0.42s ease-in-out; }
+@keyframes dieShake {
+0%, 100% { transform: rotate(0); }
+25%      { transform: rotate(-12deg) translate(-3px, 0); }
+50%      { transform: rotate(8deg) translate(2px, -2px); }
+75%      { transform: rotate(-6deg) translate(-1px, 1px); }
+}
+.die-face {
+width: 28px; height: 28px;
+display: flex; align-items: center; justify-content: center;
+}
+.dice-result {
+font-family: 'Baloo 2', cursive; font-size: 12px; font-weight: 700;
+height: 16px;
+color: var(--text);
+text-align: center;
+line-height: 1.3;
+}
+.dice-result.win { color: #6fb069; }
+.dice-result.lose { color: #ff5a4a; }
+.dice-bet-row {
+display: flex; align-items: center; gap: 4px;
+flex-wrap: wrap;
+justify-content: center;
+}
+.dice-bet-label {
+font-family: 'Baloo 2', cursive; font-size: 10px;
+color: var(--text-dim); letter-spacing: 1px;
+text-transform: uppercase;
+margin-right: 2px;
+}
+.dice-step {
+height: 28px; min-width: 32px; padding: 0 6px;
+border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);
+background: rgba(20,10,18,0.5);
+color: var(--text);
+font-family: 'Baloo 2', cursive; font-size: 11px; font-weight: 700;
+cursor: pointer;
+}
+.dice-step:active { transform: scale(0.94); }
+#dice-bet {
+width: 60px; height: 28px; padding: 0 6px;
+border-radius: 6px; border: 1px solid rgba(255,140,80,0.45);
+background: rgba(20,10,18,0.7);
+color: #fde898;
+font-family: 'Baloo 2', cursive; font-size: 12px; font-weight: 800;
+text-align: center;
+}
+.dice-choices {
+display: flex; gap: 6px;
+}
+.dice-choice {
+flex: 1; height: 48px;
+display: flex; flex-direction: column; align-items: center; justify-content: center;
+gap: 1px;
+border-radius: 8px;
+background: rgba(20,10,18,0.55);
+border: 1px solid rgba(255,140,80,0.35);
+color: var(--text);
+font-family: 'Baloo 2', cursive;
+cursor: pointer;
+transition: transform 0.12s;
+}
+.dice-choice:active { transform: scale(0.96); }
+.dice-choice.lucky {
+border-color: #ffd54f;
+background: rgba(80, 50, 10, 0.55);
+}
+.dice-choice .dc-name {
+font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+text-transform: uppercase;
+}
+.dice-choice .dc-pay {
+font-size: 14px; font-weight: 800;
+color: var(--gold);
+}
+.dice-bottom-row {
+display: flex; align-items: center; justify-content: space-between;
+gap: 6px;
+font-family: 'Baloo 2', cursive; font-size: 10px;
+color: var(--text-dim);
+margin-top: auto;
+}
+.dice-num { color: var(--gold); font-weight: 800; font-size: 12px; }
+.dice-num.bad { color: #ff7e5a; }
+.dice-pay-btn {
+height: 26px; padding: 0 12px; border-radius: 999px; border: none;
+background: rgba(232, 132, 58, 0.92); color: var(--bg);
+font-family: 'Baloo 2', cursive; font-size: 10px; font-weight: 700;
+letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+}
+.dice-pay-btn:active { transform: scale(0.94); }
+
 </style>
 </head>
 <body>
@@ -1627,12 +1633,6 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
     </button>
     <button class="title-btn secondary" onclick="openShopFromTitle()">
       <span class="btn-label">Shop</span>
-    </button>
-    <button class="title-btn secondary" onclick="openDiceFromTitle()">
-      <span class="btn-label">Boudreaux's</span>
-    </button>
-    <button class="title-btn secondary" onclick="openFishdexFromTitle()">
-      <span class="btn-label">Fishdex</span>
     </button>
   </div>
 
@@ -1686,13 +1686,71 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
   <div class="bobber-reflection"></div>
 </div>
 
-<button id="fishdex-btn" onclick="openFishdex()">DEX</button>
 <button id="shop-btn" onclick="openShop()">SHOP</button>
-<button id="dice-btn" onclick="openDice()">DICE</button>
 <button id="mute-btn" onclick="toggleMute()">🔊</button>
 
 <div id="status-overlay">
   <div id="status-text">Cast yer line into the bayou.</div>
+</div>
+
+<!-- Phone (pixel smartphone in the fisherman's pocket) -->
+<div id="phone-pocket" onclick="openPhone()" aria-label="Open phone">
+  <div class="phone-pocket-body">
+    <div class="phone-pocket-screen"></div>
+    <div class="phone-pocket-cam"></div>
+  </div>
+  <div class="phone-pocket-label">PHONE</div>
+</div>
+
+<div id="phone-overlay">
+  <div id="phone-overlay-bg" onclick="closePhone()"></div>
+  <div id="phone-frame">
+    <div class="phone-speaker"></div>
+    <div class="phone-cam"></div>
+    <div class="phone-screen">
+      <div class="phone-app-bar">
+        <span class="phone-app-time" id="phone-app-time">9:41</span>
+        <span class="phone-app-name">BAYOU DICE</span>
+        <span class="phone-app-battery">12%</span>
+      </div>
+      <div class="phone-app-body">
+        <div class="dice-flavor" id="dice-flavor">Bet small, win small. Bet big, lose bigger.</div>
+        <div class="dice-pair">
+          <div class="die" id="die-1"><div class="die-face" data-face="1">⚀</div></div>
+          <div class="die" id="die-2"><div class="die-face" data-face="1">⚀</div></div>
+        </div>
+        <div class="dice-result" id="dice-result"></div>
+        <div class="dice-bet-row">
+          <span class="dice-bet-label">Bet</span>
+          <button class="dice-step" onclick="adjDiceBet(-50)">−50</button>
+          <button class="dice-step" onclick="adjDiceBet(-10)">−10</button>
+          <input id="dice-bet" type="number" min="10" step="10" value="50" inputmode="numeric"/>
+          <button class="dice-step" onclick="adjDiceBet(10)">+10</button>
+          <button class="dice-step" onclick="adjDiceBet(50)">+50</button>
+        </div>
+        <div class="dice-choices">
+          <button class="dice-choice" data-choice="under" onclick="rollDice('under')">
+            <div class="dc-name">Under 7</div>
+            <div class="dc-pay">2×</div>
+          </button>
+          <button class="dice-choice lucky" data-choice="seven" onclick="rollDice('seven')">
+            <div class="dc-name">Lucky 7</div>
+            <div class="dc-pay">5×</div>
+          </button>
+          <button class="dice-choice" data-choice="over" onclick="rollDice('over')">
+            <div class="dc-name">Over 7</div>
+            <div class="dc-pay">2×</div>
+          </button>
+        </div>
+        <div class="dice-bottom-row">
+          <span class="dice-coins-line">Coins <span class="dice-num" id="dice-coins">0</span></span>
+          <span class="dice-debt-line">Owed <span class="dice-num bad" id="dice-debt">0</span></span>
+          <button class="dice-pay-btn" onclick="payBoudreaux()">Pay</button>
+        </div>
+      </div>
+    </div>
+    <div class="phone-home-btn" onclick="closePhone()" aria-label="Close phone"></div>
+  </div>
 </div>
 
 <div id="stats-bar">
@@ -1741,23 +1799,6 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
 
   </div>
 
-  <div id="fishdex-screen" class="screen">
-    <div class="fishdex-header">
-      <div class="fishdex-title">
-        <span>Fishdex</span>
-        <div class="fishdex-header-actions">
-          <button class="fishdex-reset" onclick="confirmReset()" title="Reset Progress">RESET</button>
-          <button class="fishdex-back" onclick="closeFishdex()">CLOSE</button>
-        </div>
-      </div>
-      <div class="fishdex-subtitle" id="fishdex-subtitle">0 of 50 discovered</div>
-      <div class="fishdex-progress">
-        <div class="fishdex-progress-fill" id="fishdex-progress-fill" style="width:0%"></div>
-      </div>
-    </div>
-    <div class="fishdex-scroll" id="fishdex-scroll"></div>
-  </div>
-
   <!-- ============== SHOP SCREEN ============== -->
 
   <div id="shop-screen" class="screen">
@@ -1780,49 +1821,6 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
 
   </div>
 
-  </div>
-
-  <!-- ============== DICE SCREEN (Boudreaux's) ============== -->
-  <div id="dice-screen" class="screen">
-    <div class="dice-header">
-      <span class="dice-title">Boudreaux's Back Room</span>
-      <button class="dice-close" onclick="closeDice()">CLOSE</button>
-    </div>
-    <div class="dice-table">
-      <div class="dice-flavor" id="dice-flavor">Bet small, win small. Bet big, lose bigger.</div>
-      <div class="dice-pair">
-        <div class="die" id="die-1"><div class="die-face" data-face="1">●</div></div>
-        <div class="die" id="die-2"><div class="die-face" data-face="1">●</div></div>
-      </div>
-      <div class="dice-result" id="dice-result"></div>
-      <div class="dice-bet-row">
-        <span class="dice-bet-label">Bet</span>
-        <button class="dice-step" onclick="adjDiceBet(-50)">−50</button>
-        <button class="dice-step" onclick="adjDiceBet(-10)">−10</button>
-        <input id="dice-bet" type="number" min="10" step="10" value="50" inputmode="numeric"/>
-        <button class="dice-step" onclick="adjDiceBet(10)">+10</button>
-        <button class="dice-step" onclick="adjDiceBet(50)">+50</button>
-      </div>
-      <div class="dice-choices">
-        <button class="dice-choice" data-choice="under" onclick="rollDice('under')">
-          <div class="dc-name">Under 7</div>
-          <div class="dc-pay">2×</div>
-        </button>
-        <button class="dice-choice lucky" data-choice="seven" onclick="rollDice('seven')">
-          <div class="dc-name">Lucky 7</div>
-          <div class="dc-pay">5×</div>
-        </button>
-        <button class="dice-choice" data-choice="over" onclick="rollDice('over')">
-          <div class="dc-name">Over 7</div>
-          <div class="dc-pay">2×</div>
-        </button>
-      </div>
-      <div class="dice-bottom-row">
-        <span class="dice-coins-line">Coins <span class="dice-num" id="dice-coins">0</span></span>
-        <span class="dice-debt-line">Owed <span class="dice-num bad" id="dice-debt">0</span></span>
-        <button class="dice-pay-btn" onclick="payBoudreaux()">Pay Down</button>
-      </div>
-    </div>
   </div>
 
   <!-- Game over modal -->
@@ -1992,7 +1990,6 @@ function resetSave() {
   debt = DEBT_START;
   updateStats();
   updateGamblingUI();
-  renderFishdex();
 }
 
 function confirmReset() {
@@ -3427,7 +3424,6 @@ window.addEventListener('DOMContentLoaded', () => {
 // ============================================================
 // TITLE SCREEN LOGIC
 // ============================================================
-let fishdexCameFromTitle = false;
 
 function startGame() {
   sfxButtonClick();
@@ -3435,23 +3431,14 @@ function startGame() {
   document.getElementById('fishing-screen').classList.add('active');
 }
 
-function openFishdexFromTitle() {
-  sfxButtonClick();
-  document.getElementById('title-screen').classList.remove('active');
-  document.getElementById('fishdex-screen').classList.add('active');
-  fishdexCameFromTitle = true;
-  renderFishdex();
-}
-
 function updateTitleScreen() {
-  const dexCount = Object.keys(collection).length;
   const playLabel = document.getElementById('play-btn-label');
   const saveIndicator = document.getElementById('save-indicator');
-  
-  if (totalCaught > 0 || dexCount > 0) {
+
+  if (totalCaught > 0) {
     if (playLabel) playLabel.textContent = 'Continue';
     if (saveIndicator) {
-      saveIndicator.innerHTML = `Save loaded · <span class="save-progress">${dexCount}/${FISH.length}</span> discovered · <span class="save-progress">${totalCaught}</span> total catches`;
+      saveIndicator.innerHTML = `<span class="save-progress">${totalCaught}</span> catches · <span class="save-progress">${Math.floor(debt)}</span> owed`;
     }
   } else {
     if (playLabel) playLabel.textContent = 'Cast Off';
@@ -3480,73 +3467,6 @@ function initTitleEffects() {
     effects.appendChild(ff);
   }
 }
-
-function openFishdex() {
-  $('fishing-screen').classList.remove('active');
-  $('fishdex-screen').classList.add('active');
-  renderFishdex();
-}
-function closeFishdex() {
-  $('fishdex-screen').classList.remove('active');
-  // If we came from title, go back to title; otherwise back to fishing
-  if (fishdexCameFromTitle) {
-    document.getElementById('title-screen').classList.add('active');
-    fishdexCameFromTitle = false;
-  } else {
-    $('fishing-screen').classList.add('active');
-  }
-}
-
-function renderFishdex() {
-  const dexCount = Object.keys(collection).length;
-  $('fishdex-subtitle').textContent = `${dexCount} of ${FISH.length} discovered`;
-  $('fishdex-progress-fill').style.width = (dexCount/FISH.length*100)+'%';
-  const scroll = $('fishdex-scroll');
-  scroll.innerHTML = '';
-  const RARITIES = ['common','uncommon','rare','legendary','junk'];
-  RARITIES.forEach(rarity => {
-    const items = FISH.filter(f => f.rarity === rarity);
-    if (items.length === 0) return;
-    const caught = items.filter(f => collection[f.id]).length;
-    const section = document.createElement('div');
-    section.className = 'dex-section';
-    const header = document.createElement('div');
-    header.className = 'dex-section-title ' + rarity + '-color';
-    header.innerHTML = `<span>${rarity.toUpperCase()}</span><span class="dex-section-count">${caught}/${items.length}</span>`;
-    section.appendChild(header);
-    const grid = document.createElement('div');
-    grid.className = 'dex-grid';
-    items.forEach(fish => {
-      const c = collection[fish.id];
-      const card = document.createElement('div');
-      card.className = 'dex-card' + (rarity === 'legendary' ? ' legendary-card' : '');
-      const canvas = document.createElement('canvas');
-      canvas.className = 'dex-fish-canvas' + (c ? '' : ' locked');
-      canvas.width = 24 * 4; canvas.height = 12 * 4;
-      if (FISH_ART[fish.id]) renderPixelArt(canvas, FISH_ART[fish.id], 4);
-      card.appendChild(canvas);
-      const name = document.createElement('div');
-      name.className = 'dex-fish-name' + (c ? '' : ' locked');
-      name.textContent = c ? fish.name : '???';
-      card.appendChild(name);
-      const stats = document.createElement('div');
-      stats.className = 'dex-fish-stats';
-      if (c) stats.innerHTML = `Caught: ${c.count} · PB ${c.personalBest}cm`;
-      else stats.textContent = 'Not yet discovered';
-      card.appendChild(stats);
-      if (c) {
-        const badge = document.createElement('div');
-        badge.className = 'dex-count-badge';
-        badge.textContent = c.count;
-        card.appendChild(badge);
-      }
-      grid.appendChild(card);
-    });
-    section.appendChild(grid);
-    scroll.appendChild(section);
-  });
-}
-
 // ============================================================
 // SHOP LOGIC
 // ============================================================
@@ -3970,7 +3890,6 @@ const DEBT_START = 500;
 
 let itch = 0;
 let debt = DEBT_START;
-let diceCameFromTitle = false;
 let gameOverShown = false;
 
 function tickGambling() {
@@ -4010,31 +3929,20 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ============================================================
-// DICE SCREEN
+// PHONE - pixel smartphone in the fisherman's pocket. Tap to open;
+// tap outside the frame or the home button to put it away. Inside
+// the phone is the dice game.
 // ============================================================
-function openDiceFromTitle() {
+function openPhone() {
   sfxButtonClick();
-  document.getElementById('title-screen').classList.remove('active');
-  document.getElementById('dice-screen').classList.add('active');
-  diceCameFromTitle = true;
   refreshDiceScreen();
+  const overlay = document.getElementById('phone-overlay');
+  if (overlay) overlay.classList.add('show');
 }
-function openDice() {
+function closePhone() {
   sfxButtonClick();
-  document.getElementById('fishing-screen').classList.remove('active');
-  document.getElementById('dice-screen').classList.add('active');
-  diceCameFromTitle = false;
-  refreshDiceScreen();
-}
-function closeDice() {
-  sfxButtonClick();
-  document.getElementById('dice-screen').classList.remove('active');
-  if (diceCameFromTitle) {
-    document.getElementById('title-screen').classList.add('active');
-    diceCameFromTitle = false;
-  } else {
-    document.getElementById('fishing-screen').classList.add('active');
-  }
+  const overlay = document.getElementById('phone-overlay');
+  if (overlay) overlay.classList.remove('show');
 }
 
 function refreshDiceScreen() {
