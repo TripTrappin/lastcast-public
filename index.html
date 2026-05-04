@@ -2547,7 +2547,9 @@ min-height: 14px;
   <div class="bobber-reflection"></div>
 </div>
 
-<button id="shop-btn" onclick="openShop()">SHOP</button>
+<!-- Shop is shelved until the gameplay loop is redesigned. Markup + logic
+     stays in place but is unreachable; flip display:none if/when ready. -->
+<button id="shop-btn" onclick="openShop()" style="display:none">SHOP</button>
 <button id="pause-btn" onclick="togglePause()" aria-label="Pause">❚❚</button>
 <button id="mute-btn" onclick="toggleMute()">🔊</button>
 
@@ -4868,12 +4870,13 @@ function reelEarly() {
   activeFish = null;
 }
 
-// Smooth stress factor 0..1 derived from current itch. Calm zone below 25
-// means low stress is genuinely calm; above that, ramps linearly to max at
-// itch 100. Returns 0 when the stiff drink is steadying the hands.
+// Smooth stress factor 0..1 derived from current itch. Calm zone below 10
+// is generously chill; above that, ramps linearly and hits max at itch 80
+// so the punishment maxes out before the meter is fully red. Stiff drink
+// flat-zeros it.
 function stressFactor() {
   if (isDrinkActive()) return 0;
-  return Math.max(0, Math.min(1, (itch - 25) / 75));
+  return Math.max(0, Math.min(1, (itch - 10) / 70));
 }
 
 function startReeling() {
@@ -4891,8 +4894,8 @@ function startReeling() {
   // Then apply the stress penalty - unless the drink is steadying the hands.
   const rod = getRod(equippedRodId);
   markerSpeed = 100 / (activeFish.markerSpeed * rod.markerSpeedMult / 50);
-  // Stress speeds the marker up to ~1.85x at max stress, smoothly from itch 25.
-  markerSpeed *= 1 + 0.85 * stressFactor();
+  // Stress speeds the marker up to 2.5x at max stress, smoothly from itch 10.
+  markerSpeed *= 1 + 1.5 * stressFactor();
   buildHitZones();
   updateMarker(); updateProgress(); updateCombo();
   $('reel-fish-name').textContent = activeFish.name;
@@ -4905,8 +4908,8 @@ function buildHitZones() {
   // Apply rod's hit zone multiplier - bigger = easier. Stress penalty
   // shrinks the zone, unless the drink is dampening it.
   let zoneMult = rod.hitZoneMult;
-  // Stress shrinks the hit zone smoothly down to ~60% of base at max stress.
-  zoneMult *= 1 - 0.40 * stressFactor();
+  // Stress shrinks the hit zone smoothly down to ~45% of base at max stress.
+  zoneMult *= 1 - 0.55 * stressFactor();
   const zoneSize = Math.min(activeFish.hitZone * zoneMult, 80);
   const minStart = 10, maxStart = 100 - zoneSize - 10;
   hitZoneStart = minStart + Math.random() * Math.max(0, maxStart - minStart);
@@ -4936,8 +4939,8 @@ function reelTick() {
   // Apply rod tensionRate multiplier - lower = grows slower = more forgiving.
   // Stress penalty: tension climbs faster, unless the drink is dampening it.
   const rod = getRod(equippedRodId);
-  // Stress raises tension growth smoothly up to ~1.55x at max stress.
-  const itchTension = 1 + 0.55 * stressFactor();
+  // Stress raises tension growth smoothly up to ~1.85x at max stress.
+  const itchTension = 1 + 0.85 * stressFactor();
   tension += 0.15 * rod.tensionRate * itchTension;
   if (tension >= 100) { lineSnap(); return; }
   updateProgress();
@@ -5835,15 +5838,27 @@ function currentQuota() {
 }
 
 function endDay() {
-  // Timer ran out. Auto-advance fires elsewhere when quota is met, so this
-  // branch only runs on failure. Offer a last-chance gamble if there's
-  // anything left to bet; otherwise straight to game over.
-  if (dayPaid < currentQuota()) {
-    if (coins > 0) showLastChance();
-    else           showGameOverPopup();
+  // Timer ran out. Auto-pay any remaining wallet toward today's quota
+  // first - if dayPaid + coins meets the quota, we just settle up and roll
+  // into the next day cleanly (no last-chance theatrics required).
+  const quota = currentQuota();
+  if (dayPaid + coins >= quota) {
+    const need = Math.max(0, quota - dayPaid);
+    coins -= need;
+    dayPaid += need;
+    debt = Math.max(0, debt - need);
+    saveGame();
+    advanceDay();
     return;
   }
-  advanceDay();
+  // Still short. Last Chance only matters when doubling the wallet would
+  // actually close the gap; otherwise, even a winning flip can't save you.
+  const shortfall = quota - dayPaid;
+  if (coins > 0 && coins * 2 >= shortfall) {
+    showLastChance();
+  } else {
+    showGameOverPopup();
+  }
 }
 
 function advanceDay() {
@@ -5917,6 +5932,8 @@ function showLastChance() {
   if (lastChanceShown || gameOverShown) return;
   const popup = document.getElementById('lastchance-popup');
   if (!popup) { showGameOverPopup(); return; }
+  // Boudreaux's at the door — nothing else gets your attention right now.
+  forceClosePhone();
   const shortfall = currentQuota() - dayPaid;
   document.getElementById('lc-shortfall').textContent = '$' + fmtMoney(shortfall);
   document.getElementById('lc-wallet').textContent = coins;
@@ -6669,6 +6686,8 @@ function paintPhonePortraits() {
 document.addEventListener('DOMContentLoaded', paintPhonePortraits);
 
 function openPhone() {
+  // Block phone access while a forced overlay is on screen.
+  if (lastChanceShown || gameOverShown || winShown || dayTransitioning) return;
   sfxButtonClick();
   paintPhonePortraits();
   refreshDiceScreen();
@@ -6680,7 +6699,12 @@ function openPhone() {
   if (overlay) overlay.classList.add('show');
 }
 function closePhone() {
-  sfxButtonClick();
+  const overlay = document.getElementById('phone-overlay');
+  if (overlay) overlay.classList.remove('show');
+}
+function forceClosePhone() {
+  // No SFX, no animation - silently shut the phone down. Used when an
+  // exclusive modal (last chance, transitions) needs the screen.
   const overlay = document.getElementById('phone-overlay');
   if (overlay) overlay.classList.remove('show');
 }
