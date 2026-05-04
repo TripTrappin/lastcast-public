@@ -4653,6 +4653,14 @@ function reelEarly() {
   activeFish = null;
 }
 
+// Smooth stress factor 0..1 derived from current itch. Calm zone below 25
+// means low stress is genuinely calm; above that, ramps linearly to max at
+// itch 100. Returns 0 when the stiff drink is steadying the hands.
+function stressFactor() {
+  if (isDrinkActive()) return 0;
+  return Math.max(0, Math.min(1, (itch - 25) / 75));
+}
+
 function startReeling() {
   clearTimeout(missTimer);
   state = 'reeling';
@@ -4668,10 +4676,8 @@ function startReeling() {
   // Then apply the stress penalty - unless the drink is steadying the hands.
   const rod = getRod(equippedRodId);
   markerSpeed = 100 / (activeFish.markerSpeed * rod.markerSpeedMult / 50);
-  if (!isDrinkActive()) {
-    if (itch >= 95)      markerSpeed *= 1.9;
-    else if (itch >= 85) markerSpeed *= 1.5;
-  }
+  // Stress speeds the marker up to ~1.85x at max stress, smoothly from itch 25.
+  markerSpeed *= 1 + 0.85 * stressFactor();
   buildHitZones();
   updateMarker(); updateProgress(); updateCombo();
   $('reel-fish-name').textContent = activeFish.name;
@@ -4684,10 +4690,8 @@ function buildHitZones() {
   // Apply rod's hit zone multiplier - bigger = easier. Stress penalty
   // shrinks the zone, unless the drink is dampening it.
   let zoneMult = rod.hitZoneMult;
-  if (!isDrinkActive()) {
-    if (itch >= 95)      zoneMult *= 0.55;
-    else if (itch >= 85) zoneMult *= 0.7;
-  }
+  // Stress shrinks the hit zone smoothly down to ~60% of base at max stress.
+  zoneMult *= 1 - 0.40 * stressFactor();
   const zoneSize = Math.min(activeFish.hitZone * zoneMult, 80);
   const minStart = 10, maxStart = 100 - zoneSize - 10;
   hitZoneStart = minStart + Math.random() * Math.max(0, maxStart - minStart);
@@ -4717,11 +4721,8 @@ function reelTick() {
   // Apply rod tensionRate multiplier - lower = grows slower = more forgiving.
   // Stress penalty: tension climbs faster, unless the drink is dampening it.
   const rod = getRod(equippedRodId);
-  let itchTension = 1;
-  if (!isDrinkActive()) {
-    if (itch >= 95)      itchTension = 1.6;
-    else if (itch >= 85) itchTension = 1.3;
-  }
+  // Stress raises tension growth smoothly up to ~1.55x at max stress.
+  const itchTension = 1 + 0.55 * stressFactor();
   tension += 0.15 * rod.tensionRate * itchTension;
   if (tension >= 100) { lineSnap(); return; }
   updateProgress();
@@ -4908,7 +4909,7 @@ const ITCH_DRAIN_PER_ROLL = 25;// (legacy) - itch now fully resets to 0 on any b
 // only ever sees the current day's quota.
 // Each day lasts DAY_DURATION_MS in real time. End of day with quota
 // unmet -> game over. Pay all 11 days (debt -> 0) -> win.
-const DAY_DURATION_MS = 10 * 60 * 1000;
+const DAY_DURATION_MS = 6 * 60 * 1000;
 const DAILY_QUOTAS = [250,500,1000,2000,4000,8000,16000,32000,64000,128000,256000];
 const TOTAL_DEBT = DAILY_QUOTAS.reduce((a, b) => a + b, 0); // 511,750
 const DEBT_START = TOTAL_DEBT;
