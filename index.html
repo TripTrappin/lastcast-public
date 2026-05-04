@@ -1909,6 +1909,83 @@ color: rgba(255, 220, 220, 0.92);
 cursor: not-allowed;
 }
 
+/* === INTRO CUTSCENE === */
+#intro-cutscene {
+position: fixed; inset: 0;
+z-index: 380;
+display: none;
+align-items: center; justify-content: center;
+background: linear-gradient(180deg, #1a0a14 0%, #060304 100%);
+}
+#intro-cutscene.show { display: flex; }
+.cutscene-card {
+display: flex; flex-direction: column; align-items: center;
+gap: 16px;
+padding: 22px 22px 18px;
+width: min(90%, 360px);
+max-height: 92%;
+}
+.cutscene-art {
+width: 200px; height: 200px;
+display: flex; align-items: center; justify-content: center;
+background: rgba(20,10,18,0.5);
+border: 2px solid #2a1808;
+border-radius: 14px;
+box-shadow: inset 0 0 24px rgba(0,0,0,0.6);
+overflow: hidden;
+}
+.cutscene-art svg {
+width: 100%; height: 100%;
+display: block;
+image-rendering: pixelated;
+}
+.cutscene-text {
+font-family: 'Baloo 2', cursive;
+font-size: 14px;
+font-weight: 600;
+line-height: 1.4;
+color: var(--text);
+text-align: center;
+min-height: 80px;
+}
+.cutscene-text .accent { color: var(--gold); font-weight: 800; }
+.cutscene-text .danger { color: #ff7e5a; font-weight: 800; }
+.cutscene-dots {
+display: flex; gap: 6px;
+}
+.cutscene-dots .dot {
+width: 7px; height: 7px;
+border-radius: 50%;
+background: rgba(255,232,212,0.25);
+transition: background 0.2s;
+}
+.cutscene-dots .dot.active {
+background: var(--gold);
+}
+.cutscene-controls {
+display: flex; gap: 10px;
+align-items: center;
+margin-top: 4px;
+}
+.cutscene-skip,
+.cutscene-next {
+height: 36px; padding: 0 18px; border-radius: 999px; border: none;
+font-family: 'Baloo 2', cursive; font-size: 12px; font-weight: 800;
+letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+transition: transform 0.12s;
+}
+.cutscene-skip {
+background: rgba(20,10,18,0.6);
+color: var(--text-dim);
+border: 1px solid rgba(255,232,212,0.2);
+}
+.cutscene-next {
+background: linear-gradient(135deg, #ff7043, #d32f2f);
+color: white;
+}
+.cutscene-skip:active,
+.cutscene-next:active { transform: scale(0.95); }
+
 </style>
 </head>
 <body>
@@ -2084,7 +2161,7 @@ cursor: not-allowed;
 <div id="stats-bar">
   <div class="mini-stat"><div class="ms-val" id="stat-caught">0</div><div class="ms-lbl">Caught</div></div>
   <div class="mini-stat coin-stat"><div class="ms-val" id="stat-coins">0</div><div class="ms-lbl">Coins</div></div>
-  <div class="mini-stat itch-stat"><div class="ms-itch"><div class="ms-itch-fill" id="stat-itch-fill"></div></div><div class="ms-lbl">Itch</div></div>
+  <div class="mini-stat itch-stat"><div class="ms-itch"><div class="ms-itch-fill" id="stat-itch-fill"></div></div><div class="ms-lbl">Stress</div></div>
 </div>
 
 <div id="cast-prompt"><span class="cast-prompt-pin">●</span>The day starts when you cast your first line.</div>
@@ -2145,6 +2222,20 @@ cursor: not-allowed;
   </div>
 
   </div>
+
+
+<!-- Intro cutscene (3 panels) -->
+<div id="intro-cutscene">
+  <div class="cutscene-card">
+    <div class="cutscene-art" id="cutscene-art"></div>
+    <div class="cutscene-text" id="cutscene-text"></div>
+    <div class="cutscene-dots" id="cutscene-dots"></div>
+    <div class="cutscene-controls">
+      <button class="cutscene-skip" onclick="skipCutscene()">Skip</button>
+      <button class="cutscene-next" id="cutscene-next" onclick="advanceCutscene()">Next</button>
+    </div>
+  </div>
+</div>
 
   <!-- Pause overlay -->
   <div id="pause-overlay" onclick="togglePause()">
@@ -2243,8 +2334,9 @@ function saveGame() {
       dayElapsedMs,
       dayPaid,
       hasCast,
+      hasSeenIntro,
       muted: isMuted,
-      version: 13,
+      version: 14,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
   } catch (e) {
@@ -2269,7 +2361,7 @@ function loadGame() {
     // start timestamp to an in-game elapsed-ms accumulator (so it pauses on
     // the title screen). v9-and-earlier saves had a tiny starting debt that
     // no longer makes sense; reset to TOTAL_DEBT on load.
-    if (![1,2,3,4,5,6,7,8,9,10,11,12,13].includes(save.version)) return;
+    if (![1,2,3,4,5,6,7,8,9,10,11,12,13,14].includes(save.version)) return;
     
     // Rehydrate collection with fish object refs
     if (save.collection) {
@@ -2322,6 +2414,9 @@ function loadGame() {
 
     // v13 fields - first-cast gate
     hasCast = !!save.hasCast;
+
+    // v14 fields - intro cutscene seen flag
+    hasSeenIntro = !!save.hasSeenIntro;
 
     // v9 fields - itch + debt. v9-or-earlier saves had a 500-coin debt that
     // no longer fits the daily-quota system; reset such old saves.
@@ -3866,6 +3961,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
 function startGame() {
   sfxButtonClick();
+  if (!hasSeenIntro) {
+    showCutscene();
+    return;
+  }
   document.getElementById('title-screen').classList.remove('active');
   document.getElementById('fishing-screen').classList.add('active');
 }
@@ -3910,7 +4009,7 @@ const POWERUPS = [
     id: 'stiff_drink',
     name: 'Stiff Drink',
     cost: 150,
-    description: 'When the itch is bad, takes the edge off for 60 seconds. Auto-pours when you need it most.',
+    description: 'When the stress is bad, takes the edge off for 60 seconds. Auto-pours when you need it most.',
   },
   {
     id: 'rabbit_foot',
@@ -4547,6 +4646,232 @@ function advanceDay() {
   if ($('stat-caught')) $('stat-caught').textContent = '0';
   flashDayBanner();
   saveGame();
+}
+
+
+// ============================================================
+// INTRO CUTSCENE
+// 3 panels of setup so the player knows why the fisherman is
+// out here grinding for a loan shark. Shows on first launch only.
+// ============================================================
+
+const BOUDREAUX_PORTRAIT = `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <!-- Smoky backdrop -->
+  <rect x="0" y="0" width="100" height="100" fill="#180a0c"/>
+  <ellipse cx="50" cy="55" rx="42" ry="40" fill="#2a141a" opacity="0.6"/>
+
+  <!-- Suit shoulders -->
+  <rect x="14" y="78" width="72" height="22" fill="#1a0c10"/>
+  <polygon points="34,78 50,92 66,78" fill="#0c0608"/>
+  <!-- Tie (blood red) -->
+  <polygon points="48,78 52,78 55,99 50,100 45,99" fill="#5a0a0a"/>
+  <rect x="48" y="78" width="4" height="2" fill="#1a0c05"/>
+
+  <!-- Head/face shape (oval, ruddy skin) -->
+  <ellipse cx="50" cy="48" rx="28" ry="32" fill="#c89870"/>
+  <!-- Skin shading -->
+  <ellipse cx="60" cy="52" rx="14" ry="22" fill="#a87858" opacity="0.5"/>
+
+  <!-- Hair: slicked back, jet black -->
+  <path d="M22 36 Q22 14 50 12 Q78 14 78 36 L78 28 Q70 18 50 18 Q30 18 22 28 Z" fill="#0c0606"/>
+  <!-- Hair shine streak -->
+  <path d="M28 22 Q40 16 52 17" stroke="#3a2018" stroke-width="1" fill="none"/>
+
+  <!-- Heavy unibrow / scowl -->
+  <rect x="28" y="36" width="44" height="3" fill="#0c0606"/>
+  <polygon points="28,36 36,38 28,40" fill="#0c0606"/>
+  <polygon points="72,36 64,38 72,40" fill="#0c0606"/>
+
+  <!-- Eye sockets (deep set, shadowed) -->
+  <ellipse cx="38" cy="44" rx="7" ry="3.5" fill="#7a5840"/>
+  <ellipse cx="62" cy="44" rx="7" ry="3.5" fill="#7a5840"/>
+
+  <!-- Eyes (narrow slits, you can barely see them) -->
+  <rect x="33" y="43" width="10" height="2" fill="#0c0606"/>
+  <rect x="57" y="43" width="10" height="2" fill="#0c0606"/>
+  <!-- Pupils (just dots) -->
+  <rect x="38" y="42" width="2" height="2" fill="#0c0606"/>
+  <rect x="62" y="42" width="2" height="2" fill="#0c0606"/>
+
+  <!-- Crow's feet -->
+  <line x1="30" y1="46" x2="33" y2="48" stroke="#7a5840" stroke-width="0.6"/>
+  <line x1="30" y1="48" x2="33" y2="49" stroke="#7a5840" stroke-width="0.6"/>
+  <line x1="70" y1="46" x2="67" y2="48" stroke="#7a5840" stroke-width="0.6"/>
+  <line x1="70" y1="48" x2="67" y2="49" stroke="#7a5840" stroke-width="0.6"/>
+
+  <!-- Nose (large, hooked, broken once) -->
+  <path d="M48 46 Q43 56 47 64 Q50 67 53 64 Q57 56 52 46 Z" fill="#a87850"/>
+  <path d="M48 50 Q46 52 48 55" stroke="#7a5840" stroke-width="0.6" fill="none"/>
+
+  <!-- Mustache (thick, drooping over the mouth) -->
+  <path d="M28 66 Q40 72 49 67 L51 67 Q60 72 72 66 L72 70 Q60 76 51 71 L49 71 Q40 76 28 70 Z" fill="#0c0606"/>
+
+  <!-- Cigar in the corner of the mouth -->
+  <rect x="60" y="69" width="22" height="3" fill="#5a3818"/>
+  <rect x="60" y="69" width="22" height="1" fill="#7a5028"/>
+  <rect x="80" y="69" width="2" height="3" fill="#ff6020"/>
+  <rect x="82" y="68" width="1" height="1" fill="#fde898"/>
+  <!-- Smoke wisps -->
+  <ellipse cx="86" cy="62" rx="3" ry="1.5" fill="#7a7a7a" opacity="0.55"/>
+  <ellipse cx="92" cy="56" rx="3" ry="1.5" fill="#7a7a7a" opacity="0.4"/>
+  <ellipse cx="89" cy="50" rx="2.5" ry="1.2" fill="#7a7a7a" opacity="0.3"/>
+
+  <!-- Stubble dots on chin -->
+  <circle cx="40" cy="74" r="0.55" fill="#0c0606"/>
+  <circle cx="44" cy="76" r="0.55" fill="#0c0606"/>
+  <circle cx="48" cy="77" r="0.55" fill="#0c0606"/>
+  <circle cx="52" cy="77" r="0.55" fill="#0c0606"/>
+  <circle cx="46" cy="78" r="0.55" fill="#0c0606"/>
+  <circle cx="42" cy="78" r="0.55" fill="#0c0606"/>
+  <circle cx="50" cy="79" r="0.55" fill="#0c0606"/>
+
+  <!-- Knife scar across left cheek -->
+  <line x1="30" y1="52" x2="36" y2="64" stroke="#7a3818" stroke-width="1.2" stroke-linecap="round"/>
+  <line x1="32" y1="55" x2="33" y2="56" stroke="#a85838" stroke-width="0.6"/>
+
+  <!-- Gold tooth glint (peeks under the mustache) -->
+  <rect x="48" y="71" width="2" height="2" fill="#fde898"/>
+  <rect x="48" y="71" width="1" height="1" fill="#ffffff"/>
+
+  <!-- Earring -->
+  <circle cx="22" cy="56" r="1.5" fill="#fde898" stroke="#0c0606" stroke-width="0.4"/>
+</svg>`;
+
+const STOREFRONT_ART = `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <rect width="100" height="100" fill="#1a0a14"/>
+  <!-- Sky/sunset behind -->
+  <rect x="0" y="0" width="100" height="35" fill="#5a2a3a"/>
+  <rect x="0" y="35" width="100" height="6" fill="#a8482a"/>
+  <!-- Building wall -->
+  <rect x="6" y="40" width="88" height="50" fill="#5a3018"/>
+  <rect x="6" y="40" width="88" height="2" fill="#7a4220"/>
+  <!-- Roof -->
+  <polygon points="4,42 96,42 88,32 12,32" fill="#3a1c08"/>
+  <!-- Sign -->
+  <rect x="14" y="44" width="72" height="10" fill="#1a0c05"/>
+  <rect x="14" y="44" width="72" height="1" fill="#5a3018"/>
+  <text x="50" y="51.5" font-family="Baloo 2,monospace" font-size="6.5" font-weight="800" fill="#fde898" text-anchor="middle">BAIT &amp; TACKLE</text>
+  <!-- Window -->
+  <rect x="20" y="58" width="22" height="22" fill="#0a0810"/>
+  <rect x="20" y="58" width="22" height="22" fill="none" stroke="#1a0c05" stroke-width="1"/>
+  <line x1="31" y1="58" x2="31" y2="80" stroke="#1a0c05" stroke-width="1"/>
+  <line x1="20" y1="69" x2="42" y2="69" stroke="#1a0c05" stroke-width="1"/>
+  <!-- Door -->
+  <rect x="50" y="58" width="20" height="32" fill="#2a1408"/>
+  <rect x="50" y="58" width="20" height="32" fill="none" stroke="#1a0c05" stroke-width="1"/>
+  <rect x="66" y="73" width="2" height="2" fill="#fde898"/>
+  <!-- "FINAL NOTICE" paper taped to the window -->
+  <rect x="22" y="60" width="18" height="13" fill="#fde898" transform="rotate(-6 31 67)"/>
+  <text x="31" y="66.5" font-family="Baloo 2,monospace" font-size="3" font-weight="800" fill="#a82010" text-anchor="middle" transform="rotate(-6 31 67)">FINAL</text>
+  <text x="31" y="70.5" font-family="Baloo 2,monospace" font-size="3" font-weight="800" fill="#a82010" text-anchor="middle" transform="rotate(-6 31 67)">NOTICE</text>
+  <!-- Window glow -->
+  <rect x="76" y="60" width="14" height="22" fill="#5a2810" opacity="0.4"/>
+  <!-- Ground/dock -->
+  <rect x="0" y="90" width="100" height="10" fill="#0a0608"/>
+  <line x1="0" y1="90" x2="100" y2="90" stroke="#1a0c05" stroke-width="1"/>
+</svg>`;
+
+const ROD_DICE_ART = `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <rect width="100" height="100" fill="#1a0a14"/>
+  <!-- Soft warm spotlight -->
+  <ellipse cx="50" cy="55" rx="40" ry="35" fill="#3a1810" opacity="0.7"/>
+  <!-- Fishing rod, leaning diagonally -->
+  <line x1="14" y1="86" x2="80" y2="22" stroke="#3a1c08" stroke-width="3" stroke-linecap="round"/>
+  <line x1="14" y1="86" x2="80" y2="22" stroke="#5a3018" stroke-width="1" stroke-linecap="round"/>
+  <!-- Reel -->
+  <circle cx="22" cy="78" r="6" fill="#1a0c05"/>
+  <circle cx="22" cy="78" r="3" fill="#3a1c08"/>
+  <!-- Line -->
+  <line x1="80" y1="22" x2="86" y2="40" stroke="#fde898" stroke-width="0.5"/>
+  <!-- Hook -->
+  <path d="M86 40 Q90 44 86 48 L84 46" stroke="#1a0c05" stroke-width="1" fill="none"/>
+  <!-- Two dice tumbling on the right -->
+  <g transform="translate(60 62) rotate(-12)">
+    <rect x="0" y="0" width="18" height="18" rx="2" fill="#fde898" stroke="#1a0c05" stroke-width="1.2"/>
+    <circle cx="5" cy="5" r="1.5" fill="#1a0c05"/>
+    <circle cx="13" cy="13" r="1.5" fill="#1a0c05"/>
+    <circle cx="9" cy="9" r="1.5" fill="#1a0c05"/>
+  </g>
+  <g transform="translate(76 74) rotate(18)">
+    <rect x="0" y="0" width="16" height="16" rx="2" fill="#fde898" stroke="#1a0c05" stroke-width="1.2"/>
+    <circle cx="4" cy="4" r="1.4" fill="#1a0c05"/>
+    <circle cx="12" cy="4" r="1.4" fill="#1a0c05"/>
+    <circle cx="4" cy="12" r="1.4" fill="#1a0c05"/>
+    <circle cx="12" cy="12" r="1.4" fill="#1a0c05"/>
+  </g>
+</svg>`;
+
+const CUTSCENE = [
+  {
+    art: STOREFRONT_ART,
+    text: `Cypress Grove Bait &amp; Tackle. Three generations. <span class="danger">About to be none.</span><br><br>The bills came due all at once. Rent. Suppliers. The bank. Everyone wants their cut.`,
+  },
+  {
+    art: BOUDREAUX_PORTRAIT,
+    text: `Then there's <span class="accent">Boudreaux</span>. He helped you out the first time. He always helps. He just expects to be paid back. <span class="danger">With interest. By the day.</span>`,
+  },
+  {
+    art: ROD_DICE_ART,
+    text: `Eleven days to make him whole. Catch what you can. Sell what you can. The rest? <span class="accent">Pray to whatever god runs that back-room dice table.</span>`,
+  },
+];
+
+let cutsceneIndex = 0;
+let hasSeenIntro = false;
+
+function showCutscene() {
+  cutsceneIndex = 0;
+  renderCutscene();
+  const overlay = document.getElementById('intro-cutscene');
+  if (overlay) overlay.classList.add('show');
+}
+
+function renderCutscene() {
+  const panel = CUTSCENE[cutsceneIndex];
+  if (!panel) { finishCutscene(); return; }
+  const art = document.getElementById('cutscene-art');
+  const txt = document.getElementById('cutscene-text');
+  const dots = document.getElementById('cutscene-dots');
+  const next = document.getElementById('cutscene-next');
+  if (art) art.innerHTML = panel.art;
+  if (txt) txt.innerHTML = panel.text;
+  if (dots) {
+    dots.innerHTML = '';
+    for (let i = 0; i < CUTSCENE.length; i++) {
+      const d = document.createElement('div');
+      d.className = 'dot' + (i === cutsceneIndex ? ' active' : '');
+      dots.appendChild(d);
+    }
+  }
+  if (next) next.textContent = (cutsceneIndex === CUTSCENE.length - 1) ? 'Cast Off' : 'Next';
+}
+
+function advanceCutscene() {
+  sfxButtonClick();
+  cutsceneIndex++;
+  if (cutsceneIndex >= CUTSCENE.length) {
+    finishCutscene();
+  } else {
+    renderCutscene();
+  }
+}
+
+function skipCutscene() {
+  sfxButtonClick();
+  finishCutscene();
+}
+
+function finishCutscene() {
+  const overlay = document.getElementById('intro-cutscene');
+  if (overlay) overlay.classList.remove('show');
+  hasSeenIntro = true;
+  saveGame();
+  // Now actually transition into the fishing screen.
+  document.getElementById('title-screen').classList.remove('active');
+  document.getElementById('fishing-screen').classList.add('active');
 }
 
 function togglePause() {
