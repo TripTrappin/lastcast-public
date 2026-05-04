@@ -2713,7 +2713,8 @@ function saveGame() {
     }
     const save = {
       collection: savableCollection,
-      totalCaught,
+      // totalCaught intentionally NOT persisted - it's a per-day stat
+      // and should reset to 0 on every session/day boundary.
       rareCount,
       coins,
       ownedRods,
@@ -2773,7 +2774,8 @@ function loadGame() {
         }
       }
     }
-    totalCaught = save.totalCaught || 0;
+    // totalCaught is per-day and not persisted; always start at 0 on load.
+    totalCaught = 0;
     rareCount = save.rareCount || 0;
     isMuted = save.muted || false;
 
