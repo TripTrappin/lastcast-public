@@ -4543,6 +4543,8 @@ function advanceDay() {
   dayElapsedMs = 0;
   dayPaid = 0;
   hasCast = false;
+  totalCaught = 0;          // catch counter is per-day
+  if ($('stat-caught')) $('stat-caught').textContent = '0';
   flashDayBanner();
   saveGame();
 }
