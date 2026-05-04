@@ -1748,6 +1748,135 @@ animation: dayFlash 0.9s ease-out;
 100% { transform: scale(1); background: rgba(20, 10, 18, 0.78); }
 }
 
+/* === DAY TRANSITION === */
+#day-transition {
+position: fixed; inset: 0;
+display: flex; align-items: center; justify-content: center;
+background: linear-gradient(180deg, #0c0612 0%, #1c0e1a 55%, #d8a258 100%);
+z-index: 380;
+opacity: 0; pointer-events: none;
+transition: opacity 0.45s ease-out;
+}
+#day-transition.show { opacity: 1; pointer-events: all; }
+.dt-card {
+text-align: center;
+font-family: 'Baloo 2', cursive;
+color: var(--text);
+padding: 24px;
+}
+.dt-day {
+font-size: 56px; font-weight: 900;
+letter-spacing: 8px;
+text-transform: uppercase;
+color: #ffd680;
+text-shadow: 0 4px 24px rgba(255,200,100,0.45);
+margin-bottom: 10px;
+animation: dtRise 0.6s ease-out;
+}
+.dt-flavor {
+font-size: 14px; font-weight: 600;
+color: rgba(255,232,212,0.78);
+margin-bottom: 22px;
+font-style: italic;
+}
+.dt-quota {
+font-size: 16px; font-weight: 800;
+color: #fde898;
+letter-spacing: 1.2px;
+text-transform: uppercase;
+}
+@keyframes dtRise {
+0%   { transform: translateY(14px); opacity: 0; }
+100% { transform: translateY(0);    opacity: 1; }
+}
+
+/* === LAST CHANCE === */
+#lastchance-popup {
+position: fixed; inset: 0;
+display: flex; align-items: center; justify-content: center;
+background: rgba(40, 5, 8, 0.94);
+z-index: 410;
+opacity: 0; pointer-events: none;
+transition: opacity 0.3s;
+}
+#lastchance-popup.show { opacity: 1; pointer-events: all; }
+.lc-card {
+text-align: center;
+padding: 26px 30px;
+background: var(--surface-solid);
+border: 1px solid #ff5a4a;
+border-radius: 16px;
+max-width: 320px;
+font-family: 'Baloo 2', cursive;
+box-shadow: 0 0 36px rgba(255,90,74,0.25);
+}
+.lc-title {
+font-size: 24px; font-weight: 900;
+color: #ff5a4a;
+letter-spacing: 4px;
+text-transform: uppercase;
+margin-bottom: 6px;
+text-shadow: 0 2px 10px rgba(255,90,74,0.55);
+}
+.lc-body {
+font-size: 12px; font-weight: 600;
+color: rgba(255,232,212,0.7);
+margin-bottom: 16px;
+font-style: italic;
+}
+.lc-stats {
+display: flex; justify-content: space-around;
+margin-bottom: 18px;
+padding: 12px 0;
+border-top: 1px solid rgba(255,232,212,0.15);
+border-bottom: 1px solid rgba(255,232,212,0.15);
+}
+.lc-stat {
+font-size: 10px; font-weight: 800;
+letter-spacing: 1.4px;
+text-transform: uppercase;
+color: rgba(255,232,212,0.55);
+display: flex; flex-direction: column; align-items: center;
+gap: 4px;
+}
+.lc-stat span {
+font-size: 22px; font-weight: 900;
+color: #fde898;
+letter-spacing: 0;
+}
+.lc-result {
+min-height: 28px;
+font-size: 16px; font-weight: 900;
+letter-spacing: 2px;
+text-transform: uppercase;
+margin-bottom: 14px;
+color: var(--text-dim);
+}
+.lc-result.win  { color: #6fb069; text-shadow: 0 2px 10px rgba(120,200,120,0.5); }
+.lc-result.lose { color: #ff5a4a; text-shadow: 0 2px 10px rgba(255,90,74,0.55); }
+.lc-actions { display: flex; gap: 10px; justify-content: center; }
+.lc-take-loss, .lc-bet {
+height: 38px; padding: 0 18px;
+border-radius: 999px; border: none;
+font-family: 'Baloo 2', cursive;
+font-size: 11px; font-weight: 800;
+letter-spacing: 1.4px;
+text-transform: uppercase;
+cursor: pointer;
+transition: transform 0.12s, filter 0.12s;
+}
+.lc-take-loss {
+background: rgba(70, 30, 30, 0.85);
+color: rgba(255,232,212,0.7);
+border: 1px solid rgba(255,232,212,0.18);
+}
+.lc-bet {
+background: linear-gradient(135deg, #ff7043, #d32f2f);
+color: white;
+}
+.lc-take-loss:active, .lc-bet:active { transform: scale(0.95); }
+.lc-take-loss:hover, .lc-bet:hover    { filter: brightness(1.08); }
+
 /* === WIN MODAL (extends gameover-popup styles) === */
 #win-popup {
 position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -2679,6 +2808,32 @@ min-height: 14px;
       <div class="gameover-title">Boudreaux's boys came by today.</div>
       <div class="gameover-body" id="gameover-body">You owe more than the bayou's worth. They took the truck. They took the dog. They left you the rod.</div>
       <button class="gameover-restart" onclick="restartFromGameOver()">Try Again</button>
+    </div>
+  </div>
+
+  <!-- Day transition -->
+  <div id="day-transition">
+    <div class="dt-card">
+      <div class="dt-day" id="dt-day">Day 1</div>
+      <div class="dt-flavor" id="dt-flavor">The sun came up.</div>
+      <div class="dt-quota" id="dt-quota">Today's quota: $250</div>
+    </div>
+  </div>
+
+  <!-- Last Chance -->
+  <div id="lastchance-popup">
+    <div class="lc-card">
+      <div class="lc-title">Last Chance</div>
+      <div class="lc-body" id="lc-body">Time's up. Boudreaux's at the door. One coin flip — bet your wallet, double or nothing.</div>
+      <div class="lc-stats">
+        <div class="lc-stat">Short<span id="lc-shortfall">$0</span></div>
+        <div class="lc-stat">Wallet<span id="lc-wallet">0</span></div>
+      </div>
+      <div class="lc-result" id="lc-result"></div>
+      <div class="lc-actions" id="lc-actions">
+        <button class="lc-take-loss" onclick="lastChanceTakeLoss()">Take the loss</button>
+        <button class="lc-bet" onclick="lastChanceBet()">Bet it all</button>
+      </div>
     </div>
   </div>
 
@@ -5441,6 +5596,8 @@ function tickGambling() {
 function gameIsHalted() {
   if (paused) return true;
   if (!hasCast) return true;   // hold the day timer until the first cast
+  if (dayTransitioning) return true;
+  if (lastChanceShown) return true;
   const title = document.getElementById('title-screen');
   if (title && title.classList.contains('active')) return true;
   // Shopping is a "time out" - freeze the day clock and itch growth so
@@ -5457,11 +5614,12 @@ function currentQuota() {
 }
 
 function endDay() {
-  // Timer ran out. With auto-advance on quota met, reaching this branch with
-  // quota unmet is the only failure mode. (If quota were somehow met without
-  // having advanced, fall through to advanceDay as a safety net.)
+  // Timer ran out. Auto-advance fires elsewhere when quota is met, so this
+  // branch only runs on failure. Offer a last-chance gamble if there's
+  // anything left to bet; otherwise straight to game over.
   if (dayPaid < currentQuota()) {
-    showGameOverPopup();
+    if (coins > 0) showLastChance();
+    else           showGameOverPopup();
     return;
   }
   advanceDay();
@@ -5477,14 +5635,139 @@ function advanceDay() {
     showGameOverPopup();
     return;
   }
-  dayNumber++;
-  dayElapsedMs = 0;
-  dayPaid = 0;
-  hasCast = false;
-  totalCaught = 0;          // catch counter is per-day
-  if ($('stat-caught')) $('stat-caught').textContent = '0';
-  flashDayBanner();
-  saveGame();
+  const newDay = dayNumber + 1;
+  const newQuota = DAILY_QUOTAS[Math.min(newDay, DAILY_QUOTAS.length) - 1];
+  showDayTransition(newDay, newQuota, () => {
+    dayNumber = newDay;
+    dayElapsedMs = 0;
+    dayPaid = 0;
+    hasCast = false;
+    totalCaught = 0;          // catch counter is per-day
+    if ($('stat-caught')) $('stat-caught').textContent = '0';
+    flashDayBanner();
+    saveGame();
+  });
+}
+
+// ============================================================
+// DAY TRANSITION
+// ============================================================
+const DAY_FLAVOR = [
+  "The sun came up.",
+  "Another day on the bayou.",
+  "You sip cold coffee.",
+  "Mist hangs over the water.",
+  "Frogs hush as you walk to the dock.",
+  "The boat creaks. So do your knees.",
+  "You bait the hook with shaky hands.",
+  "Your phone buzzes. You ignore it.",
+  "Yesterday's catch sits gutted in the cooler.",
+  "Boudreaux's still breathing down your neck.",
+];
+
+let dayTransitioning = false;
+
+function showDayTransition(dayNum, quota, onDone) {
+  const overlay = document.getElementById('day-transition');
+  if (!overlay) { if (onDone) onDone(); return; }
+  document.getElementById('dt-day').textContent = 'Day ' + dayNum;
+  document.getElementById('dt-flavor').textContent =
+    DAY_FLAVOR[Math.floor(Math.random() * DAY_FLAVOR.length)];
+  document.getElementById('dt-quota').textContent =
+    "Today's quota: $" + fmtMoney(quota);
+  dayTransitioning = true;
+  overlay.classList.add('show');
+  // Hold the title visible, then fade out, then run onDone.
+  setTimeout(() => {
+    overlay.classList.remove('show');
+    setTimeout(() => {
+      dayTransitioning = false;
+      if (onDone) onDone();
+    }, 450);
+  }, 1800);
+}
+
+// ============================================================
+// LAST CHANCE
+// ============================================================
+let lastChanceShown = false;
+
+function showLastChance() {
+  if (lastChanceShown || gameOverShown) return;
+  const popup = document.getElementById('lastchance-popup');
+  if (!popup) { showGameOverPopup(); return; }
+  const shortfall = currentQuota() - dayPaid;
+  document.getElementById('lc-shortfall').textContent = '$' + fmtMoney(shortfall);
+  document.getElementById('lc-wallet').textContent = coins;
+  const result = document.getElementById('lc-result');
+  result.textContent = '';
+  result.className = 'lc-result';
+  document.getElementById('lc-actions').style.display = '';
+  popup.classList.add('show');
+  lastChanceShown = true;
+  // Crank the music to stress mode for the whole gamble.
+  if (typeof setAmbientStress === 'function') setAmbientStress(100);
+}
+
+function hideLastChance() {
+  const popup = document.getElementById('lastchance-popup');
+  if (popup) popup.classList.remove('show');
+  lastChanceShown = false;
+}
+
+function lastChanceTakeLoss() {
+  sfxButtonClick();
+  hideLastChance();
+  showGameOverPopup();
+}
+
+function lastChanceBet() {
+  sfxButtonClick();
+  // Lock the buttons and show flipping state.
+  document.getElementById('lc-actions').style.display = 'none';
+  const result = document.getElementById('lc-result');
+  result.textContent = '🪙 flipping…';
+  result.className = 'lc-result';
+  setTimeout(() => {
+    sfxCoinClink();
+    const win = Math.random() < 0.5;
+    const shortfall = currentQuota() - dayPaid;
+    if (win) {
+      coins = coins * 2;
+      document.getElementById('lc-wallet').textContent = coins;
+      if (coins >= shortfall) {
+        // Cover the shortfall — pay it, mark today met, advance.
+        coins -= shortfall;
+        debt = Math.max(0, debt - shortfall);
+        dayPaid = currentQuota();
+        result.textContent = 'HEADS — covered.';
+        result.className = 'lc-result win';
+        saveGame();
+        setTimeout(() => {
+          hideLastChance();
+          advanceDay();
+        }, 1600);
+      } else {
+        result.textContent = 'HEADS — still short.';
+        result.className = 'lc-result lose';
+        saveGame();
+        setTimeout(() => {
+          hideLastChance();
+          showGameOverPopup();
+        }, 1800);
+      }
+    } else {
+      coins = 0;
+      document.getElementById('lc-wallet').textContent = coins;
+      result.textContent = 'TAILS — wiped out.';
+      result.className = 'lc-result lose';
+      saveGame();
+      setTimeout(() => {
+        hideLastChance();
+        showGameOverPopup();
+      }, 1800);
+    }
+  }, 1100);
 }
 
 
@@ -6448,6 +6731,8 @@ function restartFromGameOver() {
   if (sc) sc.textContent = '0';
   gameOverShown = false;
   winShown = false;
+  dayTransitioning = false;
+  lastChanceShown = false;
   saveGame();
   redrawEquippedRod();
   updateStats();
@@ -6455,6 +6740,10 @@ function restartFromGameOver() {
   document.getElementById('gameover-popup').classList.remove('show');
   const wp = document.getElementById('win-popup');
   if (wp) wp.classList.remove('show');
+  const lc = document.getElementById('lastchance-popup');
+  if (lc) lc.classList.remove('show');
+  const dt = document.getElementById('day-transition');
+  if (dt) dt.classList.remove('show');
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('title-screen').classList.add('active');
 }
