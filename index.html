@@ -1465,6 +1465,8 @@ padding: 12px;
 display: flex; flex-direction: column;
 align-items: stretch;
 gap: 10px;
+overflow-y: auto;
+min-height: 0;
 }
 .phone-home-btn {
 position: absolute;
@@ -1644,8 +1646,8 @@ min-height: 0;
 /* Blackjack rows */
 .bj-row {
 display: flex; flex-direction: column;
-gap: 4px;
-padding: 6px 8px;
+gap: 3px;
+padding: 5px 7px;
 border-radius: 8px;
 background: rgba(20, 10, 18, 0.4);
 border: 1px solid rgba(255,140,80,0.2);
@@ -1663,16 +1665,16 @@ color: var(--gold); font-size: 13px; font-weight: 800;
 }
 .bj-cards {
 display: flex; gap: 4px;
-min-height: 56px;
+min-height: 46px;
 align-items: center;
 }
 .bj-card {
-width: 36px; height: 50px;
+width: 32px; height: 44px;
 background: #ffffff;
 border: 1.5px solid #1a1a1a;
 border-radius: 4px;
 display: flex; flex-direction: column;
-padding: 2px 4px;
+padding: 2px 3px;
 font-family: 'Baloo 2', cursive;
 font-weight: 800;
 position: relative;
@@ -1698,6 +1700,19 @@ display: flex; gap: 6px;
 .bj-actions .craps-roll-btn { flex: 1; }
 .bj-hit  { background: linear-gradient(180deg, #6fb069 0%, #2e7831 100%); border-color: rgba(120,200,120,0.5); }
 .bj-stand{ background: linear-gradient(180deg, #f8c850 0%, #c8862a 100%); border-color: rgba(255,200,80,0.5); color: #1a0c05; }
+
+/* === PLINKO === */
+.plinko-canvas {
+display: block;
+width: 100%;
+max-width: 220px;
+height: auto;
+margin: 0 auto;
+border-radius: 8px;
+border: 1px solid rgba(255,140,80,0.25);
+background: #1a0a14;
+image-rendering: pixelated;
+}
 
 /* === DAY BANNER === */
 #day-banner {
@@ -2647,7 +2662,8 @@ min-height: 14px;
         <div class="phone-app-body">
         <div class="phone-tabs">
           <button class="phone-tab active" data-game="craps" onclick="setPhoneGame('craps')">Craps</button>
-          <button class="phone-tab" data-game="bj" onclick="setPhoneGame('bj')">Blackjack</button>
+          <button class="phone-tab" data-game="bj" onclick="setPhoneGame('bj')">BJ</button>
+          <button class="phone-tab" data-game="plinko" onclick="setPhoneGame('plinko')">Plinko</button>
         </div>
 
         <!-- Craps game panel -->
@@ -2694,6 +2710,21 @@ min-height: 14px;
             <button class="craps-roll-btn bj-hit" id="bj-hit" onclick="bjHit()" style="display:none">Hit</button>
             <button class="craps-roll-btn bj-stand" id="bj-stand" onclick="bjStand()" style="display:none">Stand</button>
           </div>
+        </div>
+
+        <!-- Plinko game panel -->
+        <div class="phone-game" data-game="plinko" style="display:none">
+          <canvas id="plinko-canvas" class="plinko-canvas" width="220" height="260"></canvas>
+          <div class="dice-result" id="plinko-result">Drop a ball. Edges pay big.</div>
+          <div class="dice-bet-row" id="plinko-bet-row">
+            <span class="dice-bet-label">Bet</span>
+            <button class="dice-step" onclick="adjPlinkoBet(-50)">−50</button>
+            <button class="dice-step" onclick="adjPlinkoBet(-10)">−10</button>
+            <input id="plinko-bet" type="number" min="10" step="10" value="50" inputmode="numeric"/>
+            <button class="dice-step" onclick="adjPlinkoBet(10)">+10</button>
+            <button class="dice-step" onclick="adjPlinkoBet(50)">+50</button>
+          </div>
+          <button class="craps-roll-btn" id="plinko-drop-btn" onclick="dropPlinko()">Drop Ball</button>
         </div>
 
         <!-- Coins readout (Pay Boudreaux moved to the Contacts app) -->
@@ -6216,6 +6247,7 @@ function setPhoneGame(g) {
     p.style.display = p.dataset.game === g ? '' : 'none';
   });
   if (g === 'bj') bjReset();
+  if (g === 'plinko') drawPlinko();
   sfxButtonClick();
 }
 
@@ -6673,6 +6705,209 @@ function payBoudreaux() {
     advanceDay();
     updateGamblingUI();
   }
+}
+
+// ============================================================
+// PLINKO
+// 8 peg rows, 9 landing slots. Edge slots pay 10x, center is the
+// punisher (0.3x). Outcome is sampled as 8 fair coin flips and the
+// ball is animated through the corresponding waypoints.
+// ============================================================
+const PLINKO_ROWS  = 8;
+const PLINKO_SLOTS = PLINKO_ROWS + 1;  // 9
+const PLINKO_MULTS  = [10, 3, 1.5, 0.7, 0.3, 0.7, 1.5, 3, 10];
+const PLINKO_COLORS = ['#ff5a4a', '#ff8a40', '#ffd680', '#7c8a90', '#3a4854', '#7c8a90', '#ffd680', '#ff8a40', '#ff5a4a'];
+
+let plinkoBet = 50;
+let plinkoBusy = false;
+let plinkoBall = null;   // { x, y } during animation
+let plinkoLandedSlot = null;
+
+function plinkoLayout() {
+  const c = document.getElementById('plinko-canvas');
+  if (!c) return null;
+  const W = c.width, H = c.height;
+  const topY = 26;
+  const bottomY = H - 30;
+  const rowH = (bottomY - topY) / PLINKO_ROWS;
+  return { canvas: c, ctx: c.getContext('2d'), W, H, topY, bottomY, rowH };
+}
+
+function pegX(row, peg, W) {
+  // Triangular peg layout: row r has r+2 pegs centered.
+  const pegCount = row + 2;
+  const span = W * 0.78;
+  const spacing = span / (pegCount - 1);
+  const startX = (W - span) / 2;
+  return startX + peg * spacing;
+}
+
+function drawPlinko() {
+  const lay = plinkoLayout();
+  if (!lay) return;
+  const { ctx, W, H, topY, bottomY, rowH } = lay;
+  ctx.clearRect(0, 0, W, H);
+
+  // Board gradient.
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#1a0a14');
+  bg.addColorStop(1, '#2a1024');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Pegs.
+  for (let r = 0; r < PLINKO_ROWS; r++) {
+    const y = topY + (r + 0.5) * rowH;
+    for (let p = 0; p < r + 2; p++) {
+      const x = pegX(r, p, W);
+      ctx.beginPath();
+      ctx.arc(x, y, 2.2, 0, Math.PI * 2);
+      ctx.fillStyle = '#fde898';
+      ctx.fill();
+    }
+  }
+
+  // Bottom slots.
+  const slotW = W / PLINKO_SLOTS;
+  for (let s = 0; s < PLINKO_SLOTS; s++) {
+    const x = s * slotW;
+    const isLanded = (plinkoLandedSlot === s);
+    ctx.fillStyle = PLINKO_COLORS[s] + (isLanded ? 'ff' : 'cc');
+    ctx.fillRect(x + 1, bottomY, slotW - 2, H - bottomY);
+    if (isLanded) {
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(x + 1.5, bottomY + 0.5, slotW - 3, H - bottomY - 1);
+    }
+    ctx.fillStyle = '#1a0c05';
+    ctx.font = 'bold 9px "Baloo 2", cursive, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(PLINKO_MULTS[s] + 'x', x + slotW / 2, bottomY + (H - bottomY) / 2);
+  }
+
+  // Ball.
+  if (plinkoBall) {
+    ctx.beginPath();
+    ctx.arc(plinkoBall.x, plinkoBall.y, 4.2, 0, Math.PI * 2);
+    ctx.fillStyle = '#ff5a4a';
+    ctx.fill();
+    ctx.strokeStyle = '#ffd680';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+}
+
+function adjPlinkoBet(d) {
+  const el = document.getElementById('plinko-bet');
+  if (!el) return;
+  let v = parseInt(el.value) || 50;
+  v = Math.max(10, v + d);
+  el.value = v;
+  plinkoBet = v;
+}
+
+function setPlinkoResult(msg, win) {
+  const el = document.getElementById('plinko-result');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.remove('win', 'lose');
+  if (win === true) el.classList.add('win');
+  else if (win === false) el.classList.add('lose');
+}
+
+function dropPlinko() {
+  if (plinkoBusy) return;
+  const betEl = document.getElementById('plinko-bet');
+  plinkoBet = Math.max(10, parseInt(betEl && betEl.value) || 50);
+  if (coins < plinkoBet) {
+    setPlinkoResult("You're broke. Lower the bet.", null);
+    return;
+  }
+  sfxButtonClick();
+  coins -= plinkoBet;
+  updateGamblingUI();
+  plinkoBusy = true;
+  plinkoLandedSlot = null;
+
+  // Sample 8 fair shifts; the slot index is (rights), 0..8.
+  const shifts = [];
+  let rights = 0;
+  for (let i = 0; i < PLINKO_ROWS; i++) {
+    const goesRight = Math.random() < 0.5;
+    shifts.push(goesRight ? 1 : -1);
+    if (goesRight) rights++;
+  }
+  const slot = rights;
+
+  const lay = plinkoLayout();
+  if (!lay) { plinkoBusy = false; return; }
+  const { W, topY, bottomY, rowH } = lay;
+  const slotW = W / PLINKO_SLOTS;
+
+  // Build waypoints: each row, ball moves to the next valley.
+  // Conceptually the ball sits in column c (0..PLINKO_ROWS), starting at
+  // PLINKO_ROWS/2. Each row shifts c by ±0.5, but we map directly to
+  // pixel x for animation by interpolating between row peg layouts.
+  const waypoints = [];
+  let curCol = PLINKO_ROWS / 2;   // starts in middle valley
+  let curX = W / 2;
+  waypoints.push({ x: curX, y: topY - 12 });
+  for (let r = 0; r < PLINKO_ROWS; r++) {
+    curCol += shifts[r] * 0.5;
+    const fracOfWidth = curCol / PLINKO_ROWS;
+    const x = (W - slotW * 2) * fracOfWidth + slotW;   // map [0..1] across the peg span
+    const y = topY + (r + 1) * rowH;
+    waypoints.push({ x, y });
+    curX = x;
+  }
+  // Settle into slot.
+  waypoints.push({ x: (slot + 0.5) * slotW, y: bottomY + 12 });
+
+  plinkoBall = { x: W / 2, y: topY - 12 };
+  drawPlinko();
+
+  let wp = 1;
+  function step() {
+    if (wp >= waypoints.length) {
+      plinkoLandedSlot = slot;
+      const mult = PLINKO_MULTS[slot];
+      const win = Math.round(plinkoBet * mult);
+      const profit = win - plinkoBet;
+      coins += win;
+      saveGame();
+      updateGamblingUI();
+      drawPlinko();
+      let msg;
+      if (profit > 0) {
+        msg = `${mult}x — won $${win}.`;
+        sfxCoinClink();
+        sfxCatch();
+      } else if (profit === 0) {
+        msg = `${mult}x — break-even.`;
+        sfxButtonClick();
+      } else {
+        msg = `${mult}x — lost $${plinkoBet - win}.`;
+        sfxTapMiss();
+      }
+      setPlinkoResult(msg, profit > 0 ? true : (profit < 0 ? false : null));
+      plinkoBusy = false;
+      // Clear ball after a beat, keep slot highlight a moment longer.
+      setTimeout(() => { plinkoBall = null; drawPlinko(); }, 700);
+      setTimeout(() => { plinkoLandedSlot = null; drawPlinko(); }, 2200);
+      return;
+    }
+    const target = waypoints[wp];
+    plinkoBall.x = target.x;
+    plinkoBall.y = target.y;
+    drawPlinko();
+    if (wp < waypoints.length - 1 && typeof playTone === 'function') {
+      playTone(900 + Math.random() * 500, 0.04, 'triangle', 0.05);
+    }
+    wp++;
+    setTimeout(step, 110);
+  }
+  setTimeout(step, 220);
 }
 
 // ============================================================
