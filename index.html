@@ -1993,14 +1993,15 @@ overflow: hidden;
 }
 .phone-pocket-portrait {
 position: absolute; inset: 0;
-display: none;
+opacity: 0;
+transition: opacity 0.25s ease-out;
 }
 .phone-pocket-portrait svg {
 display: block;
 width: 100%; height: 100%;
 }
 /* When stress is high, the pocket is shaking AND Boudreaux is on the screen. */
-.itch-high #phone-pocket .phone-pocket-portrait { display: block; }
+.itch-high #phone-pocket .phone-pocket-portrait { opacity: 1; }
 /* Drop the old red flicker on the inner screen since the portrait is
    showing now. Keep the buzz on the outer body. */
 .itch-high #phone-pocket .phone-pocket-screen {
@@ -2259,7 +2260,89 @@ min-height: 14px;
 <div id="phone-pocket" onclick="openPhone()" aria-label="Open phone">
   <div class="phone-pocket-body">
     <div class="phone-pocket-screen">
-      <div class="phone-pocket-portrait" id="phone-pocket-portrait"></div>
+      <div class="phone-pocket-portrait" id="phone-pocket-portrait">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <!-- Smoky backdrop -->
+  <rect x="0" y="0" width="100" height="100" fill="#180a0c"/>
+  <ellipse cx="50" cy="55" rx="42" ry="40" fill="#2a141a" opacity="0.6"/>
+
+  <!-- Suit shoulders -->
+  <rect x="14" y="78" width="72" height="22" fill="#1a0c10"/>
+  <polygon points="34,78 50,92 66,78" fill="#0c0608"/>
+  <!-- Tie (blood red) -->
+  <polygon points="48,78 52,78 55,99 50,100 45,99" fill="#5a0a0a"/>
+  <rect x="48" y="78" width="4" height="2" fill="#1a0c05"/>
+
+  <!-- Head/face shape (oval, ruddy skin) -->
+  <ellipse cx="50" cy="48" rx="28" ry="32" fill="#c89870"/>
+  <!-- Skin shading -->
+  <ellipse cx="60" cy="52" rx="14" ry="22" fill="#a87858" opacity="0.5"/>
+
+  <!-- Hair: slicked back, jet black -->
+  <path d="M22 36 Q22 14 50 12 Q78 14 78 36 L78 28 Q70 18 50 18 Q30 18 22 28 Z" fill="#0c0606"/>
+  <!-- Hair shine streak -->
+  <path d="M28 22 Q40 16 52 17" stroke="#3a2018" stroke-width="1" fill="none"/>
+
+  <!-- Heavy unibrow / scowl -->
+  <rect x="28" y="36" width="44" height="3" fill="#0c0606"/>
+  <polygon points="28,36 36,38 28,40" fill="#0c0606"/>
+  <polygon points="72,36 64,38 72,40" fill="#0c0606"/>
+
+  <!-- Eye sockets (deep set, shadowed) -->
+  <ellipse cx="38" cy="44" rx="7" ry="3.5" fill="#7a5840"/>
+  <ellipse cx="62" cy="44" rx="7" ry="3.5" fill="#7a5840"/>
+
+  <!-- Eyes (narrow slits, you can barely see them) -->
+  <rect x="33" y="43" width="10" height="2" fill="#0c0606"/>
+  <rect x="57" y="43" width="10" height="2" fill="#0c0606"/>
+  <!-- Pupils (just dots) -->
+  <rect x="38" y="42" width="2" height="2" fill="#0c0606"/>
+  <rect x="62" y="42" width="2" height="2" fill="#0c0606"/>
+
+  <!-- Crow's feet -->
+  <line x1="30" y1="46" x2="33" y2="48" stroke="#7a5840" stroke-width="0.6"/>
+  <line x1="30" y1="48" x2="33" y2="49" stroke="#7a5840" stroke-width="0.6"/>
+  <line x1="70" y1="46" x2="67" y2="48" stroke="#7a5840" stroke-width="0.6"/>
+  <line x1="70" y1="48" x2="67" y2="49" stroke="#7a5840" stroke-width="0.6"/>
+
+  <!-- Nose (large, hooked, broken once) -->
+  <path d="M48 46 Q43 56 47 64 Q50 67 53 64 Q57 56 52 46 Z" fill="#a87850"/>
+  <path d="M48 50 Q46 52 48 55" stroke="#7a5840" stroke-width="0.6" fill="none"/>
+
+  <!-- Mustache (thick, drooping over the mouth) -->
+  <path d="M28 66 Q40 72 49 67 L51 67 Q60 72 72 66 L72 70 Q60 76 51 71 L49 71 Q40 76 28 70 Z" fill="#0c0606"/>
+
+  <!-- Cigar in the corner of the mouth -->
+  <rect x="60" y="69" width="22" height="3" fill="#5a3818"/>
+  <rect x="60" y="69" width="22" height="1" fill="#7a5028"/>
+  <rect x="80" y="69" width="2" height="3" fill="#ff6020"/>
+  <rect x="82" y="68" width="1" height="1" fill="#fde898"/>
+  <!-- Smoke wisps -->
+  <ellipse cx="86" cy="62" rx="3" ry="1.5" fill="#7a7a7a" opacity="0.55"/>
+  <ellipse cx="92" cy="56" rx="3" ry="1.5" fill="#7a7a7a" opacity="0.4"/>
+  <ellipse cx="89" cy="50" rx="2.5" ry="1.2" fill="#7a7a7a" opacity="0.3"/>
+
+  <!-- Stubble dots on chin -->
+  <circle cx="40" cy="74" r="0.55" fill="#0c0606"/>
+  <circle cx="44" cy="76" r="0.55" fill="#0c0606"/>
+  <circle cx="48" cy="77" r="0.55" fill="#0c0606"/>
+  <circle cx="52" cy="77" r="0.55" fill="#0c0606"/>
+  <circle cx="46" cy="78" r="0.55" fill="#0c0606"/>
+  <circle cx="42" cy="78" r="0.55" fill="#0c0606"/>
+  <circle cx="50" cy="79" r="0.55" fill="#0c0606"/>
+
+  <!-- Knife scar across left cheek -->
+  <line x1="30" y1="52" x2="36" y2="64" stroke="#7a3818" stroke-width="1.2" stroke-linecap="round"/>
+  <line x1="32" y1="55" x2="33" y2="56" stroke="#a85838" stroke-width="0.6"/>
+
+  <!-- Gold tooth glint (peeks under the mustache) -->
+  <rect x="48" y="71" width="2" height="2" fill="#fde898"/>
+  <rect x="48" y="71" width="1" height="1" fill="#ffffff"/>
+
+  <!-- Earring -->
+  <circle cx="22" cy="56" r="1.5" fill="#fde898" stroke="#0c0606" stroke-width="0.4"/>
+</svg>
+      </div>
     </div>
     <div class="phone-pocket-cam"></div>
   </div>
@@ -2306,7 +2389,89 @@ min-height: 14px;
         </div>
         <div class="phone-app-body contacts-body">
           <div class="contact-card">
-            <div class="contact-portrait" id="contact-boudreaux-portrait"></div>
+            <div class="contact-portrait" id="contact-boudreaux-portrait">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <!-- Smoky backdrop -->
+  <rect x="0" y="0" width="100" height="100" fill="#180a0c"/>
+  <ellipse cx="50" cy="55" rx="42" ry="40" fill="#2a141a" opacity="0.6"/>
+
+  <!-- Suit shoulders -->
+  <rect x="14" y="78" width="72" height="22" fill="#1a0c10"/>
+  <polygon points="34,78 50,92 66,78" fill="#0c0608"/>
+  <!-- Tie (blood red) -->
+  <polygon points="48,78 52,78 55,99 50,100 45,99" fill="#5a0a0a"/>
+  <rect x="48" y="78" width="4" height="2" fill="#1a0c05"/>
+
+  <!-- Head/face shape (oval, ruddy skin) -->
+  <ellipse cx="50" cy="48" rx="28" ry="32" fill="#c89870"/>
+  <!-- Skin shading -->
+  <ellipse cx="60" cy="52" rx="14" ry="22" fill="#a87858" opacity="0.5"/>
+
+  <!-- Hair: slicked back, jet black -->
+  <path d="M22 36 Q22 14 50 12 Q78 14 78 36 L78 28 Q70 18 50 18 Q30 18 22 28 Z" fill="#0c0606"/>
+  <!-- Hair shine streak -->
+  <path d="M28 22 Q40 16 52 17" stroke="#3a2018" stroke-width="1" fill="none"/>
+
+  <!-- Heavy unibrow / scowl -->
+  <rect x="28" y="36" width="44" height="3" fill="#0c0606"/>
+  <polygon points="28,36 36,38 28,40" fill="#0c0606"/>
+  <polygon points="72,36 64,38 72,40" fill="#0c0606"/>
+
+  <!-- Eye sockets (deep set, shadowed) -->
+  <ellipse cx="38" cy="44" rx="7" ry="3.5" fill="#7a5840"/>
+  <ellipse cx="62" cy="44" rx="7" ry="3.5" fill="#7a5840"/>
+
+  <!-- Eyes (narrow slits, you can barely see them) -->
+  <rect x="33" y="43" width="10" height="2" fill="#0c0606"/>
+  <rect x="57" y="43" width="10" height="2" fill="#0c0606"/>
+  <!-- Pupils (just dots) -->
+  <rect x="38" y="42" width="2" height="2" fill="#0c0606"/>
+  <rect x="62" y="42" width="2" height="2" fill="#0c0606"/>
+
+  <!-- Crow's feet -->
+  <line x1="30" y1="46" x2="33" y2="48" stroke="#7a5840" stroke-width="0.6"/>
+  <line x1="30" y1="48" x2="33" y2="49" stroke="#7a5840" stroke-width="0.6"/>
+  <line x1="70" y1="46" x2="67" y2="48" stroke="#7a5840" stroke-width="0.6"/>
+  <line x1="70" y1="48" x2="67" y2="49" stroke="#7a5840" stroke-width="0.6"/>
+
+  <!-- Nose (large, hooked, broken once) -->
+  <path d="M48 46 Q43 56 47 64 Q50 67 53 64 Q57 56 52 46 Z" fill="#a87850"/>
+  <path d="M48 50 Q46 52 48 55" stroke="#7a5840" stroke-width="0.6" fill="none"/>
+
+  <!-- Mustache (thick, drooping over the mouth) -->
+  <path d="M28 66 Q40 72 49 67 L51 67 Q60 72 72 66 L72 70 Q60 76 51 71 L49 71 Q40 76 28 70 Z" fill="#0c0606"/>
+
+  <!-- Cigar in the corner of the mouth -->
+  <rect x="60" y="69" width="22" height="3" fill="#5a3818"/>
+  <rect x="60" y="69" width="22" height="1" fill="#7a5028"/>
+  <rect x="80" y="69" width="2" height="3" fill="#ff6020"/>
+  <rect x="82" y="68" width="1" height="1" fill="#fde898"/>
+  <!-- Smoke wisps -->
+  <ellipse cx="86" cy="62" rx="3" ry="1.5" fill="#7a7a7a" opacity="0.55"/>
+  <ellipse cx="92" cy="56" rx="3" ry="1.5" fill="#7a7a7a" opacity="0.4"/>
+  <ellipse cx="89" cy="50" rx="2.5" ry="1.2" fill="#7a7a7a" opacity="0.3"/>
+
+  <!-- Stubble dots on chin -->
+  <circle cx="40" cy="74" r="0.55" fill="#0c0606"/>
+  <circle cx="44" cy="76" r="0.55" fill="#0c0606"/>
+  <circle cx="48" cy="77" r="0.55" fill="#0c0606"/>
+  <circle cx="52" cy="77" r="0.55" fill="#0c0606"/>
+  <circle cx="46" cy="78" r="0.55" fill="#0c0606"/>
+  <circle cx="42" cy="78" r="0.55" fill="#0c0606"/>
+  <circle cx="50" cy="79" r="0.55" fill="#0c0606"/>
+
+  <!-- Knife scar across left cheek -->
+  <line x1="30" y1="52" x2="36" y2="64" stroke="#7a3818" stroke-width="1.2" stroke-linecap="round"/>
+  <line x1="32" y1="55" x2="33" y2="56" stroke="#a85838" stroke-width="0.6"/>
+
+  <!-- Gold tooth glint (peeks under the mustache) -->
+  <rect x="48" y="71" width="2" height="2" fill="#fde898"/>
+  <rect x="48" y="71" width="1" height="1" fill="#ffffff"/>
+
+  <!-- Earring -->
+  <circle cx="22" cy="56" r="1.5" fill="#fde898" stroke="#0c0606" stroke-width="0.4"/>
+</svg>
+            </div>
             <div class="contact-text">
               <div class="contact-name">Boudreaux</div>
               <div class="contact-sub">Loan Shark · Mobile</div>
@@ -3285,9 +3450,6 @@ const FISH = [
   { id:'swamp_witch', name:'Swamp Witch', rarity:'legendary', weight:1, pts:950, minSz:30, maxSz:70, hitZone:12, markerSpeed:520, hitsNeeded:13, shape:'cryptid', X:'P', Y:'p', Z:'V' },
   { id:'tatzelwurm', name:'Tatzelwurm', rarity:'legendary', weight:1, pts:900, minSz:50, maxSz:110, hitZone:13, markerSpeed:550, hitsNeeded:13, shape:'snake', X:'q', Y:'Q', Z:'2' },
   { id:'bayou_kraken', name:'Bayou Kraken', rarity:'legendary', weight:1, pts:1200, minSz:80, maxSz:200, hitZone:11, markerSpeed:500, hitsNeeded:14, shape:'tentacle', X:'V', Y:'v', Z:'9' },
-  { id:'old_boot', name:'Old Boot', rarity:'junk', weight:35, pts:1, minSz:8, maxSz:14, hitZone:38, markerSpeed:1500, hitsNeeded:5, shape:'rounded', X:'u', Y:'U', Z:'3' },
-  { id:'tin_can', name:'Rusty Tin Can', rarity:'junk', weight:28, pts:2, minSz:6, maxSz:12, hitZone:38, markerSpeed:1500, hitsNeeded:5, shape:'long', X:'a', Y:'A', Z:'3' },
-  { id:'tire', name:'Bicycle Tire', rarity:'junk', weight:16, pts:5, minSz:20, maxSz:30, hitZone:35, markerSpeed:1450, hitsNeeded:6, shape:'round', X:'f', Y:'L', Z:'L' },
 ];
 
 const FISH_ART = {};
@@ -3749,6 +3911,10 @@ function weightedPick() {
   // Build adjusted weights array
   const adjusted = FISH.map(f => {
     let w = f.weight;
+
+    // Baseline uncommon bump - players asked for slightly higher odds on
+    // uncommons regardless of rod / bait setup.
+    if (f.rarity === 'uncommon') w *= 1.5;
 
     // Bait powerup: filter the pool first.
     if (!passesFloor(f)) {
