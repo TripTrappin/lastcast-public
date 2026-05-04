@@ -1599,6 +1599,13 @@ gap: 6px;
 font-family: 'Baloo 2', cursive; font-size: 10px;
 color: var(--text-dim);
 margin-top: auto;
+padding: 6px 4px 4px;
+background: rgba(8, 4, 8, 0.92);
+backdrop-filter: blur(4px);
+position: sticky;
+bottom: -2px;
+z-index: 5;
+flex-shrink: 0;
 }
 .dice-num { color: var(--gold); font-weight: 800; font-size: 12px; }
 .dice-num.bad { color: #ff7e5a; }
@@ -1614,9 +1621,13 @@ letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
 .phone-tabs {
 display: flex; gap: 4px;
 padding: 4px;
-background: rgba(0, 0, 0, 0.4);
+background: rgba(8, 4, 8, 0.92);
+backdrop-filter: blur(4px);
 border-radius: 8px;
 flex-shrink: 0;
+position: sticky;
+top: 0;
+z-index: 6;
 }
 .phone-tab {
 flex: 1;
@@ -1712,6 +1723,9 @@ border-radius: 8px;
 border: 1px solid rgba(255,140,80,0.25);
 background: #1a0a14;
 image-rendering: pixelated;
+}
+.plinko-panel {
+gap: 6px !important;
 }
 
 /* === DAY BANNER === */
@@ -2871,8 +2885,8 @@ min-height: 14px;
         </div>
 
         <!-- Plinko game panel -->
-        <div class="phone-game" data-game="plinko" style="display:none">
-          <canvas id="plinko-canvas" class="plinko-canvas" width="220" height="260"></canvas>
+        <div class="phone-game plinko-panel" data-game="plinko" style="display:none">
+          <canvas id="plinko-canvas" class="plinko-canvas" width="220" height="190"></canvas>
           <div class="dice-result" id="plinko-result">Drop a ball. Edges pay big.</div>
           <div class="dice-bet-row" id="plinko-bet-row">
             <span class="dice-bet-label">Bet</span>
@@ -6580,8 +6594,8 @@ function maybeSendIntroTexts() {
   }
   messagesIntroSent = true;
   saveGame();
-  setTimeout(() => deliverText('boudreaux', "Money. By Friday."), 1500);
-  setTimeout(() => deliverText('boudreaux', "Don't ghost me. I know where you fish."), 5500);
+  setTimeout(() => deliverText('boudreaux', "Listen good. Have my money every day 'til the loan is paid. Miss a day and there'll be consequences."), 1500);
+  setTimeout(() => deliverText('boudreaux', "Don't ghost me. I know where you fish."), 6000);
 }
 
 function messagesTick() {
