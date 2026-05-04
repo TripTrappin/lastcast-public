@@ -1986,6 +1986,93 @@ color: white;
 .cutscene-skip:active,
 .cutscene-next:active { transform: scale(0.95); }
 
+/* === PHONE: incoming call screen === */
+/* Sits on top of .phone-screen until answered. The phone opens to this
+   every time you pull it out. */
+.phone-call-screen {
+position: absolute; inset: 0;
+z-index: 5;
+display: none;
+flex-direction: column; align-items: center;
+gap: 8px;
+padding: 18px 12px 14px;
+background: linear-gradient(180deg, #1a0a14 0%, #060304 100%);
+text-align: center;
+}
+#phone-frame.calling .phone-call-screen { display: flex; }
+#phone-frame.calling .phone-app-bar,
+#phone-frame.calling .phone-tabs,
+#phone-frame.calling .phone-game { display: none; }
+#phone-frame.calling .dice-bottom-row { display: none; }
+.phone-call-status {
+font-family: 'Baloo 2', cursive;
+font-size: 11px; font-weight: 800;
+letter-spacing: 1.6px;
+text-transform: uppercase;
+color: #6fb069;
+animation: callPulse 1.4s ease-in-out infinite;
+}
+@keyframes callPulse {
+0%, 100% { opacity: 0.55; }
+50%      { opacity: 1; }
+}
+.phone-call-portrait {
+width: 140px; height: 140px;
+border-radius: 50%;
+overflow: hidden;
+border: 3px solid #2a1808;
+box-shadow: 0 0 0 0 rgba(255, 90, 74, 0.55);
+animation: callRing 1.6s ease-out infinite;
+}
+.phone-call-portrait svg {
+display: block;
+width: 100%; height: 100%;
+image-rendering: pixelated;
+}
+@keyframes callRing {
+0%   { box-shadow: 0 0 0 0 rgba(255, 90, 74, 0.55); }
+70%  { box-shadow: 0 0 0 18px rgba(255, 90, 74, 0); }
+100% { box-shadow: 0 0 0 0 rgba(255, 90, 74, 0); }
+}
+.phone-call-name {
+font-family: 'Baloo 2', cursive;
+font-size: 22px; font-weight: 800;
+color: var(--text);
+letter-spacing: 0.5px;
+}
+.phone-call-sub {
+font-family: 'Baloo 2', cursive;
+font-size: 11px; font-weight: 600;
+letter-spacing: 0.5px;
+color: var(--text-dim);
+}
+.phone-call-actions {
+display: flex; gap: 36px;
+margin-top: auto;
+margin-bottom: 6px;
+}
+.phone-call-decline,
+.phone-call-answer {
+width: 52px; height: 52px;
+border-radius: 50%;
+border: none;
+font-size: 22px;
+font-weight: 800;
+cursor: pointer;
+display: flex; align-items: center; justify-content: center;
+color: #fff;
+box-shadow: 0 4px 8px rgba(0,0,0,0.55);
+transition: transform 0.12s;
+}
+.phone-call-decline { background: #c8261c; }
+.phone-call-answer  { background: #28a14a; animation: answerNudge 1.6s ease-in-out infinite; }
+.phone-call-decline:active,
+.phone-call-answer:active { transform: scale(0.92); }
+@keyframes answerNudge {
+0%, 100% { transform: translateY(0); }
+50%      { transform: translateY(-3px); }
+}
+
 </style>
 </head>
 <body>
@@ -2090,6 +2177,16 @@ color: white;
     <div class="phone-speaker"></div>
     <div class="phone-cam"></div>
     <div class="phone-screen">
+      <div class="phone-call-screen" id="phone-call-screen">
+        <div class="phone-call-status">Incoming Call</div>
+        <div class="phone-call-portrait" id="phone-call-portrait"></div>
+        <div class="phone-call-name">Boudreaux</div>
+        <div class="phone-call-sub">Mobile · Tap to answer</div>
+        <div class="phone-call-actions">
+          <button class="phone-call-decline" onclick="closePhone()" aria-label="Decline">✕</button>
+          <button class="phone-call-answer" onclick="answerPhoneCall()" aria-label="Answer">✓</button>
+        </div>
+      </div>
       <div class="phone-app-bar">
         <span class="phone-app-time" id="phone-app-time">9:41</span>
         <span class="phone-app-name">BAYOU DICE</span>
@@ -5002,13 +5099,27 @@ function openPhone() {
   resetCrapsRound();
   bjReset();
   setPhoneGame(phoneGame || 'craps');
+  // Boudreaux is always calling. Open to the incoming-call screen.
+  const frame = document.getElementById('phone-frame');
+  const port  = document.getElementById('phone-call-portrait');
+  if (frame) frame.classList.add('calling');
+  if (port && typeof BOUDREAUX_PORTRAIT === 'string') port.innerHTML = BOUDREAUX_PORTRAIT;
   const overlay = document.getElementById('phone-overlay');
   if (overlay) overlay.classList.add('show');
+}
+
+function answerPhoneCall() {
+  sfxButtonClick();
+  const frame = document.getElementById('phone-frame');
+  if (frame) frame.classList.remove('calling');
 }
 function closePhone() {
   sfxButtonClick();
   const overlay = document.getElementById('phone-overlay');
   if (overlay) overlay.classList.remove('show');
+  // Reset call state so next open starts on the incoming-call screen again.
+  const frame = document.getElementById('phone-frame');
+  if (frame) frame.classList.remove('calling');
 }
 
 // ============================================================
