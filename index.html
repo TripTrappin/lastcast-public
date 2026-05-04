@@ -2214,6 +2214,140 @@ color: #fff;
 background: linear-gradient(180deg, #d83a4a 0%, #8a1820 100%);
 color: #fff;
 }
+.app-icon-bg.messages {
+background: linear-gradient(180deg, #50c878 0%, #2a8050 100%);
+color: #fff;
+position: relative;
+overflow: visible;
+}
+.app-icon-badge {
+position: absolute;
+top: -5px; right: -5px;
+background: #ff3a30;
+color: #fff;
+font-family: 'Baloo 2', cursive;
+font-size: 10px; font-weight: 800;
+padding: 1px 5px;
+border-radius: 999px;
+min-width: 16px;
+text-align: center;
+border: 2px solid #1a0a14;
+box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+line-height: 1.1;
+}
+
+/* === MESSAGES app === */
+.messages-body { padding: 8px; gap: 4px; }
+.messages-inbox {
+display: flex; flex-direction: column;
+gap: 4px;
+}
+.msg-thread-row {
+display: flex; align-items: center;
+gap: 10px;
+padding: 8px 10px;
+background: rgba(20, 10, 18, 0.55);
+border: 1px solid rgba(255,232,212,0.12);
+border-radius: 10px;
+cursor: pointer;
+text-align: left;
+font-family: 'Baloo 2', cursive;
+color: var(--text);
+transition: background 0.15s;
+}
+.msg-thread-row:hover { background: rgba(40, 20, 32, 0.7); }
+.msg-thread-row.unread { border-color: rgba(255,90,74,0.5); }
+.msg-avatar {
+width: 36px; height: 36px;
+border-radius: 50%;
+display: flex; align-items: center; justify-content: center;
+font-family: 'Baloo 2', cursive;
+font-weight: 900;
+font-size: 16px;
+color: #1a0c05;
+flex-shrink: 0;
+}
+.msg-thread-info { flex: 1; min-width: 0; }
+.msg-thread-name {
+font-size: 13px; font-weight: 800;
+color: #fde898;
+letter-spacing: 0.4px;
+}
+.msg-thread-snippet {
+font-size: 11px; font-weight: 600;
+color: var(--text-dim);
+margin-top: 2px;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+.msg-thread-badge {
+background: #ff3a30;
+color: #fff;
+font-size: 10px; font-weight: 800;
+padding: 2px 7px;
+border-radius: 999px;
+min-width: 16px;
+text-align: center;
+flex-shrink: 0;
+}
+.messages-thread {
+display: flex; flex-direction: column;
+gap: 6px;
+flex: 1;
+min-height: 0;
+}
+.msg-bubbles {
+display: flex; flex-direction: column;
+gap: 6px;
+overflow-y: auto;
+padding: 4px 2px 8px;
+flex: 1;
+}
+.msg-bubble {
+align-self: flex-start;
+max-width: 80%;
+padding: 7px 11px;
+background: rgba(255,232,212,0.92);
+color: #1a0c05;
+border-radius: 14px 14px 14px 4px;
+font-family: 'Baloo 2', cursive;
+font-size: 12px;
+font-weight: 600;
+line-height: 1.35;
+box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+word-wrap: break-word;
+}
+.msg-bubble.boudreaux { background: #ff8a78; color: #1a0c05; }
+.msg-bubble.marcie    { background: #ffc080; }
+.msg-bubble.junior    { background: #fde898; }
+.msg-bubble.tee_ray   { background: #c8d0d8; }
+
+/* Pocket notification dot for unread messages */
+#phone-pocket .phone-pocket-msg-dot {
+position: absolute;
+top: -4px; right: -4px;
+width: 14px; height: 14px;
+background: #ff3a30;
+border: 2px solid #1a0a14;
+border-radius: 50%;
+opacity: 0;
+transform: scale(0.6);
+transition: opacity 0.2s, transform 0.2s;
+z-index: 6;
+pointer-events: none;
+}
+#phone-pocket .phone-pocket-msg-dot.show {
+opacity: 1; transform: scale(1);
+}
+@keyframes pocketMsgPulse {
+0%   { transform: scale(0.6); }
+40%  { transform: scale(1.4); }
+100% { transform: scale(1); }
+}
+#phone-pocket .phone-pocket-msg-dot.pulse {
+animation: pocketMsgPulse 0.6s ease-out;
+}
 .app-icon-name {
 font-family: 'Baloo 2', cursive;
 font-size: 10px; font-weight: 700;
@@ -2423,6 +2557,7 @@ min-height: 14px;
 
 <!-- Phone (pixel smartphone in the fisherman's pocket) -->
 <div id="phone-pocket" onclick="openPhone()" aria-label="Open phone">
+  <div class="phone-pocket-msg-dot" id="phone-pocket-msg-dot"></div>
   <div class="phone-pocket-body">
     <div class="phone-pocket-screen">
       <div class="phone-pocket-portrait" id="phone-pocket-portrait">
@@ -2537,6 +2672,13 @@ min-height: 14px;
             </div>
             <div class="app-icon-name">Contacts</div>
           </button>
+          <button class="phone-app-icon" onclick="setPhoneApp('messages')">
+            <div class="app-icon-bg messages">
+              <svg viewBox="0 0 32 32" fill="currentColor"><path d="M5 7 h22 a2 2 0 0 1 2 2 v12 a2 2 0 0 1 -2 2 h-12 l-6 5 v-5 h-4 a2 2 0 0 1 -2 -2 v-12 a2 2 0 0 1 2 -2 z"/></svg>
+              <span class="app-icon-badge" id="msgs-badge" style="display:none">0</span>
+            </div>
+            <div class="app-icon-name">Messages</div>
+          </button>
           <button class="phone-app-icon" onclick="setPhoneApp('gambia')">
             <div class="app-icon-bg gambia">
               <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="15" r="1.5" fill="currentColor"/><rect x="13" y="13" width="14" height="14" rx="2"/><circle cx="17" cy="17" r="1.5" fill="currentColor"/><circle cx="23" cy="23" r="1.5" fill="currentColor"/></svg>
@@ -2649,6 +2791,20 @@ min-height: 14px;
             </div>
             <button class="contact-pay-btn" onclick="payBoudreaux()">Pay Boudreaux</button>
             <div class="contact-hint" id="contact-pay-hint"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MESSAGES app -->
+      <div class="phone-app-screen" data-app="messages" style="display:none">
+        <div class="phone-nav">
+          <button class="phone-nav-back" onclick="messagesNavBack()" aria-label="Back">‹</button>
+          <span class="phone-nav-title" id="messages-nav-title">Messages</span>
+        </div>
+        <div class="phone-app-body messages-body">
+          <div id="messages-inbox" class="messages-inbox"></div>
+          <div id="messages-thread" class="messages-thread" style="display:none">
+            <div id="msg-bubbles" class="msg-bubbles"></div>
           </div>
         </div>
       </div>
@@ -2950,7 +3106,10 @@ function saveGame() {
       hasSeenIntro,
       muted: isMuted,
       masterVolume,
-      version: 14,
+      conversations,
+      messagesRead,
+      messagesIntroSent,
+      version: 15,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
   } catch (e) {
@@ -2975,7 +3134,7 @@ function loadGame() {
     // start timestamp to an in-game elapsed-ms accumulator (so it pauses on
     // the title screen). v9-and-earlier saves had a tiny starting debt that
     // no longer makes sense; reset to TOTAL_DEBT on load.
-    if (![1,2,3,4,5,6,7,8,9,10,11,12,13,14].includes(save.version)) return;
+    if (![1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].includes(save.version)) return;
     
     // Rehydrate collection with fish object refs
     if (save.collection) {
@@ -3058,6 +3217,24 @@ function loadGame() {
       dayPaid      = (save.version === 10 && save.dayPaid)    ? save.dayPaid    : 0;
       dayElapsedMs = 0;
     }
+
+    // v15: messages state. Older saves just stay with empty defaults.
+    if (save.conversations && typeof save.conversations === 'object') {
+      conversations = { boudreaux: [], marcie: [], junior: [], tee_ray: [] };
+      for (const id in conversations) {
+        const arr = save.conversations[id];
+        if (Array.isArray(arr)) {
+          conversations[id] = arr.filter(m => m && typeof m.text === 'string');
+        }
+      }
+    }
+    if (save.messagesRead && typeof save.messagesRead === 'object') {
+      messagesRead = { boudreaux: 0, marcie: 0, junior: 0, tee_ray: 0 };
+      for (const id in messagesRead) {
+        if (typeof save.messagesRead[id] === 'number') messagesRead[id] = save.messagesRead[id];
+      }
+    }
+    messagesIntroSent = !!save.messagesIntroSent;
   } catch (e) {
     console.warn('Load failed:', e);
   }
@@ -4982,6 +5159,8 @@ window.addEventListener('DOMContentLoaded', () => {
   initTitleEffects();
   // Bait display
   updateBaitDisplay();
+  // Paint the messages badge from any persisted unread count.
+  paintMessagesBadge();
 });
 
 // ============================================================
@@ -5000,6 +5179,8 @@ function startGame() {
   updateStats();
   updateGamblingUI();
   startAmbient();
+  maybeSendIntroTexts();
+  paintMessagesBadge();
 }
 
 function updateTitleScreen() {
@@ -5630,6 +5811,7 @@ function tickGambling() {
     endDay();
   }
   updateGamblingUI();
+  messagesTick();
 }
 
 function gameIsHalted() {
@@ -6036,6 +6218,8 @@ function finishCutscene() {
   updateStats();
   updateGamblingUI();
   startAmbient();
+  maybeSendIntroTexts();
+  paintMessagesBadge();
 }
 
 function togglePause() {
@@ -6180,9 +6364,21 @@ function setPhoneApp(app) {
     label.textContent = app === 'home' ? 'HOME'
                       : app === 'contacts' ? 'CONTACTS'
                       : app === 'gambia' ? 'GAMBIA'
+                      : app === 'messages' ? 'MESSAGES'
                       : app.toUpperCase();
   }
   if (app === 'contacts') refreshContactsApp();
+  if (app === 'messages') {
+    // Always land on the inbox when entering the app.
+    openMessageThreadId = null;
+    const inbox = document.getElementById('messages-inbox');
+    const thread = document.getElementById('messages-thread');
+    if (inbox)  inbox.style.display = '';
+    if (thread) thread.style.display = 'none';
+    const t = document.getElementById('messages-nav-title');
+    if (t) t.textContent = 'Messages';
+    paintMessagesInbox();
+  }
   sfxButtonClick();
 }
 
@@ -6203,6 +6399,261 @@ function refreshContactsApp() {
     if (coins <= 0) hint.textContent = "Nothing to give him.";
     else if (debt <= 0) hint.textContent = "He's been paid in full.";
     else hint.textContent = "";
+  }
+}
+
+// ============================================================
+// MESSAGES APP
+// In-game text-message immersion. Boudreaux opens the conversation
+// at first cast; other texters (wife, kid, fishing buddy) pop in on
+// random intervals during play. Read-only — the player can't reply,
+// just receive. Conversations persist across sessions.
+// ============================================================
+const TEXTERS = [
+  { id: 'boudreaux', name: 'Boudreaux', color: '#ff5a4a', initial: 'B' },
+  { id: 'marcie',    name: 'Marcie',    color: '#ff8a40', initial: 'M' },
+  { id: 'junior',    name: 'Junior',    color: '#ffd680', initial: 'J' },
+  { id: 'tee_ray',   name: 'Tee-Ray',   color: '#7c8a90', initial: 'T' },
+];
+
+const TEXT_POOL = {
+  boudreaux: [
+    "Money. By Friday.",
+    "Tick tock, fisher boy.",
+    "I know where you fish.",
+    "Don't make me come find you.",
+    "How's the wife?",
+    "Heard you been at the casino. Cute.",
+    "My boys are bored. They want overtime.",
+    "Last warning.",
+    "I been patient. I'm done bein' patient.",
+    "Pay up or swim.",
+    "You think I forget?",
+    "I want it ALL. Don't drip-feed me.",
+    "I'll see you soon. One way or another.",
+  ],
+  marcie: [
+    "When are you coming home?",
+    "The kids miss you.",
+    "Junior asked about you again.",
+    "I called the dock. They said you left hours ago.",
+    "We need to talk. Please.",
+    "Don't tell me you're fishing.",
+    "I'm not raising these kids alone.",
+    "Just come home, Earl.",
+    "I'm scared. Talk to me.",
+    "Where ARE you.",
+    "There's a man parked outside. Who is he.",
+    "Please pick up.",
+  ],
+  junior: [
+    "daddy when r u coming home",
+    "i drew you a fish 🐟",
+    "mommy is crying again",
+    "can we go fishing soon",
+    "i miss u",
+    "i lost a tooth!! :D",
+    "are you working again",
+    "love u dad",
+    "i made the team",
+    "do u want to see my drawing",
+  ],
+  tee_ray: [
+    "Drinks tonight?",
+    "Saw you down at the dock again.",
+    "You good, brother?",
+    "Heard Boudreaux's lookin'. Be careful.",
+    "Bar's got a special. Come thru.",
+    "I'll cover you tonight if you need it.",
+    "Sturgeon biting at the south bend.",
+    "Don't do nothin' stupid.",
+    "Marcie called me. She's worried.",
+    "Lemme know if you need a place to crash.",
+  ],
+};
+
+let conversations = { boudreaux: [], marcie: [], junior: [], tee_ray: [] };
+let messagesRead  = { boudreaux: 0,  marcie: 0,  junior: 0,  tee_ray: 0  };
+let messagesIntroSent = false;
+let lastMsgTimeMs = 0;       // wall-clock ms of last incoming message
+let nextMsgDelayMs = 28000;  // ms until next eligible random message
+let openMessageThreadId = null;
+
+function totalUnreadMessages() {
+  let n = 0;
+  for (const id in conversations) {
+    n += Math.max(0, conversations[id].length - (messagesRead[id] || 0));
+  }
+  return n;
+}
+
+function unreadFor(id) {
+  return Math.max(0, (conversations[id] || []).length - (messagesRead[id] || 0));
+}
+
+function paintMessagesBadge() {
+  const n = totalUnreadMessages();
+  const badge = document.getElementById('msgs-badge');
+  if (badge) {
+    if (n > 0) { badge.style.display = ''; badge.textContent = n > 9 ? '9+' : String(n); }
+    else { badge.style.display = 'none'; }
+  }
+  const dot = document.getElementById('phone-pocket-msg-dot');
+  if (dot) dot.classList.toggle('show', n > 0);
+}
+
+function flashPocketMsgDot() {
+  const dot = document.getElementById('phone-pocket-msg-dot');
+  if (!dot) return;
+  dot.classList.add('show', 'pulse');
+  setTimeout(() => dot.classList.remove('pulse'), 700);
+}
+
+function deliverText(texterId, text) {
+  if (!conversations[texterId]) conversations[texterId] = [];
+  conversations[texterId].push({ text, t: Date.now() });
+  flashPocketMsgDot();
+  paintMessagesBadge();
+  // If currently looking at messages, refresh whichever view is open.
+  if (phoneApp === 'messages') {
+    if (openMessageThreadId === texterId) {
+      paintMessageThread(texterId);
+      messagesRead[texterId] = conversations[texterId].length;
+      paintMessagesBadge();
+    } else if (openMessageThreadId === null) {
+      paintMessagesInbox();
+    }
+  }
+  saveGame();
+}
+
+function pickRandomTexter() {
+  // Boudreaux's share scales with how much debt is left.
+  const debtFrac = (typeof TOTAL_DEBT === 'number' && TOTAL_DEBT > 0)
+    ? Math.max(0, Math.min(1, debt / TOTAL_DEBT)) : 0.5;
+  const weights = {
+    boudreaux: 0.25 + debtFrac * 0.35,
+    marcie:    0.25,
+    junior:    0.20,
+    tee_ray:   0.25,
+  };
+  const total = Object.values(weights).reduce((a, b) => a + b, 0);
+  let r = Math.random() * total;
+  for (const id in weights) {
+    r -= weights[id];
+    if (r <= 0) return id;
+  }
+  return 'boudreaux';
+}
+
+function pickFreshMessage(texterId) {
+  const pool = TEXT_POOL[texterId] || [];
+  if (!pool.length) return null;
+  const recent = (conversations[texterId] || []).slice(-3).map(m => m.text);
+  const fresh = pool.filter(m => !recent.includes(m));
+  const choices = fresh.length ? fresh : pool;
+  return choices[Math.floor(Math.random() * choices.length)];
+}
+
+function maybeSendIntroTexts() {
+  if (messagesIntroSent) return;
+  if ((conversations.boudreaux || []).length > 0) {
+    messagesIntroSent = true;
+    return;
+  }
+  messagesIntroSent = true;
+  saveGame();
+  setTimeout(() => deliverText('boudreaux', "Money. By Friday."), 1500);
+  setTimeout(() => deliverText('boudreaux', "Don't ghost me. I know where you fish."), 5500);
+}
+
+function messagesTick() {
+  if (gameIsHalted()) return;
+  if (lastMsgTimeMs === 0) lastMsgTimeMs = Date.now();
+  if (Date.now() - lastMsgTimeMs < nextMsgDelayMs) return;
+  const id = pickRandomTexter();
+  const text = pickFreshMessage(id);
+  if (text) deliverText(id, text);
+  lastMsgTimeMs = Date.now();
+  nextMsgDelayMs = (28 + Math.random() * 70) * 1000;  // 28-98s
+}
+
+function paintMessagesInbox() {
+  const inbox = document.getElementById('messages-inbox');
+  if (!inbox) return;
+  inbox.innerHTML = '';
+  for (const t of TEXTERS) {
+    const thread = conversations[t.id] || [];
+    const unread = unreadFor(t.id);
+    const last = thread[thread.length - 1];
+    const snippet = last ? last.text : "No messages.";
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'msg-thread-row' + (unread > 0 ? ' unread' : '');
+    row.onclick = () => openMessageThread(t.id);
+    row.innerHTML = `
+      <span class="msg-avatar" style="background:${t.color}">${t.initial}</span>
+      <div class="msg-thread-info">
+        <div class="msg-thread-name">${t.name}</div>
+        <div class="msg-thread-snippet">${snippet}</div>
+      </div>
+      ${unread > 0 ? `<span class="msg-thread-badge">${unread}</span>` : ''}
+    `;
+    inbox.appendChild(row);
+  }
+}
+
+function paintMessageThread(id) {
+  const bubbles = document.getElementById('msg-bubbles');
+  if (!bubbles) return;
+  bubbles.innerHTML = '';
+  const thread = conversations[id] || [];
+  for (const m of thread) {
+    const b = document.createElement('div');
+    b.className = 'msg-bubble ' + id;
+    b.textContent = m.text;
+    bubbles.appendChild(b);
+  }
+  // Scroll to bottom so the newest message is visible.
+  bubbles.scrollTop = bubbles.scrollHeight;
+}
+
+function openMessageThread(id) {
+  openMessageThreadId = id;
+  const t = TEXTERS.find(x => x.id === id);
+  document.getElementById('messages-inbox').style.display = 'none';
+  document.getElementById('messages-thread').style.display = '';
+  const title = document.getElementById('messages-nav-title');
+  if (title) title.textContent = t ? t.name : 'Messages';
+  paintMessageThread(id);
+  // Mark as read.
+  messagesRead[id] = (conversations[id] || []).length;
+  paintMessagesBadge();
+  sfxButtonClick();
+  saveGame();
+}
+
+function closeMessageThread() {
+  openMessageThreadId = null;
+  document.getElementById('messages-inbox').style.display = '';
+  document.getElementById('messages-thread').style.display = 'none';
+  const title = document.getElementById('messages-nav-title');
+  if (title) title.textContent = 'Messages';
+  paintMessagesInbox();
+}
+
+function messagesNavBack() {
+  if (openMessageThreadId !== null) closeMessageThread();
+  else setPhoneApp('home');
+}
+
+function refreshMessagesApp() {
+  if (openMessageThreadId !== null) {
+    paintMessageThread(openMessageThreadId);
+    messagesRead[openMessageThreadId] = (conversations[openMessageThreadId] || []).length;
+    paintMessagesBadge();
+  } else {
+    paintMessagesInbox();
   }
 }
 
@@ -6976,6 +7427,12 @@ function restartFromGameOver() {
   winShown = false;
   dayTransitioning = false;
   lastChanceShown = false;
+  conversations = { boudreaux: [], marcie: [], junior: [], tee_ray: [] };
+  messagesRead = { boudreaux: 0, marcie: 0, junior: 0, tee_ray: 0 };
+  messagesIntroSent = false;
+  lastMsgTimeMs = 0;
+  openMessageThreadId = null;
+  paintMessagesBadge();
   saveGame();
   redrawEquippedRod();
   updateStats();
