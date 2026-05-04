@@ -2713,10 +2713,9 @@ function saveGame() {
     }
     const save = {
       collection: savableCollection,
-      // totalCaught intentionally NOT persisted - it's a per-day stat
-      // and should reset to 0 on every session/day boundary.
+      // totalCaught and coins are intentionally NOT persisted - they're
+      // per-session stats that should reset to 0 on every load.
       rareCount,
-      coins,
       ownedRods,
       equippedRodId,
       // Save bait counts (skip worms - always infinite)
@@ -2774,13 +2773,13 @@ function loadGame() {
         }
       }
     }
-    // totalCaught is per-day and not persisted; always start at 0 on load.
+    // totalCaught and coins are per-session and not persisted; always reset.
     totalCaught = 0;
+    coins = 0;
     rareCount = save.rareCount || 0;
     isMuted = save.muted || false;
 
     // v2 fields (default to v1 baseline if missing)
-    coins = save.coins || 0;
     ownedRods = save.ownedRods && save.ownedRods.length ? save.ownedRods : ['cane'];
     equippedRodId = save.equippedRodId || 'cane';
     if (!ownedRods.includes(equippedRodId)) equippedRodId = 'cane';
@@ -3027,7 +3026,7 @@ function startAmbient() {
   padLp.frequency.value = 700;
   padLp.Q.value = 0.5;
   const padGain = ctx.createGain();
-  padGain.gain.value = 0.025;
+  padGain.gain.value = 0.06;
   padLp.connect(padGain); padGain.connect(cozyGain);
 
   // Two voices a perfect 5th apart, each slightly detuned for warmth.
@@ -3134,10 +3133,10 @@ function startAmbient() {
   }
   scheduleBell();
 
-  // Fade master in. Conservative target — ambient sits well under SFX.
+  // Fade master in. Audible but well below SFX.
   const t0 = ctx.currentTime;
   master.gain.setValueAtTime(0, t0);
-  master.gain.linearRampToValueAtTime(0.22, t0 + 1.5);
+  master.gain.linearRampToValueAtTime(0.6, t0 + 1.5);
 
   const allOscs = [pad1, pad1b, pad2, pad2b, dr1, dr2, dr3, drLfo];
 
