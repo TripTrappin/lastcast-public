@@ -3020,25 +3020,24 @@ function startAmbient() {
   cozyGain.gain.value = 1;
   cozyGain.connect(master);
 
-  // Warm pad: triangle A3 + triangle E4 (perfect 5th) + sine A2 sub.
+  // Warm pad: pure sines only, slight detune for chorus warmth.
+  // Heavy lowpass keeps it dark and round — no harmonic buzz.
   const padLp = ctx.createBiquadFilter();
   padLp.type = 'lowpass';
-  padLp.frequency.value = 1100;
+  padLp.frequency.value = 700;
+  padLp.Q.value = 0.5;
   const padGain = ctx.createGain();
-  padGain.gain.value = 0.05;
+  padGain.gain.value = 0.025;
   padLp.connect(padGain); padGain.connect(cozyGain);
 
-  const pad1 = ctx.createOscillator(); pad1.type = 'triangle'; pad1.frequency.value = 220;     // A3
-  const pad2 = ctx.createOscillator(); pad2.type = 'triangle'; pad2.frequency.value = 329.63;  // E4
-  const pad3 = ctx.createOscillator(); pad3.type = 'sine';     pad3.frequency.value = 110;     // A2
-  pad1.connect(padLp); pad2.connect(padLp); pad3.connect(padLp);
-  pad1.start(); pad2.start(); pad3.start();
-
-  // Slow gentle LFO on pad gain for breathing motion.
-  const padLfo = ctx.createOscillator(); padLfo.type = 'sine'; padLfo.frequency.value = 0.08;
-  const padLfoGain = ctx.createGain(); padLfoGain.gain.value = 0.018;
-  padLfo.connect(padLfoGain); padLfoGain.connect(padGain.gain);
-  padLfo.start();
+  // Two voices a perfect 5th apart, each slightly detuned for warmth.
+  const pad1  = ctx.createOscillator(); pad1.type  = 'sine'; pad1.frequency.value  = 220;
+  const pad1b = ctx.createOscillator(); pad1b.type = 'sine'; pad1b.frequency.value = 220.5;
+  const pad2  = ctx.createOscillator(); pad2.type  = 'sine'; pad2.frequency.value  = 329.63;
+  const pad2b = ctx.createOscillator(); pad2b.type = 'sine'; pad2b.frequency.value = 330.4;
+  pad1.connect(padLp); pad1b.connect(padLp);
+  pad2.connect(padLp); pad2b.connect(padLp);
+  pad1.start(); pad1b.start(); pad2.start(); pad2b.start();
 
   // Pentatonic pluck scheduler — sparse, soft notes.
   const PENTA = [220, 261.63, 293.66, 329.63, 392.00, 440, 523.25, 587.33];
@@ -3071,20 +3070,23 @@ function startAmbient() {
   stressGain.gain.value = 0;
   stressGain.connect(master);
 
-  // Dissonant low drone: detuned saws at E1 + F1 (minor 2nd) + sine sub.
-  const drLp = ctx.createBiquadFilter(); drLp.type = 'lowpass'; drLp.frequency.value = 380;
-  const drGain = ctx.createGain(); drGain.gain.value = 0.16;
+  // Tense drone: triangles a tritone apart (A1 + Eb2 — unstable, anxious)
+  // run through a heavy lowpass. Triangles are softer than saws but the
+  // dissonant interval still feels uneasy — without buzzing.
+  const drLp = ctx.createBiquadFilter(); drLp.type = 'lowpass'; drLp.frequency.value = 320;
+  drLp.Q.value = 0.5;
+  const drGain = ctx.createGain(); drGain.gain.value = 0.08;
   drLp.connect(drGain); drGain.connect(stressGain);
 
-  const dr1 = ctx.createOscillator(); dr1.type = 'sawtooth'; dr1.frequency.value = 41.20;  // E1
-  const dr2 = ctx.createOscillator(); dr2.type = 'sawtooth'; dr2.frequency.value = 43.65;  // F1
-  const dr3 = ctx.createOscillator(); dr3.type = 'sine';     dr3.frequency.value = 82.41;  // E2
+  const dr1 = ctx.createOscillator(); dr1.type = 'triangle'; dr1.frequency.value = 55.00;  // A1
+  const dr2 = ctx.createOscillator(); dr2.type = 'triangle'; dr2.frequency.value = 77.78;  // Eb2 (tritone)
+  const dr3 = ctx.createOscillator(); dr3.type = 'sine';     dr3.frequency.value = 110;    // A2 sub
   dr1.connect(drLp); dr2.connect(drLp); dr3.connect(drLp);
   dr1.start(); dr2.start(); dr3.start();
 
   // Slow filter sweep makes the drone feel like it's breathing anxiously.
   const drLfo = ctx.createOscillator(); drLfo.type = 'sine'; drLfo.frequency.value = 0.13;
-  const drLfoGain = ctx.createGain(); drLfoGain.gain.value = 120;
+  const drLfoGain = ctx.createGain(); drLfoGain.gain.value = 60;
   drLfo.connect(drLfoGain); drLfoGain.connect(drLp.frequency);
   drLfo.start();
 
@@ -3099,10 +3101,10 @@ function startAmbient() {
         o.connect(g); g.connect(stressGain);
         const now = ctx.currentTime;
         g.gain.setValueAtTime(0, now);
-        g.gain.linearRampToValueAtTime(0.32, now + 0.02);
+        g.gain.linearRampToValueAtTime(0.18, now + 0.02);
         g.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
         g.gain.setValueAtTime(0.001, now + 0.22);
-        g.gain.linearRampToValueAtTime(0.22, now + 0.24);
+        g.gain.linearRampToValueAtTime(0.12, now + 0.24);
         g.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
         o.start(now); o.stop(now + 0.45);
       } catch (e) {}
@@ -3123,7 +3125,7 @@ function startAmbient() {
         o.connect(g); g.connect(stressGain);
         const now = ctx.currentTime;
         g.gain.setValueAtTime(0, now);
-        g.gain.linearRampToValueAtTime(0.045, now + 0.005);
+        g.gain.linearRampToValueAtTime(0.025, now + 0.005);
         g.gain.exponentialRampToValueAtTime(0.001, now + 1.6);
         o.start(now); o.stop(now + 1.7);
       } catch (e) {}
@@ -3132,12 +3134,12 @@ function startAmbient() {
   }
   scheduleBell();
 
-  // Fade master in.
+  // Fade master in. Conservative target — ambient sits well under SFX.
   const t0 = ctx.currentTime;
   master.gain.setValueAtTime(0, t0);
-  master.gain.linearRampToValueAtTime(0.55, t0 + 1.5);
+  master.gain.linearRampToValueAtTime(0.22, t0 + 1.5);
 
-  const allOscs = [pad1, pad2, pad3, padLfo, dr1, dr2, dr3, drLfo];
+  const allOscs = [pad1, pad1b, pad2, pad2b, dr1, dr2, dr3, drLfo];
 
   ambient = {
     master, cozyGain, stressGain,
