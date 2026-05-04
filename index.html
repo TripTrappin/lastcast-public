@@ -1986,91 +1986,184 @@ color: white;
 .cutscene-skip:active,
 .cutscene-next:active { transform: scale(0.95); }
 
-/* === PHONE: incoming call screen === */
-/* Sits on top of .phone-screen until answered. The phone opens to this
-   every time you pull it out. */
-.phone-call-screen {
+/* === Phone pocket: Boudreaux peeks through when stress is high === */
+.phone-pocket-screen {
+position: relative;
+overflow: hidden;
+}
+.phone-pocket-portrait {
 position: absolute; inset: 0;
-z-index: 5;
 display: none;
-flex-direction: column; align-items: center;
-gap: 8px;
-padding: 18px 12px 14px;
-background: linear-gradient(180deg, #1a0a14 0%, #060304 100%);
-text-align: center;
 }
-#phone-frame.calling .phone-call-screen { display: flex; }
-#phone-frame.calling .phone-app-bar,
-#phone-frame.calling .phone-tabs,
-#phone-frame.calling .phone-game { display: none; }
-#phone-frame.calling .dice-bottom-row { display: none; }
-.phone-call-status {
+.phone-pocket-portrait svg {
+display: block;
+width: 100%; height: 100%;
+}
+/* When stress is high, the pocket is shaking AND Boudreaux is on the screen. */
+.itch-high #phone-pocket .phone-pocket-portrait { display: block; }
+/* Drop the old red flicker on the inner screen since the portrait is
+   showing now. Keep the buzz on the outer body. */
+.itch-high #phone-pocket .phone-pocket-screen {
+background: #1a0a14;
+animation: none;
+}
+
+/* === Phone home screen: app icon grid === */
+.phone-app-screen {
+flex: 1;
+display: flex; flex-direction: column;
+min-height: 0;
+overflow: hidden;
+}
+.phone-home-grid {
+flex: 1;
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 14px;
+padding: 18px 18px;
+align-content: start;
+}
+.phone-app-icon {
+display: flex; flex-direction: column; align-items: center;
+gap: 4px;
+border: none;
+background: transparent;
+padding: 0;
+cursor: pointer;
+transition: transform 0.12s;
+}
+.phone-app-icon:active { transform: scale(0.92); }
+.app-icon-bg {
+width: 56px; height: 56px;
+border-radius: 14px;
+display: flex; align-items: center; justify-content: center;
+box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+.app-icon-bg svg { width: 36px; height: 36px; }
+.app-icon-bg.contacts {
+background: linear-gradient(180deg, #4a87d8 0%, #2a4a8a 100%);
+color: #fff;
+}
+.app-icon-bg.gambia {
+background: linear-gradient(180deg, #d83a4a 0%, #8a1820 100%);
+color: #fff;
+}
+.app-icon-name {
 font-family: 'Baloo 2', cursive;
-font-size: 11px; font-weight: 800;
-letter-spacing: 1.6px;
+font-size: 10px; font-weight: 700;
+color: #fde898;
+letter-spacing: 0.4px;
+text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+}
+
+/* === In-app nav bar === */
+.phone-nav {
+display: flex; align-items: center;
+gap: 6px;
+padding: 6px 10px 8px;
+border-bottom: 1px solid rgba(255,255,255,0.08);
+flex-shrink: 0;
+}
+.phone-nav-back {
+width: 26px; height: 26px;
+border-radius: 50%;
+border: none;
+background: rgba(255,255,255,0.08);
+color: #fde898;
+font-size: 18px; font-weight: 800;
+line-height: 1;
+display: flex; align-items: center; justify-content: center;
+cursor: pointer;
+}
+.phone-nav-back:active { transform: scale(0.92); }
+.phone-nav-title {
+font-family: 'Baloo 2', cursive;
+font-size: 12px; font-weight: 800;
+letter-spacing: 1.4px;
 text-transform: uppercase;
-color: #6fb069;
-animation: callPulse 1.4s ease-in-out infinite;
+color: #ff8a60;
 }
-@keyframes callPulse {
-0%, 100% { opacity: 0.55; }
-50%      { opacity: 1; }
+
+/* === Contacts app === */
+.contacts-body {
+gap: 14px;
 }
-.phone-call-portrait {
-width: 140px; height: 140px;
+.contact-card {
+display: flex; align-items: center; gap: 12px;
+padding: 12px;
+border-radius: 12px;
+background: rgba(20, 10, 18, 0.5);
+border: 1px solid rgba(255,232,212,0.18);
+}
+.contact-portrait {
+width: 56px; height: 56px;
 border-radius: 50%;
 overflow: hidden;
-border: 3px solid #2a1808;
-box-shadow: 0 0 0 0 rgba(255, 90, 74, 0.55);
-animation: callRing 1.6s ease-out infinite;
+border: 2px solid #2a1808;
+flex-shrink: 0;
 }
-.phone-call-portrait svg {
+.contact-portrait svg {
 display: block;
 width: 100%; height: 100%;
 image-rendering: pixelated;
 }
-@keyframes callRing {
-0%   { box-shadow: 0 0 0 0 rgba(255, 90, 74, 0.55); }
-70%  { box-shadow: 0 0 0 18px rgba(255, 90, 74, 0); }
-100% { box-shadow: 0 0 0 0 rgba(255, 90, 74, 0); }
-}
-.phone-call-name {
+.contact-text { display: flex; flex-direction: column; gap: 2px; }
+.contact-name {
 font-family: 'Baloo 2', cursive;
-font-size: 22px; font-weight: 800;
+font-size: 16px; font-weight: 800;
 color: var(--text);
-letter-spacing: 0.5px;
 }
-.phone-call-sub {
+.contact-sub {
 font-family: 'Baloo 2', cursive;
-font-size: 11px; font-weight: 600;
-letter-spacing: 0.5px;
+font-size: 10px; font-weight: 600;
+letter-spacing: 0.4px;
 color: var(--text-dim);
 }
-.phone-call-actions {
-display: flex; gap: 36px;
-margin-top: auto;
-margin-bottom: 6px;
+.contact-actions {
+display: flex; flex-direction: column; gap: 8px;
+margin-top: 4px;
 }
-.phone-call-decline,
-.phone-call-answer {
-width: 52px; height: 52px;
-border-radius: 50%;
-border: none;
-font-size: 22px;
-font-weight: 800;
-cursor: pointer;
-display: flex; align-items: center; justify-content: center;
+.contact-coins-row {
+display: flex; justify-content: space-between; align-items: baseline;
+padding: 8px 12px;
+border-radius: 10px;
+background: rgba(255, 213, 79, 0.08);
+border: 1px solid rgba(255, 213, 79, 0.3);
+}
+.contact-coins-label {
+font-family: 'Baloo 2', cursive;
+font-size: 11px; font-weight: 700;
+letter-spacing: 0.6px;
+text-transform: uppercase;
+color: var(--text-dim);
+}
+.contact-coins-val {
+font-family: 'Baloo 2', cursive;
+font-size: 18px; font-weight: 800;
+color: var(--gold);
+}
+.contact-pay-btn {
+height: 44px;
+border-radius: 999px;
+border: 1px solid rgba(255,140,80,0.7);
+background: linear-gradient(180deg, #ff7f50 0%, #c8362a 100%);
 color: #fff;
-box-shadow: 0 4px 8px rgba(0,0,0,0.55);
+font-family: 'Baloo 2', cursive;
+font-size: 14px; font-weight: 800;
+letter-spacing: 1.4px;
+text-transform: uppercase;
+cursor: pointer;
+box-shadow: 0 3px 0 rgba(0,0,0,0.5);
 transition: transform 0.12s;
 }
-.phone-call-decline { background: #c8261c; }
-.phone-call-answer  { background: #28a14a; animation: answerNudge 1.6s ease-in-out infinite; }
-.phone-call-decline:active,
-.phone-call-answer:active { transform: scale(0.92); }
-@keyframes answerNudge {
-0%, 100% { transform: translateY(0); }
-50%      { transform: translateY(-3px); }
+.contact-pay-btn:active { transform: translateY(1px); box-shadow: 0 2px 0 rgba(0,0,0,0.5); }
+.contact-hint {
+text-align: center;
+font-family: 'Baloo 2', cursive;
+font-size: 11px; font-weight: 600;
+color: var(--text-dim);
+font-style: italic;
+min-height: 14px;
 }
 
 </style>
@@ -2165,7 +2258,9 @@ transition: transform 0.12s;
 <!-- Phone (pixel smartphone in the fisherman's pocket) -->
 <div id="phone-pocket" onclick="openPhone()" aria-label="Open phone">
   <div class="phone-pocket-body">
-    <div class="phone-pocket-screen"></div>
+    <div class="phone-pocket-screen">
+      <div class="phone-pocket-portrait" id="phone-pocket-portrait"></div>
+    </div>
     <div class="phone-pocket-cam"></div>
   </div>
   <div class="phone-pocket-label">PHONE</div>
@@ -2176,23 +2271,65 @@ transition: transform 0.12s;
   <div id="phone-frame">
     <div class="phone-speaker"></div>
     <div class="phone-cam"></div>
-    <div class="phone-screen">
-      <div class="phone-call-screen" id="phone-call-screen">
-        <div class="phone-call-status">Incoming Call</div>
-        <div class="phone-call-portrait" id="phone-call-portrait"></div>
-        <div class="phone-call-name">Boudreaux</div>
-        <div class="phone-call-sub">Mobile · Tap to answer</div>
-        <div class="phone-call-actions">
-          <button class="phone-call-decline" onclick="closePhone()" aria-label="Decline">✕</button>
-          <button class="phone-call-answer" onclick="answerPhoneCall()" aria-label="Answer">✓</button>
-        </div>
-      </div>
+    <div class="phone-screen" id="phone-screen">
+
+      <!-- Status bar (always visible) -->
       <div class="phone-app-bar">
         <span class="phone-app-time" id="phone-app-time">9:41</span>
-        <span class="phone-app-name">BAYOU DICE</span>
+        <span class="phone-app-name" id="phone-app-name">HOME</span>
         <span class="phone-app-battery">12%</span>
       </div>
-      <div class="phone-app-body">
+
+      <!-- HOME screen: app icon grid -->
+      <div class="phone-app-screen home" data-app="home">
+        <div class="phone-home-grid">
+          <button class="phone-app-icon" onclick="setPhoneApp('contacts')">
+            <div class="app-icon-bg contacts">
+              <svg viewBox="0 0 32 32" fill="currentColor"><circle cx="16" cy="11" r="5"/><path d="M5 28 Q5 18 16 18 Q27 18 27 28 Z"/></svg>
+            </div>
+            <div class="app-icon-name">Contacts</div>
+          </button>
+          <button class="phone-app-icon" onclick="setPhoneApp('gambia')">
+            <div class="app-icon-bg gambia">
+              <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="15" r="1.5" fill="currentColor"/><rect x="13" y="13" width="14" height="14" rx="2"/><circle cx="17" cy="17" r="1.5" fill="currentColor"/><circle cx="23" cy="23" r="1.5" fill="currentColor"/></svg>
+            </div>
+            <div class="app-icon-name">Gambia</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- CONTACTS app -->
+      <div class="phone-app-screen" data-app="contacts" style="display:none">
+        <div class="phone-nav">
+          <button class="phone-nav-back" onclick="setPhoneApp('home')" aria-label="Back">‹</button>
+          <span class="phone-nav-title">Contacts</span>
+        </div>
+        <div class="phone-app-body contacts-body">
+          <div class="contact-card">
+            <div class="contact-portrait" id="contact-boudreaux-portrait"></div>
+            <div class="contact-text">
+              <div class="contact-name">Boudreaux</div>
+              <div class="contact-sub">Loan Shark · Mobile</div>
+            </div>
+          </div>
+          <div class="contact-actions">
+            <div class="contact-coins-row">
+              <span class="contact-coins-label">In Wallet</span>
+              <span class="contact-coins-val" id="contact-coins-val">0</span>
+            </div>
+            <button class="contact-pay-btn" onclick="payBoudreaux()">Pay Boudreaux</button>
+            <div class="contact-hint" id="contact-pay-hint"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GAMBIA app -->
+      <div class="phone-app-screen" data-app="gambia" style="display:none">
+        <div class="phone-nav">
+          <button class="phone-nav-back" onclick="setPhoneApp('home')" aria-label="Back">‹</button>
+          <span class="phone-nav-title">Gambia</span>
+        </div>
+        <div class="phone-app-body">
         <div class="phone-tabs">
           <button class="phone-tab active" data-game="craps" onclick="setPhoneGame('craps')">Craps</button>
           <button class="phone-tab" data-game="bj" onclick="setPhoneGame('bj')">Blackjack</button>
@@ -2244,14 +2381,15 @@ transition: transform 0.12s;
           </div>
         </div>
 
-        <!-- Shared coins / owed / pay row -->
+        <!-- Coins readout (Pay Boudreaux moved to the Contacts app) -->
         <div class="dice-bottom-row">
           <span class="dice-coins-line">Coins <span class="dice-num" id="dice-coins">0</span></span>
-          <button class="dice-pay-btn" onclick="payBoudreaux()">Pay Boudreaux</button>
         </div>
-      </div>
+        </div><!-- /phone-app-body -->
+      </div><!-- /gambia app -->
+
     </div>
-    <div class="phone-home-btn" onclick="closePhone()" aria-label="Close phone"></div>
+    <div class="phone-home-btn" onclick="phoneHomeButton()" aria-label="Home"></div>
   </div>
 </div>
 
@@ -5054,6 +5192,16 @@ function updateGamblingUI() {
     app.classList.toggle('itch-very-high', itch >= 90);
   }
 
+  // Keep the contacts app's wallet readout in sync with current coins.
+  const cv = document.getElementById('contact-coins-val');
+  if (cv) cv.textContent = coins;
+  const hint = document.getElementById('contact-pay-hint');
+  if (hint) {
+    if (coins <= 0) hint.textContent = "Nothing to give him.";
+    else if (debt <= 0) hint.textContent = "He's been paid in full.";
+    else hint.textContent = "";
+  }
+
   // Cast prompt - shows whenever the day timer is paused waiting for the
   // player's first cast of the day. Only relevant on the fishing screen.
   const cp = document.getElementById('cast-prompt');
@@ -5093,33 +5241,72 @@ document.addEventListener('DOMContentLoaded', () => {
 // tap outside the frame or the home button to put it away. Inside
 // the phone is the dice game.
 // ============================================================
+// Track which app the phone is currently on.
+let phoneApp = 'home';
+
+function setPhoneApp(app) {
+  phoneApp = app;
+  document.querySelectorAll('#phone-screen .phone-app-screen').forEach(el => {
+    el.style.display = (el.dataset.app === app) ? '' : 'none';
+  });
+  // Status bar label tracks the current app.
+  const label = document.getElementById('phone-app-name');
+  if (label) {
+    label.textContent = app === 'home' ? 'HOME'
+                      : app === 'contacts' ? 'CONTACTS'
+                      : app === 'gambia' ? 'GAMBIA'
+                      : app.toUpperCase();
+  }
+  if (app === 'contacts') refreshContactsApp();
+  sfxButtonClick();
+}
+
+function phoneHomeButton() {
+  // Home button = go to home screen if in an app, else close the phone.
+  if (phoneApp !== 'home') {
+    setPhoneApp('home');
+  } else {
+    closePhone();
+  }
+}
+
+function refreshContactsApp() {
+  const v = document.getElementById('contact-coins-val');
+  if (v) v.textContent = coins;
+  const hint = document.getElementById('contact-pay-hint');
+  if (hint) {
+    if (coins <= 0) hint.textContent = "Nothing to give him.";
+    else if (debt <= 0) hint.textContent = "He's been paid in full.";
+    else hint.textContent = "";
+  }
+}
+
+function paintPhonePortraits() {
+  // Inject Boudreaux's portrait into both the pocket window and the
+  // contacts card. Run once on DOMContentLoaded; cheap to re-run.
+  if (typeof BOUDREAUX_PORTRAIT !== 'string') return;
+  const pocket = document.getElementById('phone-pocket-portrait');
+  if (pocket && !pocket.innerHTML) pocket.innerHTML = BOUDREAUX_PORTRAIT;
+  const contact = document.getElementById('contact-boudreaux-portrait');
+  if (contact && !contact.innerHTML) contact.innerHTML = BOUDREAUX_PORTRAIT;
+}
+document.addEventListener('DOMContentLoaded', paintPhonePortraits);
+
 function openPhone() {
   sfxButtonClick();
+  paintPhonePortraits();
   refreshDiceScreen();
   resetCrapsRound();
   bjReset();
   setPhoneGame(phoneGame || 'craps');
-  // Boudreaux is always calling. Open to the incoming-call screen.
-  const frame = document.getElementById('phone-frame');
-  const port  = document.getElementById('phone-call-portrait');
-  if (frame) frame.classList.add('calling');
-  if (port && typeof BOUDREAUX_PORTRAIT === 'string') port.innerHTML = BOUDREAUX_PORTRAIT;
+  setPhoneApp('home');
   const overlay = document.getElementById('phone-overlay');
   if (overlay) overlay.classList.add('show');
-}
-
-function answerPhoneCall() {
-  sfxButtonClick();
-  const frame = document.getElementById('phone-frame');
-  if (frame) frame.classList.remove('calling');
 }
 function closePhone() {
   sfxButtonClick();
   const overlay = document.getElementById('phone-overlay');
   if (overlay) overlay.classList.remove('show');
-  // Reset call state so next open starts on the incoming-call screen again.
-  const frame = document.getElementById('phone-frame');
-  if (frame) frame.classList.remove('calling');
 }
 
 // ============================================================
