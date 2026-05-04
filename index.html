@@ -3686,11 +3686,13 @@ function startReeling() {
   hitsLanded = 0; perfectHits = 0; combo = 0; maxCombo = 0; tension = 0;
   markerPos = 0; markerDirection = 1;
   // Apply equipped rod's marker speed multiplier (higher mult = slower marker = easier).
-  // Then apply the itch penalty: shaking hands at high itch make the marker harder to time.
+  // Then apply the stress penalty - unless the drink is steadying the hands.
   const rod = getRod(equippedRodId);
   markerSpeed = 100 / (activeFish.markerSpeed * rod.markerSpeedMult / 50);
-  if (itch >= 95)      markerSpeed *= 1.9;   // hands genuinely shaking
-  else if (itch >= 85) markerSpeed *= 1.5;   // jittery
+  if (!isDrinkActive()) {
+    if (itch >= 95)      markerSpeed *= 1.9;
+    else if (itch >= 85) markerSpeed *= 1.5;
+  }
   buildHitZones();
   updateMarker(); updateProgress(); updateCombo();
   $('reel-fish-name').textContent = activeFish.name;
@@ -3700,11 +3702,13 @@ function startReeling() {
 
 function buildHitZones() {
   const rod = getRod(equippedRodId);
-  // Apply rod's hit zone multiplier - bigger = easier. Then apply itch penalty
-  // (shrink the zone when the fisherman can't focus).
+  // Apply rod's hit zone multiplier - bigger = easier. Stress penalty
+  // shrinks the zone, unless the drink is dampening it.
   let zoneMult = rod.hitZoneMult;
-  if (itch >= 95)      zoneMult *= 0.55;
-  else if (itch >= 85) zoneMult *= 0.7;
+  if (!isDrinkActive()) {
+    if (itch >= 95)      zoneMult *= 0.55;
+    else if (itch >= 85) zoneMult *= 0.7;
+  }
   const zoneSize = Math.min(activeFish.hitZone * zoneMult, 80);
   const minStart = 10, maxStart = 100 - zoneSize - 10;
   hitZoneStart = minStart + Math.random() * Math.max(0, maxStart - minStart);
@@ -3732,11 +3736,13 @@ function reelTick() {
   if (markerPos <= 0) { markerPos = 0; markerDirection = 1; }
   updateMarker();
   // Apply rod tensionRate multiplier - lower = grows slower = more forgiving.
-  // Itch penalty: line tension climbs faster when the player is twitchy.
+  // Stress penalty: tension climbs faster, unless the drink is dampening it.
   const rod = getRod(equippedRodId);
   let itchTension = 1;
-  if (itch >= 95)      itchTension = 1.6;
-  else if (itch >= 85) itchTension = 1.3;
+  if (!isDrinkActive()) {
+    if (itch >= 95)      itchTension = 1.6;
+    else if (itch >= 85) itchTension = 1.3;
+  }
   tension += 0.15 * rod.tensionRate * itchTension;
   if (tension >= 100) { lineSnap(); return; }
   updateProgress();
@@ -4009,7 +4015,7 @@ const POWERUPS = [
     id: 'stiff_drink',
     name: 'Stiff Drink',
     cost: 150,
-    description: 'When the stress is bad, takes the edge off for 60 seconds. Auto-pours when you need it most.',
+    description: 'When stress is sky-high, steadies your hands at the rod for 60 seconds. Skips the shaking penalty.',
   },
   {
     id: 'rabbit_foot',
@@ -4570,16 +4576,16 @@ function tickGambling() {
     updateGamblingUI();
     return;
   }
-  // Stiff Drink: when the itch crosses the danger zone, auto-pop a charge
-  // for 60s of slowed itch growth.
+  // Stress is now derived from quota progress in updateGamblingUI(); no
+  // passive growth here. Stiff Drink still auto-fires when stress is
+  // high, but its effect is to dampen the reeling penalty (see
+  // startReeling/buildHitZones/reelTick) rather than slow growth.
   if (itch >= 80 && !isDrinkActive() && powerupCharges('stiff_drink') > 0) {
     if (consumePowerup('stiff_drink')) {
       stiffDrinkActiveUntilMs = Date.now() + 60000;
-      showPowerupToast('🥃', "Drink takes the edge off.");
+      showPowerupToast('🥃', "Drink steadies your hands.");
     }
   }
-  const itchRate = isDrinkActive() ? ITCH_PER_SEC * 0.7 : ITCH_PER_SEC;
-  itch = Math.min(ITCH_MAX, itch + itchRate);
 
   // Time Stretcher: when less than 2 in-game hours remain with the quota
   // unmet, push the clock back HALF a day (12 in-game hours).
@@ -4922,11 +4928,21 @@ function fmtTime(ms) {
 }
 
 function bumpItchOnCast() {
-  itch = Math.min(ITCH_MAX, itch + ITCH_PER_CAST);
+  // Stress is derived from quota progress, so casting doesn't bump it.
+  // Kept around because it's still called from the cast site and may
+  // grow other behaviours later.
   updateGamblingUI();
 }
 
 function updateGamblingUI() {
+  // Derive stress from how close the player is to today's quota. dayPaid
+  // is locked in; coins on hand also count because the player could pay
+  // them this instant. At or beyond quota: 0 stress. At nothing: 100.
+  const quota = currentQuota();
+  const effectivePaid = dayPaid + coins;
+  const progress = Math.min(1, Math.max(0, effectivePaid / Math.max(1, quota)));
+  itch = (1 - progress) * 100;
+
   const fill = document.getElementById('stat-itch-fill');
   if (fill) fill.style.width = (itch / ITCH_MAX * 100) + '%';
   const debtEl = document.getElementById('stat-debt');
@@ -5147,7 +5163,8 @@ function bjDeal() {
   betEl.value = bet;
   coins -= bet;
   bjBet = bet;
-  itch = 0;  // any single bet fully resets the itch
+  // Stress is derived; placing the bet already dropped coins, so
+  // updateGamblingUI() picks up the new value without an explicit reset.
   updateStats();
   updateGamblingUI();
 
@@ -5316,7 +5333,8 @@ function rollCraps() {
     }
   }
 
-  itch = 0;  // any single bet fully resets the itch
+  // Stress is derived from coin position; placing the bet already dropped
+  // coins, so updateGamblingUI() reflects the new value.
   updateStats();
   updateGamblingUI();
 
