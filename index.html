@@ -4207,6 +4207,13 @@ function cycleBait() {
 }
 
 function updateBaitDisplay() {
+  const selector = document.getElementById('bait-selector');
+  // Hide the entire bait selector until the player owns at least one
+  // non-worm bait. Worms are infinite and the only option until then,
+  // so the UI just adds noise.
+  const hasPurchasedBait = BAITS.some(b => b.id !== 'worms' && (baitInventory[b.id] || 0) > 0);
+  if (selector) selector.style.display = hasPurchasedBait ? '' : 'none';
+  if (!hasPurchasedBait) return;
   const bait = getBait(selectedBaitId);
   const countEl = document.getElementById('bait-count');
   const nameEl = document.getElementById('bait-current');
