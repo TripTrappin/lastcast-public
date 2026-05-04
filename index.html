@@ -3820,7 +3820,7 @@ function updateStats() {
 const ITCH_MAX = 100;
 const ITCH_PER_SEC = 1;        // passive growth per real-time second
 const ITCH_PER_CAST = 4;       // bumps per cast
-const ITCH_DRAIN_PER_ROLL = 25;// each dice roll relieves itch
+const ITCH_DRAIN_PER_ROLL = 25;// (legacy) - itch now fully resets to 0 on any bet
 
 // Day / quota system. 11 daily quotas, each day's goal is *double*
 // the previous (250, 500, 1k, 2k, 4k, ... 256k). Cumulative across
@@ -4820,7 +4820,7 @@ function bjDeal() {
   betEl.value = bet;
   coins -= bet;
   bjBet = bet;
-  itch = Math.max(0, itch - ITCH_DRAIN_PER_ROLL);
+  itch = 0;  // any single bet fully resets the itch
   updateStats();
   updateGamblingUI();
 
@@ -4989,7 +4989,7 @@ function rollCraps() {
     }
   }
 
-  itch = Math.max(0, itch - ITCH_DRAIN_PER_ROLL);
+  itch = 0;  // any single bet fully resets the itch
   updateStats();
   updateGamblingUI();
 
