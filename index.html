@@ -3014,131 +3014,188 @@ function startAmbient() {
   master.gain.value = 0;
   master.connect(ctx.destination);
 
-  // ---------- COZY LAYER ----------
+  // ---------- COZY LAYER (soft piano) ----------
+  // No continuous pad — sparse piano-like notes only. Silence between
+  // notes lets the player's environment breathe through and means there's
+  // no sustained tone that could ever sound buzzy.
   const cozyGain = ctx.createGain();
   cozyGain.gain.value = 1;
   cozyGain.connect(master);
 
-  // Warm pad: pure sines only, slight detune for chorus warmth.
-  // Heavy lowpass keeps it dark and round — no harmonic buzz.
-  const padLp = ctx.createBiquadFilter();
-  padLp.type = 'lowpass';
-  padLp.frequency.value = 700;
-  padLp.Q.value = 0.5;
-  const padGain = ctx.createGain();
-  padGain.gain.value = 0.06;
-  padLp.connect(padGain); padGain.connect(cozyGain);
+  // Warm tilt for the whole cozy bus.
+  const cozyLp = ctx.createBiquadFilter();
+  cozyLp.type = 'lowpass';
+  cozyLp.frequency.value = 2400;
+  cozyLp.Q.value = 0.5;
+  cozyLp.connect(cozyGain);
 
-  // Two voices a perfect 5th apart, each slightly detuned for warmth.
-  const pad1  = ctx.createOscillator(); pad1.type  = 'sine'; pad1.frequency.value  = 220;
-  const pad1b = ctx.createOscillator(); pad1b.type = 'sine'; pad1b.frequency.value = 220.5;
-  const pad2  = ctx.createOscillator(); pad2.type  = 'sine'; pad2.frequency.value  = 329.63;
-  const pad2b = ctx.createOscillator(); pad2b.type = 'sine'; pad2b.frequency.value = 330.4;
-  pad1.connect(padLp); pad1b.connect(padLp);
-  pad2.connect(padLp); pad2b.connect(padLp);
-  pad1.start(); pad1b.start(); pad2.start(); pad2b.start();
-
-  // Pentatonic pluck scheduler — sparse, soft notes.
-  const PENTA = [220, 261.63, 293.66, 329.63, 392.00, 440, 523.25, 587.33];
   let alive = true;
-  function scheduleCozyPluck() {
+
+  // Piano note via additive synthesis: fundamental + harmonics with slight
+  // inharmonicity, all sharing one piano-shaped envelope (fast attack,
+  // slow exponential decay).
+  function playPianoNote(freq, vol, dur) {
+    if (!alive || isMuted) return;
+    try {
+      const now = ctx.currentTime;
+      const env = ctx.createGain();
+      env.gain.setValueAtTime(0, now);
+      env.gain.linearRampToValueAtTime(vol, now + 0.008);
+      env.gain.exponentialRampToValueAtTime(0.001, now + dur);
+      env.connect(cozyLp);
+
+      const harmonics = [
+        [1.0,    1.00],
+        [2.0,    0.42],
+        [3.0,    0.16],
+        [4.02,   0.06],   // slight inharmonicity for realism
+        [5.97,   0.025],
+      ];
+      for (const [mult, weight] of harmonics) {
+        const o = ctx.createOscillator();
+        o.type = 'sine';
+        o.frequency.value = freq * mult;
+        const g = ctx.createGain();
+        g.gain.value = weight;
+        o.connect(g); g.connect(env);
+        o.start(now); o.stop(now + dur + 0.1);
+      }
+    } catch (e) {}
+  }
+
+  // A-minor pentatonic across two octaves — gentle, never grating.
+  const COZY_NOTES = [
+    164.81,  // E3
+    196.00,  // G3
+    220.00,  // A3
+    261.63,  // C4
+    293.66,  // D4
+    329.63,  // E4
+    392.00,  // G4
+    440.00,  // A4
+  ];
+
+  function scheduleCozyNote() {
     if (!alive) return;
     setTimeout(() => {
       if (!alive) return;
       if (!isMuted) {
-        try {
-          const o = ctx.createOscillator();
-          o.type = 'sine';
-          o.frequency.value = PENTA[Math.floor(Math.random() * PENTA.length)];
-          const g = ctx.createGain(); g.gain.value = 0;
-          o.connect(g); g.connect(cozyGain);
-          const now = ctx.currentTime;
-          g.gain.setValueAtTime(0, now);
-          g.gain.linearRampToValueAtTime(0.045, now + 0.025);
-          g.gain.exponentialRampToValueAtTime(0.001, now + 1.0);
-          o.start(now); o.stop(now + 1.1);
-        } catch (e) {}
+        const freq = COZY_NOTES[Math.floor(Math.random() * COZY_NOTES.length)];
+        playPianoNote(freq, 0.12 + Math.random() * 0.05, 2.2);
       }
-      scheduleCozyPluck();
-    }, 2800 + Math.random() * 4500);
+      scheduleCozyNote();
+    }, 2400 + Math.random() * 3000);
   }
-  scheduleCozyPluck();
+  scheduleCozyNote();
+
+  // Occasional low bass note for grounding.
+  function scheduleCozyBass() {
+    if (!alive) return;
+    setTimeout(() => {
+      if (!alive) return;
+      if (!isMuted) {
+        const bassNotes = [110, 130.81, 146.83];  // A2, C3, D3
+        playPianoNote(bassNotes[Math.floor(Math.random() * bassNotes.length)], 0.10, 3.2);
+      }
+      scheduleCozyBass();
+    }, 7000 + Math.random() * 6000);
+  }
+  scheduleCozyBass();
 
   // ---------- STRESSFUL LAYER ----------
   const stressGain = ctx.createGain();
   stressGain.gain.value = 0;
   stressGain.connect(master);
 
-  // Tense drone: triangles a tritone apart (A1 + Eb2 — unstable, anxious)
-  // run through a heavy lowpass. Triangles are softer than saws but the
-  // dissonant interval still feels uneasy — without buzzing.
-  const drLp = ctx.createBiquadFilter(); drLp.type = 'lowpass'; drLp.frequency.value = 320;
-  drLp.Q.value = 0.5;
-  const drGain = ctx.createGain(); drGain.gain.value = 0.08;
-  drLp.connect(drGain); drGain.connect(stressGain);
+  // Menacing low drone via FM synthesis: sine carrier modulated by another
+  // sine creates a slowly shifting harmonic spectrum without the harshness
+  // of raw saw/square waves.
+  const drLp = ctx.createBiquadFilter();
+  drLp.type = 'lowpass';
+  drLp.frequency.value = 320;
+  drLp.Q.value = 0.7;
+  const drBus = ctx.createGain(); drBus.gain.value = 0.22;
+  drLp.connect(drBus); drBus.connect(stressGain);
 
-  const dr1 = ctx.createOscillator(); dr1.type = 'triangle'; dr1.frequency.value = 55.00;  // A1
-  const dr2 = ctx.createOscillator(); dr2.type = 'triangle'; dr2.frequency.value = 77.78;  // Eb2 (tritone)
-  const dr3 = ctx.createOscillator(); dr3.type = 'sine';     dr3.frequency.value = 110;    // A2 sub
-  dr1.connect(drLp); dr2.connect(drLp); dr3.connect(drLp);
-  dr1.start(); dr2.start(); dr3.start();
+  const carrier = ctx.createOscillator();
+  carrier.type = 'sine';
+  carrier.frequency.value = 55;            // A1
 
-  // Slow filter sweep makes the drone feel like it's breathing anxiously.
-  const drLfo = ctx.createOscillator(); drLfo.type = 'sine'; drLfo.frequency.value = 0.13;
-  const drLfoGain = ctx.createGain(); drLfoGain.gain.value = 60;
+  const fmOsc = ctx.createOscillator();
+  fmOsc.type = 'sine';
+  fmOsc.frequency.value = 77.78;           // tritone above carrier
+  const fmAmount = ctx.createGain();
+  fmAmount.gain.value = 30;                // modulation depth
+  fmOsc.connect(fmAmount); fmAmount.connect(carrier.frequency);
+  carrier.connect(drLp);
+  carrier.start(); fmOsc.start();
+
+  // Slow filter LFO — anxious breathing.
+  const drLfo = ctx.createOscillator();
+  drLfo.type = 'sine';
+  drLfo.frequency.value = 0.18;
+  const drLfoGain = ctx.createGain();
+  drLfoGain.gain.value = 90;
   drLfo.connect(drLfoGain); drLfoGain.connect(drLp.frequency);
   drLfo.start();
 
-  // Heartbeat pulse — ~85 BPM, double-thump pattern.
+  // Faster heartbeat — ~100 BPM, urgent.
   function scheduleHeartbeat() {
     if (!alive) return;
     if (!isMuted) {
       try {
         const o = ctx.createOscillator();
-        o.type = 'sine'; o.frequency.value = 55;
+        o.type = 'sine'; o.frequency.value = 50;
         const g = ctx.createGain(); g.gain.value = 0;
         o.connect(g); g.connect(stressGain);
         const now = ctx.currentTime;
         g.gain.setValueAtTime(0, now);
-        g.gain.linearRampToValueAtTime(0.18, now + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-        g.gain.setValueAtTime(0.001, now + 0.22);
-        g.gain.linearRampToValueAtTime(0.12, now + 0.24);
-        g.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-        o.start(now); o.stop(now + 0.45);
+        g.gain.linearRampToValueAtTime(0.28, now + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+        g.gain.setValueAtTime(0.001, now + 0.20);
+        g.gain.linearRampToValueAtTime(0.18, now + 0.215);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+        o.start(now); o.stop(now + 0.4);
       } catch (e) {}
     }
-    setTimeout(scheduleHeartbeat, 720);
+    setTimeout(scheduleHeartbeat, 600);
   }
   scheduleHeartbeat();
 
-  // Sparse anxious bell — high dissonant ping every 6-12s.
-  function scheduleBell() {
+  // Dissonant stab — minor 2nd interval played percussively, every 5-9s.
+  function scheduleStab() {
     if (!alive) return;
     if (!isMuted) {
       try {
-        const o = ctx.createOscillator();
-        o.type = 'sine';
-        o.frequency.value = 1100 + Math.random() * 350;
-        const g = ctx.createGain(); g.gain.value = 0;
-        o.connect(g); g.connect(stressGain);
         const now = ctx.currentTime;
-        g.gain.setValueAtTime(0, now);
-        g.gain.linearRampToValueAtTime(0.025, now + 0.005);
-        g.gain.exponentialRampToValueAtTime(0.001, now + 1.6);
-        o.start(now); o.stop(now + 1.7);
+        const env = ctx.createGain();
+        env.gain.setValueAtTime(0, now);
+        env.gain.linearRampToValueAtTime(0.10, now + 0.008);
+        env.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+        env.connect(stressGain);
+
+        // Random root in low/mid octave + minor 2nd above for dissonance.
+        const roots = [220, 261.63, 293.66, 329.63];
+        const root = roots[Math.floor(Math.random() * roots.length)];
+        [root, root * 1.0595].forEach(f => {
+          const o = ctx.createOscillator();
+          o.type = 'triangle';
+          o.frequency.value = f;
+          o.connect(env);
+          o.start(now); o.stop(now + 0.65);
+        });
       } catch (e) {}
     }
-    setTimeout(scheduleBell, 6000 + Math.random() * 6000);
+    setTimeout(scheduleStab, 5000 + Math.random() * 4000);
   }
-  scheduleBell();
+  scheduleStab();
 
-  // Fade master in. Audible but well below SFX.
+  // Fade master in.
   const t0 = ctx.currentTime;
   master.gain.setValueAtTime(0, t0);
-  master.gain.linearRampToValueAtTime(0.6, t0 + 1.5);
+  master.gain.linearRampToValueAtTime(0.7, t0 + 1.5);
 
-  const allOscs = [pad1, pad1b, pad2, pad2b, dr1, dr2, dr3, drLfo];
+  const allOscs = [carrier, fmOsc, drLfo];
 
   ambient = {
     master, cozyGain, stressGain,
