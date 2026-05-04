@@ -1892,6 +1892,23 @@ filter: drop-shadow(0 0 4px rgba(255, 213, 79, 0.9));
   50%      { box-shadow: 0 4px 14px rgba(0,0,0,0.55), 0 0 0 4px rgba(255,213,79,0.18); }
 }
 
+/* Powerup row: dimmed when you can't afford it, with a warning-red Buy button. */
+.shop-item.cant-afford {
+opacity: 0.55;
+filter: grayscale(0.45);
+}
+.shop-item.cant-afford .shop-item-name,
+.shop-item.cant-afford .shop-item-desc {
+color: rgba(255,232,212,0.55);
+}
+.shop-item.cant-afford .shop-buy-btn,
+.shop-item.cant-afford .shop-buy-btn:disabled {
+background: rgba(178, 42, 36, 0.85);
+border-color: rgba(255, 110, 90, 0.6);
+color: rgba(255, 220, 220, 0.92);
+cursor: not-allowed;
+}
+
 </style>
 </head>
 <body>
@@ -4044,7 +4061,7 @@ function renderPowerupsShop(scroll) {
     const canAfford = coins >= item.cost;
 
     const row = document.createElement('div');
-    row.className = 'shop-item';
+    row.className = 'shop-item' + (canAfford ? '' : ' cant-afford');
 
     const icon = document.createElement('div');
     icon.className = 'shop-item-icon';
