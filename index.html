@@ -1782,25 +1782,26 @@ animation: dayFlash 0.9s ease-out;
 /* === TEXT NOTIFICATION (incoming-message banner) === */
 .text-notification {
 position: absolute;
-bottom: 244px;
-right: 12px;
-max-width: 188px;
+bottom: 92px;
+left: 50%;
+max-width: 240px;
+width: max-content;
 display: flex; align-items: center; gap: 6px;
-padding: 5px 7px;
+padding: 5px 8px;
 background: rgba(20, 10, 18, 0.96);
 border: 1px solid rgba(255,232,212,0.25);
 border-radius: 10px;
 box-shadow: 0 4px 12px rgba(0,0,0,0.55);
 z-index: 30;
 cursor: pointer;
-transform: translateX(120%);
+transform: translate(-50%, 140%);
 opacity: 0;
 pointer-events: none;
 transition: transform 0.4s cubic-bezier(0.2, 0.85, 0.25, 1.05),
             opacity 0.25s;
 }
 .text-notification.show {
-transform: translateX(0);
+transform: translate(-50%, 0);
 opacity: 1;
 pointer-events: all;
 }
