@@ -4886,13 +4886,13 @@ function reelEarly() {
   activeFish = null;
 }
 
-// Smooth stress factor 0..1 derived from current itch. Calm zone below 10
-// is generously chill; above that, ramps linearly and hits max at itch 80
-// so the punishment maxes out before the meter is fully red. Stiff drink
-// flat-zeros it.
+// Smooth stress factor 0..1 derived from current itch. Calm zone below 15
+// is genuinely chill; above that, ramps linearly and hits max at itch 85
+// so the punishment caps out a hair before the meter is fully red. Stiff
+// drink flat-zeros it.
 function stressFactor() {
   if (isDrinkActive()) return 0;
-  return Math.max(0, Math.min(1, (itch - 10) / 70));
+  return Math.max(0, Math.min(1, (itch - 15) / 70));
 }
 
 function startReeling() {
@@ -4910,8 +4910,8 @@ function startReeling() {
   // Then apply the stress penalty - unless the drink is steadying the hands.
   const rod = getRod(equippedRodId);
   markerSpeed = 100 / (activeFish.markerSpeed * rod.markerSpeedMult / 50);
-  // Stress speeds the marker up to 2.5x at max stress, smoothly from itch 10.
-  markerSpeed *= 1 + 1.5 * stressFactor();
+  // Stress speeds the marker up to ~2x at max stress.
+  markerSpeed *= 1 + 1.0 * stressFactor();
   buildHitZones();
   updateMarker(); updateProgress(); updateCombo();
   $('reel-fish-name').textContent = activeFish.name;
@@ -4924,8 +4924,8 @@ function buildHitZones() {
   // Apply rod's hit zone multiplier - bigger = easier. Stress penalty
   // shrinks the zone, unless the drink is dampening it.
   let zoneMult = rod.hitZoneMult;
-  // Stress shrinks the hit zone smoothly down to ~45% of base at max stress.
-  zoneMult *= 1 - 0.55 * stressFactor();
+  // Stress shrinks the hit zone smoothly down to ~60% of base at max stress.
+  zoneMult *= 1 - 0.40 * stressFactor();
   const zoneSize = Math.min(activeFish.hitZone * zoneMult, 80);
   const minStart = 10, maxStart = 100 - zoneSize - 10;
   hitZoneStart = minStart + Math.random() * Math.max(0, maxStart - minStart);
@@ -4955,8 +4955,8 @@ function reelTick() {
   // Apply rod tensionRate multiplier - lower = grows slower = more forgiving.
   // Stress penalty: tension climbs faster, unless the drink is dampening it.
   const rod = getRod(equippedRodId);
-  // Stress raises tension growth smoothly up to ~1.85x at max stress.
-  const itchTension = 1 + 0.85 * stressFactor();
+  // Stress raises tension growth smoothly up to ~1.65x at max stress.
+  const itchTension = 1 + 0.65 * stressFactor();
   tension += 0.15 * rod.tensionRate * itchTension;
   if (tension >= 100) { lineSnap(); return; }
   updateProgress();
