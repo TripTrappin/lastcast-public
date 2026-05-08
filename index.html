@@ -1782,7 +1782,7 @@ animation: dayFlash 0.9s ease-out;
 /* === TEXT NOTIFICATION (incoming-message banner) === */
 .text-notification {
 position: absolute;
-bottom: 100px;
+top: 14px;
 left: 50%;
 max-width: 240px;
 width: max-content;
@@ -1794,7 +1794,9 @@ border-radius: 10px;
 box-shadow: 0 4px 12px rgba(0,0,0,0.55);
 z-index: 30;
 cursor: pointer;
-transform: translate(-50%, 140%);
+touch-action: pan-y;
+user-select: none;
+transform: translate(-50%, -160%);
 opacity: 0;
 pointer-events: none;
 transition: transform 0.4s cubic-bezier(0.2, 0.85, 0.25, 1.05),
@@ -1804,6 +1806,9 @@ transition: transform 0.4s cubic-bezier(0.2, 0.85, 0.25, 1.05),
 transform: translate(-50%, 0);
 opacity: 1;
 pointer-events: all;
+}
+.text-notification.dragging {
+transition: none;
 }
 .tn-avatar {
 width: 20px; height: 20px;
@@ -3075,7 +3080,7 @@ min-height: 14px;
   </div>
 
   <!-- Text-message notification (slides in from top when a new text lands) -->
-  <div id="text-notification" class="text-notification" onclick="onTextNotificationClick()">
+  <div id="text-notification" class="text-notification">
     <div class="tn-avatar" id="tn-avatar">B</div>
     <div class="tn-content">
       <div class="tn-name" id="tn-name">Boudreaux</div>
@@ -6648,6 +6653,9 @@ function showTextNotification(texterId, text) {
   const bd = document.getElementById('tn-body');
   if (bd) bd.textContent = text;
   _tnCurrentTexter = texterId;
+  // Wipe any leftover drag state from a previous notification.
+  el.style.transform = '';
+  el.classList.remove('dragging');
   el.classList.add('show');
   if (_tnHideTimer) clearTimeout(_tnHideTimer);
   // Boudreaux's lines linger longer than chatter from the rest.
@@ -6662,7 +6670,11 @@ function showTextNotification(texterId, text) {
 
 function hideTextNotification() {
   const el = document.getElementById('text-notification');
-  if (el) el.classList.remove('show');
+  if (el) {
+    // Clear any drag transform so the CSS hide animation applies cleanly.
+    el.style.transform = '';
+    el.classList.remove('show', 'dragging');
+  }
   if (_tnHideTimer) { clearTimeout(_tnHideTimer); _tnHideTimer = null; }
 }
 
@@ -6675,6 +6687,63 @@ function onTextNotificationClick() {
   if (typeof setPhoneApp === 'function') setPhoneApp('messages');
   if (typeof openMessageThread === 'function') openMessageThread(id);
 }
+
+// Tap to open thread; swipe up to dismiss. Pointer events handle both
+// mouse and touch, capturing the pointer so the drag continues even if
+// the finger leaves the badge.
+function initTextNotificationGestures() {
+  const el = document.getElementById('text-notification');
+  if (!el) return;
+  let startY = null;
+  let dragging = false;
+  let didSwipe = false;
+  const SWIPE_DISMISS = 36;   // px upward to count as a dismiss
+  const TAP_SLOP     = 6;    // movement under this is still a tap
+
+  el.addEventListener('pointerdown', (e) => {
+    if (!el.classList.contains('show')) return;
+    startY = e.clientY;
+    dragging = true;
+    didSwipe = false;
+    el.classList.add('dragging');
+    try { el.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+
+  el.addEventListener('pointermove', (e) => {
+    if (!dragging || startY === null) return;
+    const raw = e.clientY - startY;
+    const dy = Math.min(0, raw);   // upward only — downward does nothing
+    if (Math.abs(raw) > TAP_SLOP) didSwipe = true;
+    el.style.transform = `translate(-50%, ${dy}px)`;
+  });
+
+  function endDrag(e) {
+    if (!dragging) return;
+    dragging = false;
+    el.classList.remove('dragging');
+    const raw = (startY != null && e && typeof e.clientY === 'number')
+      ? e.clientY - startY : 0;
+    const dy = Math.min(0, raw);
+    startY = null;
+    if (dy < -SWIPE_DISMISS) {
+      // Swiped up enough — dismiss.
+      el.style.transform = '';   // let CSS hide-transform take over
+      hideTextNotification();
+    } else if (!didSwipe) {
+      // Plain tap — open the relevant thread.
+      el.style.transform = '';
+      onTextNotificationClick();
+    } else {
+      // Partial swipe — snap back to resting position.
+      el.style.transform = '';
+    }
+  }
+
+  el.addEventListener('pointerup', endDrag);
+  el.addEventListener('pointercancel', endDrag);
+  el.addEventListener('lostpointercapture', endDrag);
+}
+document.addEventListener('DOMContentLoaded', initTextNotificationGestures);
 
 function pickRandomTexter() {
   // Boudreaux's share scales with how much debt is left.
