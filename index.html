@@ -2100,41 +2100,84 @@ position: fixed; inset: 0;
 z-index: 380;
 display: none;
 align-items: center; justify-content: center;
-background: linear-gradient(180deg, #1a0a14 0%, #060304 100%);
+background: radial-gradient(ellipse at center, #1a0a14 0%, #060304 75%);
+overflow: hidden;
+}
+#intro-cutscene::before {
+content: '';
+position: absolute; inset: 0;
+background:
+  radial-gradient(circle at 50% 50%, transparent 35%, rgba(0,0,0,0.55) 100%),
+  repeating-linear-gradient(0deg, rgba(255,232,212,0.025) 0 1px, transparent 1px 3px);
+pointer-events: none;
+animation: cutsceneGrain 2.6s steps(6) infinite;
+opacity: 0.7;
+}
+@keyframes cutsceneGrain {
+0%   { transform: translate(0,    0); }
+20%  { transform: translate(-1px, 1px); }
+40%  { transform: translate(1px, -1px); }
+60%  { transform: translate(-1px,-1px); }
+80%  { transform: translate(1px,  1px); }
+100% { transform: translate(0,    0); }
 }
 #intro-cutscene.show { display: flex; }
 .cutscene-card {
+position: relative;
 display: flex; flex-direction: column; align-items: center;
 gap: 16px;
 padding: 22px 22px 18px;
 width: min(90%, 360px);
 max-height: 92%;
+z-index: 1;
 }
 .cutscene-art {
-width: 200px; height: 200px;
+width: 220px; height: 220px;
 display: flex; align-items: center; justify-content: center;
 background: rgba(20,10,18,0.5);
 border: 2px solid #2a1808;
 border-radius: 14px;
-box-shadow: inset 0 0 24px rgba(0,0,0,0.6);
+box-shadow: inset 0 0 24px rgba(0,0,0,0.7), 0 8px 28px rgba(0,0,0,0.6);
 overflow: hidden;
+position: relative;
+}
+.cutscene-art::after {
+/* Soft scanline + vignette layered over the art panel itself */
+content: '';
+position: absolute; inset: 0;
+pointer-events: none;
+background:
+  radial-gradient(circle at 50% 50%, transparent 48%, rgba(0,0,0,0.5) 100%),
+  repeating-linear-gradient(0deg, rgba(255,232,212,0.04) 0 1px, transparent 1px 2px);
 }
 .cutscene-art svg {
 width: 100%; height: 100%;
 display: block;
 image-rendering: pixelated;
+animation: cutsceneKenBurns 7s ease-out forwards;
+transform-origin: 50% 55%;
+}
+@keyframes cutsceneKenBurns {
+0%   { transform: scale(1.02) translate(0, 0); }
+100% { transform: scale(1.10) translate(-2%, -3%); }
 }
 .cutscene-text {
 font-family: 'Baloo 2', cursive;
 font-size: 14px;
 font-weight: 600;
-line-height: 1.4;
+line-height: 1.45;
 color: var(--text);
 text-align: center;
-min-height: 80px;
+min-height: 96px;
+animation: cutsceneTextFade 0.9s ease-out;
+}
+@keyframes cutsceneTextFade {
+0%   { opacity: 0; transform: translateY(6px); }
+100% { opacity: 1; transform: translateY(0); }
 }
 .cutscene-text .accent { color: var(--gold); font-weight: 800; }
 .cutscene-text .danger { color: #ff7e5a; font-weight: 800; }
+.cutscene-text .quiet  { color: var(--text-dim); font-style: italic; }
 .cutscene-dots {
 display: flex; gap: 6px;
 }
@@ -6114,6 +6157,49 @@ const BOUDREAUX_PORTRAIT = `
   <circle cx="22" cy="56" r="1.5" fill="#fde898" stroke="#0c0606" stroke-width="0.4"/>
 </svg>`;
 
+const DOCK_DAWN_ART = `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <!-- Sky gradient: deep purple fading to amber -->
+  <rect width="100" height="100" fill="#1a0a14"/>
+  <rect x="0" y="0"  width="100" height="14" fill="#2a1830"/>
+  <rect x="0" y="14" width="100" height="10" fill="#5a2a3a"/>
+  <rect x="0" y="24" width="100" height="8"  fill="#a8482a"/>
+  <rect x="0" y="32" width="100" height="6"  fill="#d8703a"/>
+  <rect x="0" y="38" width="100" height="6"  fill="#f8a060"/>
+  <!-- Sun -->
+  <circle cx="50" cy="46" r="9" fill="#fde898"/>
+  <circle cx="50" cy="46" r="6" fill="#ffeec0"/>
+  <!-- Distant treeline silhouette -->
+  <polygon points="0,52 8,46 14,50 22,42 30,48 38,44 46,50 54,46 62,50 70,44 78,48 88,44 100,52 100,60 0,60" fill="#0c0608"/>
+  <!-- Water with sun reflection -->
+  <rect x="0" y="60" width="100" height="40" fill="#1a0a14"/>
+  <rect x="0" y="60" width="100" height="2"  fill="#3a1c1a"/>
+  <rect x="46" y="62" width="8" height="2"  fill="#a8482a" opacity="0.7"/>
+  <rect x="44" y="66" width="12" height="2" fill="#7a2818" opacity="0.6"/>
+  <rect x="46" y="72" width="8" height="2"  fill="#5a1810" opacity="0.5"/>
+  <rect x="48" y="80" width="4" height="2"  fill="#3a1010" opacity="0.5"/>
+  <!-- Wooden dock/pier -->
+  <rect x="6" y="84" width="88" height="6"  fill="#3a1c08"/>
+  <rect x="6" y="84" width="88" height="1"  fill="#5a3018"/>
+  <line x1="20" y1="90" x2="20" y2="100" stroke="#1a0c05" stroke-width="2"/>
+  <line x1="50" y1="90" x2="50" y2="100" stroke="#1a0c05" stroke-width="2"/>
+  <line x1="80" y1="90" x2="80" y2="100" stroke="#1a0c05" stroke-width="2"/>
+  <!-- Lone figure - rounded shoulders, tackle box at his feet -->
+  <rect x="44" y="68" width="6" height="3"   fill="#1a0c05"/> <!-- hat -->
+  <rect x="42" y="71" width="10" height="2"  fill="#3a1c08"/>
+  <rect x="44" y="73" width="6" height="11"  fill="#3a1c08"/> <!-- body -->
+  <rect x="43" y="78" width="2" height="6"   fill="#3a1c08"/>
+  <rect x="49" y="78" width="2" height="6"   fill="#3a1c08"/>
+  <rect x="42" y="84" width="3" height="3"   fill="#1a0c05"/> <!-- legs -->
+  <rect x="49" y="84" width="3" height="3"   fill="#1a0c05"/>
+  <!-- Tackle box -->
+  <rect x="54" y="85" width="6" height="4"   fill="#5a3018"/>
+  <rect x="54" y="85" width="6" height="1"   fill="#7a4220"/>
+  <!-- Cigarette ember -->
+  <rect x="40" y="71" width="1" height="1"   fill="#ff7e5a"/>
+  <rect x="38" y="69" width="1" height="1"   fill="#fde898" opacity="0.5"/>
+</svg>`;
+
 const STOREFRONT_ART = `
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
   <rect width="100" height="100" fill="#1a0a14"/>
@@ -6149,6 +6235,55 @@ const STOREFRONT_ART = `
   <line x1="0" y1="90" x2="100" y2="90" stroke="#1a0c05" stroke-width="1"/>
 </svg>`;
 
+const BACKROOM_ART = `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <rect width="100" height="100" fill="#0a0608"/>
+  <!-- Smoke haze in the back -->
+  <ellipse cx="50" cy="22" rx="60" ry="14" fill="#2a181a" opacity="0.65"/>
+  <ellipse cx="35" cy="14" rx="32" ry="8"  fill="#1a1012" opacity="0.6"/>
+  <!-- Hanging bare bulb with cone of yellow light -->
+  <line x1="50" y1="0"  x2="50" y2="14" stroke="#1a0c05" stroke-width="1"/>
+  <circle cx="50" cy="14" r="3" fill="#fde898"/>
+  <circle cx="50" cy="14" r="2" fill="#ffeec0"/>
+  <polygon points="50,16 22,84 78,84" fill="#5a2810" opacity="0.45"/>
+  <polygon points="50,16 32,80 68,80" fill="#a8482a" opacity="0.35"/>
+  <!-- Felt table -->
+  <ellipse cx="50" cy="74" rx="44" ry="14" fill="#1a3820"/>
+  <ellipse cx="50" cy="72" rx="44" ry="14" fill="#284a30"/>
+  <ellipse cx="50" cy="71" rx="40" ry="12" fill="#2e5a36"/>
+  <!-- Two dice mid-tumble (rotated, with motion blur ghosts) -->
+  <g opacity="0.35">
+    <rect x="38" y="62" width="10" height="10" rx="1.5" fill="#fde898" stroke="#1a0c05" stroke-width="1" transform="rotate(-22 43 67)"/>
+  </g>
+  <g transform="translate(42 60) rotate(-8)">
+    <rect x="0" y="0" width="11" height="11" rx="1.5" fill="#fde898" stroke="#1a0c05" stroke-width="1.2"/>
+    <circle cx="3"  cy="3"  r="1" fill="#1a0c05"/>
+    <circle cx="8"  cy="8"  r="1" fill="#1a0c05"/>
+    <circle cx="3"  cy="8"  r="1" fill="#1a0c05"/>
+    <circle cx="8"  cy="3"  r="1" fill="#1a0c05"/>
+  </g>
+  <g opacity="0.35">
+    <rect x="56" y="64" width="10" height="10" rx="1.5" fill="#fde898" stroke="#1a0c05" stroke-width="1" transform="rotate(18 61 69)"/>
+  </g>
+  <g transform="translate(56 62) rotate(12)">
+    <rect x="0" y="0" width="11" height="11" rx="1.5" fill="#fde898" stroke="#1a0c05" stroke-width="1.2"/>
+    <circle cx="5.5" cy="5.5" r="1" fill="#1a0c05"/>
+  </g>
+  <!-- Pile of stacked chips on the right edge -->
+  <rect x="76" y="74" width="14" height="2" fill="#a82010"/>
+  <rect x="76" y="76" width="14" height="2" fill="#fde898"/>
+  <rect x="76" y="78" width="14" height="2" fill="#1a0c05"/>
+  <rect x="76" y="80" width="14" height="2" fill="#a82010"/>
+  <!-- Two pairs of hands on the table edge - sleeves only -->
+  <rect x="6"  y="78" width="14" height="6" fill="#1a0c10"/>
+  <rect x="20" y="80" width="6"  height="4" fill="#c89870"/> <!-- hand poking out -->
+  <rect x="80" y="78" width="14" height="6" fill="#3a1808"/>
+  <rect x="74" y="80" width="6"  height="4" fill="#a87858"/>
+  <!-- Foreground player silhouette - back of head visible -->
+  <rect x="40" y="86" width="20" height="14" fill="#0a0608"/>
+  <ellipse cx="50" cy="88" rx="10" ry="4" fill="#0c0608"/>
+</svg>`;
+
 const ROD_DICE_ART = `
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
   <rect width="100" height="100" fill="#1a0a14"/>
@@ -6182,16 +6317,24 @@ const ROD_DICE_ART = `
 
 const CUTSCENE = [
   {
+    art: DOCK_DAWN_ART,
+    text: `<span class="accent">Earl Beaucoup.</span> Cypress Grove fisherman. Forty-three years old. <span class="quiet">Used to think he was lucky.</span>`,
+  },
+  {
     art: STOREFRONT_ART,
-    text: `Cypress Grove Bait &amp; Tackle. Three generations. <span class="danger">About to be none.</span><br><br>The bills came due all at once. Rent. Suppliers. The bank. Everyone wants their cut.`,
+    text: `Three generations of Beaucoups on this dock. <span class="danger">About to be none.</span><br><br>Rent. Suppliers. The bank. Everyone wants their cut.`,
+  },
+  {
+    art: BACKROOM_ART,
+    text: `<span class="quiet">One night at the back-room dice table.</span><br><br>Just enough to clear the bills, you said. <span class="danger">Just one good night.</span>`,
   },
   {
     art: BOUDREAUX_PORTRAIT,
-    text: `Then there's <span class="accent">Boudreaux</span>. He helped you out the first time. He always helps. He just expects to be paid back. <span class="danger">With interest. By the day.</span>`,
+    text: `Then there's <span class="accent">Boudreaux</span>. He smiled when he counted out the envelope. <span class="danger">He smiles different now.</span>`,
   },
   {
     art: ROD_DICE_ART,
-    text: `Eleven days to make him whole. Catch what you can. Sell what you can. The rest? <span class="accent">Pray to whatever god runs that back-room dice table.</span>`,
+    text: `Eleven days. Pay him every one of 'em. Cast what you can. Sell what you can. The rest? <span class="accent">Pray to whatever god runs that table.</span>`,
   },
 ];
 
@@ -6212,8 +6355,17 @@ function renderCutscene() {
   const txt = document.getElementById('cutscene-text');
   const dots = document.getElementById('cutscene-dots');
   const next = document.getElementById('cutscene-next');
-  if (art) art.innerHTML = panel.art;
-  if (txt) txt.innerHTML = panel.text;
+  if (art) {
+    // Re-trigger the ken-burns animation by replacing the SVG node.
+    art.innerHTML = panel.art;
+  }
+  if (txt) {
+    // Restart the text fade-in by reflowing the node.
+    txt.innerHTML = panel.text;
+    txt.style.animation = 'none';
+    void txt.offsetWidth;        // force reflow so animation restarts
+    txt.style.animation = '';
+  }
   if (dots) {
     dots.innerHTML = '';
     for (let i = 0; i < CUTSCENE.length; i++) {
@@ -6223,6 +6375,10 @@ function renderCutscene() {
     }
   }
   if (next) next.textContent = (cutsceneIndex === CUTSCENE.length - 1) ? 'Cast Off' : 'Next';
+  // Soft low transition tone — bayou-night vibe, dampens to nothing.
+  if (typeof playTone === 'function' && !isMuted) {
+    playTone(110, 0.5, 'sine', 0.10, 0.08, 0.4);
+  }
 }
 
 function advanceCutscene() {
