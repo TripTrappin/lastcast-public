@@ -1779,69 +1779,6 @@ animation: dayFlash 0.9s ease-out;
 100% { transform: scale(1); background: rgba(20, 10, 18, 0.78); }
 }
 
-/* === TEXT NOTIFICATION (incoming-message banner) === */
-.text-notification {
-position: absolute;
-top: 22px;
-left: 50%;
-max-width: 240px;
-width: max-content;
-display: flex; align-items: center; gap: 6px;
-padding: 5px 8px;
-background: rgba(20, 10, 18, 0.96);
-border: 1px solid rgba(255,232,212,0.25);
-border-radius: 10px;
-box-shadow: 0 4px 12px rgba(0,0,0,0.55);
-z-index: 40;
-cursor: pointer;
-touch-action: pan-y;
-user-select: none;
-transform: translate(-50%, -160%);
-opacity: 0;
-pointer-events: none;
-transition: transform 0.4s cubic-bezier(0.2, 0.85, 0.25, 1.05),
-            opacity 0.25s;
-}
-.text-notification.show {
-transform: translate(-50%, 0);
-opacity: 1;
-pointer-events: all;
-}
-.text-notification.dragging {
-transition: none;
-}
-.tn-avatar {
-width: 20px; height: 20px;
-border-radius: 50%;
-display: flex; align-items: center; justify-content: center;
-font-family: 'Baloo 2', cursive;
-font-weight: 900;
-font-size: 11px;
-color: #1a0c05;
-flex-shrink: 0;
-background: #ff5a4a;
-}
-.tn-content { flex: 1; min-width: 0; }
-.tn-name {
-font-family: 'Baloo 2', cursive;
-font-size: 9px; font-weight: 800;
-color: #fde898;
-letter-spacing: 0.3px;
-}
-.tn-body {
-font-family: 'Baloo 2', cursive;
-font-size: 9px; font-weight: 600;
-color: var(--text);
-line-height: 1.2;
-margin-top: 1px;
-display: -webkit-box;
--webkit-line-clamp: 2;
--webkit-box-orient: vertical;
-overflow: hidden;
-text-overflow: ellipsis;
-word-wrap: break-word;
-}
-
 /* === DAY TRANSITION === */
 #day-transition {
 position: fixed; inset: 0;
@@ -3076,15 +3013,6 @@ min-height: 14px;
       <div class="gameover-title">Boudreaux's boys came by today.</div>
       <div class="gameover-body" id="gameover-body">You owe more than the bayou's worth. They took the truck. They took the dog. They left you the rod.</div>
       <button class="gameover-restart" onclick="restartFromGameOver()">Try Again</button>
-    </div>
-  </div>
-
-  <!-- Text-message notification (slides in from top when a new text lands) -->
-  <div id="text-notification" class="text-notification">
-    <div class="tn-avatar" id="tn-avatar">B</div>
-    <div class="tn-content">
-      <div class="tn-name" id="tn-name">Boudreaux</div>
-      <div class="tn-body" id="tn-body">Message text</div>
     </div>
   </div>
 
@@ -6629,121 +6557,8 @@ function deliverText(texterId, text) {
       paintMessagesInbox();
     }
   }
-  // Slide in an on-screen notification so the player actually sees the
-  // text without having to open the phone — critical for the loan
-  // shark's day-1 setup, useful immersion for everything else.
-  showTextNotification(texterId, text);
   saveGame();
 }
-
-let _tnHideTimer = null;
-let _tnCurrentTexter = null;
-
-function showTextNotification(texterId, text) {
-  // Don't compete with forced overlays — those take the screen on purpose.
-  if (lastChanceShown || gameOverShown || winShown || dayTransitioning) return;
-  const el = document.getElementById('text-notification');
-  if (!el) return;
-  const t = TEXTERS.find(x => x.id === texterId);
-  if (!t) return;
-  const av = document.getElementById('tn-avatar');
-  if (av) { av.textContent = t.initial; av.style.background = t.color; }
-  const nm = document.getElementById('tn-name');
-  if (nm) nm.textContent = t.name;
-  const bd = document.getElementById('tn-body');
-  if (bd) bd.textContent = text;
-  _tnCurrentTexter = texterId;
-  // Wipe any leftover drag state from a previous notification.
-  el.style.transform = '';
-  el.classList.remove('dragging');
-  el.classList.add('show');
-  if (_tnHideTimer) clearTimeout(_tnHideTimer);
-  // Boudreaux's lines linger longer than chatter from the rest.
-  const holdMs = (texterId === 'boudreaux') ? 7500 : 5500;
-  _tnHideTimer = setTimeout(hideTextNotification, holdMs);
-  // Soft two-tone notification ping.
-  if (typeof playTone === 'function' && !isMuted) {
-    playTone(1500, 0.07, 'triangle', 0.13);
-    setTimeout(() => playTone(2000, 0.09, 'triangle', 0.11), 110);
-  }
-}
-
-function hideTextNotification() {
-  const el = document.getElementById('text-notification');
-  if (el) {
-    // Clear any drag transform so the CSS hide animation applies cleanly.
-    el.style.transform = '';
-    el.classList.remove('show', 'dragging');
-  }
-  if (_tnHideTimer) { clearTimeout(_tnHideTimer); _tnHideTimer = null; }
-}
-
-function onTextNotificationClick() {
-  const id = _tnCurrentTexter;
-  hideTextNotification();
-  if (!id) return;
-  // Open the phone straight to the relevant thread.
-  if (typeof openPhone === 'function') openPhone();
-  if (typeof setPhoneApp === 'function') setPhoneApp('messages');
-  if (typeof openMessageThread === 'function') openMessageThread(id);
-}
-
-// Tap to open thread; swipe up to dismiss. Pointer events handle both
-// mouse and touch, capturing the pointer so the drag continues even if
-// the finger leaves the badge.
-function initTextNotificationGestures() {
-  const el = document.getElementById('text-notification');
-  if (!el) return;
-  let startY = null;
-  let dragging = false;
-  let didSwipe = false;
-  const SWIPE_DISMISS = 36;   // px upward to count as a dismiss
-  const TAP_SLOP     = 6;    // movement under this is still a tap
-
-  el.addEventListener('pointerdown', (e) => {
-    if (!el.classList.contains('show')) return;
-    startY = e.clientY;
-    dragging = true;
-    didSwipe = false;
-    el.classList.add('dragging');
-    try { el.setPointerCapture(e.pointerId); } catch (_) {}
-  });
-
-  el.addEventListener('pointermove', (e) => {
-    if (!dragging || startY === null) return;
-    const raw = e.clientY - startY;
-    const dy = Math.min(0, raw);   // upward only — downward does nothing
-    if (Math.abs(raw) > TAP_SLOP) didSwipe = true;
-    el.style.transform = `translate(-50%, ${dy}px)`;
-  });
-
-  function endDrag(e) {
-    if (!dragging) return;
-    dragging = false;
-    el.classList.remove('dragging');
-    const raw = (startY != null && e && typeof e.clientY === 'number')
-      ? e.clientY - startY : 0;
-    const dy = Math.min(0, raw);
-    startY = null;
-    if (dy < -SWIPE_DISMISS) {
-      // Swiped up enough — dismiss.
-      el.style.transform = '';   // let CSS hide-transform take over
-      hideTextNotification();
-    } else if (!didSwipe) {
-      // Plain tap — open the relevant thread.
-      el.style.transform = '';
-      onTextNotificationClick();
-    } else {
-      // Partial swipe — snap back to resting position.
-      el.style.transform = '';
-    }
-  }
-
-  el.addEventListener('pointerup', endDrag);
-  el.addEventListener('pointercancel', endDrag);
-  el.addEventListener('lostpointercapture', endDrag);
-}
-document.addEventListener('DOMContentLoaded', initTextNotificationGestures);
 
 function pickRandomTexter() {
   // Boudreaux's share scales with how much debt is left.
@@ -6781,7 +6596,15 @@ function maybeSendIntroTexts() {
   }
   messagesIntroSent = true;
   saveGame();
-  setTimeout(() => deliverText('boudreaux', "Listen good. Have my money every day 'til the loan is paid. Miss a day and there'll be consequences."), 1500);
+  setTimeout(() => {
+    deliverText('boudreaux', "Listen good. Have my money every day 'til the loan is paid. Miss a day and there'll be consequences.");
+    // Auto-open the phone straight to Boudreaux's thread so the player
+    // can't miss the goal — the rest of the game's framing depends on
+    // this read landing.
+    if (typeof openPhone === 'function') openPhone();
+    if (typeof setPhoneApp === 'function') setPhoneApp('messages');
+    if (typeof openMessageThread === 'function') openMessageThread('boudreaux');
+  }, 1500);
   setTimeout(() => deliverText('boudreaux', "Don't ghost me. I know where you fish."), 6000);
 }
 
